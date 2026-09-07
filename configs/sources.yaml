@@ -1,0 +1,30 @@
+sources:
+  imd_dwr:
+    enabled: false
+    role: radar_nowcast
+    note: "Keep adapter pluggable; operational/archive access may be restricted."
+
+  mosdac_insat:
+    enabled: false
+    role: satellite_qpe
+    note: "Registration/request may be required."
+
+  nasa_gpm_imerg:
+    enabled: true
+    role: historical_precipitation
+    note: "Use for historical/training-validation. Do not present latency products as instant warning feed."
+
+  noaa_gfs:
+    enabled: true
+    role: nwp
+    note: "Open development NWP source."
+
+  copernicus_dem:
+    enabled: true
+    role: terrain
+    note: "Static DEM foundation."
+
+  osm:
+    enabled: true
+    role: vector_context
+    note: "Roads, waterways and critical-asset context."

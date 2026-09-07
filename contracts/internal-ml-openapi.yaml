@@ -1,0 +1,64 @@
+openapi: 3.1.0
+info:
+  title: JalRakshak Internal ML API
+  version: 0.1.0
+  description: >
+    Internal contract between the JalRakshak backend and ML/GIS service.
+    The backend is the only public consumer.
+servers:
+  - url: http://localhost:8001
+
+paths:
+  /internal/v1/nowcast:
+    post:
+      summary: Run rainfall nowcast
+      responses:
+        "200":
+          description: Nowcast run accepted/completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NowcastResult"
+  /internal/v1/inundation:
+    post:
+      summary: Run inundation/depth-or-susceptibility inference
+      responses:
+        "200":
+          description: Flood run accepted/completed
+  /internal/v1/risk:
+    post:
+      summary: Build H3 risk output from rainfall/flood/exposure inputs
+      responses:
+        "200":
+          description: Risk run accepted/completed
+  /internal/v1/report-verification:
+    post:
+      summary: Verify citizen/field flood report
+      responses:
+        "200":
+          description: Verification result
+  /internal/v1/models/status:
+    get:
+      summary: Return model/service status
+      responses:
+        "200":
+          description: Status
+  /internal/v1/runs/{run_id}:
+    get:
+      summary: Return model run status/manifest
+      parameters:
+        - in: path
+          name: run_id
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Run record
+
+components:
+  schemas:
+    WeatherFrame:
+      $ref: "./schemas/weather-frame.schema.json"
+    NowcastResult:
+      $ref: "./schemas/nowcast-result.schema.json"

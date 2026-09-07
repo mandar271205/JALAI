@@ -1,0 +1,43 @@
+{
+  "weather.zarr": {
+    "source": "weather_cube",
+    "number_of_gpm_frames": 23,
+    "number_of_gfs_frames": 4,
+    "date_range": [
+      "2023-07-25T00:00:00+00:00",
+      "2023-07-25T11:00:00+00:00"
+    ],
+    "gpm_missing_percentage": 2.5634765625,
+    "gfs_missing_percentage": 2.57110595703125,
+    "REAL_OR_SYNTHETIC": "REAL"
+  },
+  "static.zarr": {
+    "source": "static_cube",
+    "variables_found": [
+      "elevation",
+      "distance_to_water",
+      "flow_accumulation",
+      "low_lying_index",
+      "slope"
+    ],
+    "dem_missing_pct": 2.57110595703125,
+    "dem_min": -0.6024046540260315,
+    "dem_max": 479.2968444824219,
+    "REAL_OR_SYNTHETIC": "REAL"
+  },
+  "osm_data": {
+    "raw_files": [
+      "bridges.geojson",
+      "emergency_assets.geojson",
+      "fire_stations.geojson",
+      "hospitals.geojson",
+      "police_stations.geojson",
+      "railways.geojson",
+      "roads.geojson",
+      "schools.geojson",
+      "shelters.geojson",
+      "waterways.geojson"
+    ],
+    "REAL_OR_SYNTHETIC": "REAL"
+  }
+}

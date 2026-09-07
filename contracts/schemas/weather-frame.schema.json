@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://jalrakshak.ai/schemas/weather-frame.schema.json",
+  "title": "WeatherFrame",
+  "type": "object",
+  "required": [
+    "source",
+    "variable",
+    "valid_time",
+    "bbox",
+    "crs",
+    "resolution_m",
+    "units",
+    "quality_score",
+    "object_uri",
+    "checksum"
+  ],
+  "properties": {
+    "source": {"type": "string"},
+    "variable": {"type": "string"},
+    "valid_time": {"type": "string", "format": "date-time"},
+    "bbox": {
+      "type": "array",
+      "items": {"type": "number"},
+      "minItems": 4,
+      "maxItems": 4
+    },
+    "crs": {"type": "string"},
+    "resolution_m": {"type": "number", "exclusiveMinimum": 0},
+    "units": {"type": "string"},
+    "quality_score": {"type": "number", "minimum": 0, "maximum": 1},
+    "freshness_score": {"type": "number", "minimum": 0, "maximum": 1},
+    "missing_percent": {"type": "number", "minimum": 0, "maximum": 100},
+    "processing_version": {"type": "string"},
+    "object_uri": {"type": "string"},
+    "checksum": {"type": "string"},
+    "provenance": {"type": "object"}
+  }
+}

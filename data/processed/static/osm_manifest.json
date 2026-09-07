@@ -1,0 +1,42 @@
+{
+  "source": "openstreetmap",
+  "acquisition_timestamp": "2026-09-07T01:50:08.271703+00:00",
+  "processing_version": "0.1.0",
+  "bbox_wgs84": [
+    72.75,
+    18.85,
+    73.05,
+    19.3
+  ],
+  "analysis_crs": "EPSG:32643",
+  "grid": {
+    "width": 256,
+    "height": 256
+  },
+  "layers": {
+    "roads": "data\\processed\\static\\roads.geojson",
+    "waterways": "data\\processed\\static\\waterways.geojson",
+    "railways": "data\\processed\\static\\railways.geojson",
+    "hospitals": "data\\processed\\static\\hospitals.geojson",
+    "schools": "data\\processed\\static\\schools.geojson",
+    "emergency_assets": "data\\processed\\static\\emergency_assets.geojson"
+  },
+  "feature_counts": {
+    "roads": 292968,
+    "waterways": 1338,
+    "railways": 2342,
+    "hospitals": 1229,
+    "schools": 944,
+    "emergency_assets": 2486,
+    "distance_to_water": 65536
+  },
+  "checksums": {
+    "roads": "d0ec8c98f63cadedd1cdb58bf8b90f7ac6e32618b5dbbb7a83c967aa76be995b",
+    "waterways": "9dc7b4c1c8e6b1a8cbbdd5f7af5684d11daca1c11aaa30c8431b394bf3fea15f",
+    "railways": "cce2c022d0fd3ee3d94e4df4a0903c562715046e491626ee3e6532cf306d9a94",
+    "hospitals": "8e6c193628780f7a78e71a52ed003978e9a05fc8f7bc4e0b6b23277f64e30ad5",
+    "schools": "5d1a7e64f522abd7ac543c75c9a669f70b2b5b4c68ab305ee5b40ff3feef1cf7",
+    "emergency_assets": "63a16fde9636082548a0631bf437c4dca424dc2e7fa61b66c6d5bcda0699b230",
+    "distance_to_water": "d41f6122eb49a78a37af5af1c9a17e501ac301f4a2e13d0727c186ce7776b21e"
+  }
+}

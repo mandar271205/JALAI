@@ -1,0 +1,52 @@
+# Secrets
+.env
+.env.*
+.netrc
+_netrc
+*.pem
+credentials*
+
+# Raw / processed datasets
+data/raw/
+data/interim/
+data/processed/training/
+data/processed/cubes/
+data/processed/demo/
+*.zarr/
+*.zarr
+*.hdf5
+*.grib2
+*.tif
+*.tiff
+test.hdf5
+test_dem_output.tif
+test_gfs.grib2
+cache/
+tmp.py
+
+# Large ML artifacts
+*.ckpt
+*.pth
+*.pt
+models/*
+!models/.gitkeep
+
+# Large geospatial datasets (>50MB)
+data/processed/static/roads.geojson
+
+# Python / Packaging
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.venv/
+*.egg-info/
+dist/
+build/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# OS / IDE
+.DS_Store
+.vscode/

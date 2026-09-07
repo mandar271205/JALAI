@@ -1,0 +1,50 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "jalrakshak-ml"
+version = "0.1.0"
+description = "JalRakshak AI ML + Geospatial intelligence pipeline"
+requires-python = ">=3.11,<3.13"
+dependencies = [
+  "numpy",
+  "pandas",
+  "xarray",
+  "zarr",
+  "numcodecs",
+  "PyYAML",
+  "pydantic>=2",
+  "rasterio",
+  "rioxarray",
+  "geopandas",
+  "shapely",
+  "pyproj",
+  "h5py",
+  "netCDF4",
+  "requests",
+]
+
+[project.optional-dependencies]
+weather = ["cfgrib", "pysteps"]
+deep = ["torch", "matplotlib", "pillow"]
+ml = [
+  "scikit-learn",
+  "xgboost",
+  "lightgbm",
+  "torch",
+  "lightning",
+  "optuna",
+  "mlflow",
+]
+dev = ["pytest", "ruff"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100

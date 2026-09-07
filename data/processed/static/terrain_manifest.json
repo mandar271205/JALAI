@@ -1,0 +1,13 @@
+{
+  "source_elevation_checksum": "56bd3208207e276499c1b47bce4a3e76df75d2e62b92903f71878d0fdee86ab0",
+  "target_crs": "EPSG:32643",
+  "resolution_m": 160.88147274302992,
+  "processing_version": "0.1.0",
+  "features_generated": [
+    "slope",
+    "flow_direction_d8",
+    "flow_accumulation",
+    "low_lying_index"
+  ],
+  "generated_at": "2026-09-06T21:00:46.834983+00:00"
+}

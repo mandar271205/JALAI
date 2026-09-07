@@ -1,0 +1,33 @@
+name: jalrakshak
+channels:
+  - conda-forge
+dependencies:
+  - python=3.11
+  - pip
+  - numpy
+  - pandas
+  - polars
+  - xarray
+  - dask
+  - zarr
+  - numcodecs
+  - netcdf4
+  - h5py
+  - pyyaml
+  - cfgrib
+  - eccodes
+  - pydantic>=2
+  - typer
+  - rich
+  - rasterio
+  - rioxarray
+  - geopandas
+  - shapely
+  - pyproj
+  - gdal
+  - matplotlib
+  - pytorch
+  - jupyterlab
+  - pytest
+  - pip:
+      - -e .

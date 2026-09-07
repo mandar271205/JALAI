@@ -1,0 +1,21 @@
+{
+  "source": "copernicus_glo_30",
+  "bbox": [
+    72.75,
+    18.85,
+    73.05,
+    19.3
+  ],
+  "source_crs": "EPSG:4326",
+  "target_crs": "EPSG:32643",
+  "resolution_m": 160.88147274302992,
+  "checksum": "56bd3208207e276499c1b47bce4a3e76df75d2e62b92903f71878d0fdee86ab0",
+  "acquisition_timestamp": "2026-09-06T21:00:46.834983+00:00",
+  "processing_version": "0.1.0",
+  "transformations": [
+    "Fetch COP30 1x1 degree tiles",
+    "Mosaic tiles",
+    "Reproject EPSG:4326 -> EPSG:32643",
+    "Bilinear resample to 256x256"
+  ]
+}

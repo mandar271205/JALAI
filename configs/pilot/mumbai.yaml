@@ -1,0 +1,18 @@
+pilot:
+  name: mumbai
+  bbox_wgs84: [72.75, 18.85, 73.05, 19.30]
+  api_crs: "EPSG:4326"
+  analysis_crs: "EPSG:32643"
+  grid:
+    width: 256
+    height: 256
+    temporal_step_minutes: 10
+  units:
+    rainfall_rate: "mm/h"
+    rainfall_accumulation: "mm"
+    water_depth: "m"
+  risk_levels:
+    - LOW
+    - MODERATE
+    - HIGH
+    - SEVERE

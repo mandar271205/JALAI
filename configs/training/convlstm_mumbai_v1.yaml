@@ -1,0 +1,76 @@
+data:
+  version: "gpm_imerg_v07_mumbai_monsoon_windows_v1"
+  source_version: "IMERG_V07"
+  temporal_step_minutes: 30
+  pilot_config: "configs/pilot/mumbai.yaml"
+  raw_dir: "data/raw/weather/gpm"
+  output_root: "data/processed/training"
+
+acquisition:
+  # The acquisition CLI is dry-run by default and requires --execute.
+  max_frames: 72
+  max_download_gb: 0.50
+  max_total_raw_gb: 0.80
+  estimated_granule_mb: 8.0
+  download_workers: 1
+
+# Whole 12-hour monsoon sampling windows. Splits are event-isolated.
+# Expand these deliberately before a meaningful GPU training campaign.
+events:
+  - id: "mumbai_monsoon_2023_07_18"
+    start: "2023-07-18T00:00:00+00:00"
+    end: "2023-07-18T12:00:00+00:00"
+    split: "train"
+  - id: "mumbai_monsoon_2023_07_25"
+    start: "2023-07-25T00:00:00+00:00"
+    end: "2023-07-25T12:00:00+00:00"
+    split: "validation"
+  - id: "mumbai_monsoon_2023_08_24"
+    start: "2023-08-24T00:00:00+00:00"
+    end: "2023-08-24T12:00:00+00:00"
+    split: "test"
+
+dataset:
+  history_length: 4
+  prediction_horizon: 4
+  input_channels: ["rainfall"]
+  crop_size: [128, 128]
+  crop_origin: null
+  normalization: "log1p_percentile_scale"
+  normalization_percentile: 99.5
+
+model:
+  version: "convlstm_mumbai_v1"
+  hidden_channels: [16, 16]
+  num_layers: 2
+  kernel_size: 3
+  head_channels: 16
+
+training:
+  seed: 26071
+  device: "auto"
+  batch_size: 4
+  num_workers: 0
+  epochs: 30
+  learning_rate: 0.001
+  weight_decay: 0.0001
+  gradient_clip_norm: 1.0
+  early_stopping_patience: 6
+  scheduler:
+    name: "reduce_on_plateau"
+    patience: 2
+    factor: 0.5
+  loss:
+    name: "weighted_mae_plus_mse"
+    event_threshold_mm_h: 5.0
+    event_weight: 4.0
+    mse_weight: 0.25
+
+evaluation:
+  thresholds_mm_h: [0.1, 1.0, 5.0]
+  horizons_minutes: [30, 60, 90, 120]
+
+artifacts:
+  model_dir: "models/nowcast"
+  evaluation_report: "reports/phase3_evaluation.json"
+  figure_dir: "reports/phase3_figures"

@@ -1,0 +1,17 @@
+{
+  "status": "NOT_RUN",
+  "reason": "No genuine real-data ConvLSTM GPU checkpoint exists; baseline-versus-ConvLSTM comparison would be misleading.",
+  "data_version": "gpm_imerg_v07_mumbai_monsoon_windows_v1",
+  "held_out_event": "mumbai_monsoon_2023_08_24",
+  "held_out_sequences_available": 17,
+  "checkpoint_path": null,
+  "gpu_training_run": false,
+  "providers": {
+    "persistence": {"metrics": null},
+    "pysteps": {"metrics": null},
+    "convlstm": {"metrics": null}
+  },
+  "probabilistic_metrics": "NOT_APPLICABLE_DETERMINISTIC_FORECAST",
+  "PHASE_3_IMPLEMENTATION_READY": true,
+  "PHASE_3_MODEL_VALIDATED": false
+}
