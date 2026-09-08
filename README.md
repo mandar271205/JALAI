@@ -163,3 +163,19 @@ and export of checkpoints, metrics, and plots.
 Do not set `PHASE_3_MODEL_VALIDATED=true` for a CPU smoke run or for the legacy
 23-frame Phase-2 replay. It requires genuine GPU training on an approved larger
 historical corpus followed by held-out event evaluation.
+
+### Heavy-rain V2 redesign
+
+The additive V2 configuration uses the existing 432-frame expanded corpus and
+does not run acquisition:
+
+```bash
+python scripts/train_convlstm.py --config configs/training/convlstm_mumbai_heavyrain_v2.yaml --device cuda
+python scripts/evaluate_phase3.py --config configs/training/convlstm_mumbai_heavyrain_v2.yaml --checkpoint models/nowcast/convlstm_mumbai_heavyrain_v2/best.pt --device cuda
+```
+
+Use `colab/02_convlstm_heavyrain_v2_training.ipynb` for the isolated GPU
+workflow. It requires the versioned
+`gpm_imerg_v07_mumbai_monsoon_expanded_v1` stores to be present or mounted and
+fails rather than redownloading them. See `reports/phase3_v2_design.md` for the
+residual, mask, heavy-rain sampling/loss, and checkpoint-selection contracts.

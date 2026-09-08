@@ -1,67 +1,78 @@
+"""Lead-time nowcast evaluator with explicit validity-mask support."""
+from __future__ import annotations
+
 import numpy as np
 import pandas as pd
-from typing import Dict, List, Optional
-from .metrics import compute_continuous_metrics, compute_dichotomous_metrics, compute_probabilistic_metrics
+
+from .metrics import (
+    compute_continuous_metrics,
+    compute_dichotomous_metrics,
+    compute_probabilistic_metrics,
+)
+
 
 class NowcastEvaluator:
-    """
-    Evaluator class for nowcasting models.
-    Computes metrics across specified lead times.
-    """
+    """Compute continuous and threshold metrics for nowcast sequences."""
 
-    def __init__(self, thresholds: List[float] = [0.1, 1.0, 5.0]):
-        """
-        Args:
-            thresholds: List of thresholds for dichotomous metrics (e.g., rainfall intensities).
-        """
-        self.thresholds = thresholds
+    def __init__(self, thresholds: list[float] | None = None):
+        self.thresholds = thresholds or [0.1, 1.0, 5.0]
 
-    def evaluate_sequence(self, obs: np.ndarray, pred: np.ndarray, prob_pred: Optional[np.ndarray] = None) -> pd.DataFrame:
-        """
-        Evaluates a predicted sequence against an observed sequence.
-
-        Args:
-            obs: 3D array of ground truth (lead_time, height, width).
-            pred: 3D array of predictions (lead_time, height, width).
-            prob_pred: Optional 3D array of probabilistic predictions [0, 1] (lead_time, height, width).
-
-        Returns:
-            pd.DataFrame: A DataFrame where each row corresponds to a lead time
-                          and columns contain metrics.
-        """
+    def evaluate_sequence(
+        self,
+        obs: np.ndarray,
+        pred: np.ndarray,
+        prob_pred: np.ndarray | None = None,
+        valid_mask: np.ndarray | None = None,
+    ) -> pd.DataFrame:
+        """Evaluate ``[lead_time, height, width]`` arrays over valid cells."""
         if obs.ndim != 3 or pred.ndim != 3:
-            raise ValueError(f"Expected 3D arrays (time, y, x). Got obs {obs.ndim}D, pred {pred.ndim}D.")
+            raise ValueError(
+                f"Expected 3D arrays (time, y, x). Got obs {obs.ndim}D, pred {pred.ndim}D."
+            )
         if obs.shape != pred.shape:
             raise ValueError(f"Shape mismatch: obs {obs.shape} != pred {pred.shape}")
         if prob_pred is not None and prob_pred.shape != obs.shape:
             raise ValueError(f"Shape mismatch: obs {obs.shape} != prob_pred {prob_pred.shape}")
+        if valid_mask is not None and valid_mask.shape != obs.shape:
+            raise ValueError(f"Shape mismatch: obs {obs.shape} != valid_mask {valid_mask.shape}")
 
-        lead_times = obs.shape[0]
         results = []
-
-        for t in range(lead_times):
-            obs_t = obs[t]
-            pred_t = pred[t]
-            
-            # Continuous metrics
-            row_metrics = compute_continuous_metrics(obs_t, pred_t)
-            row_metrics["lead_time"] = t + 1
-            
-            # Dichotomous and Probabilistic metrics per threshold
-            for thresh in self.thresholds:
-                thresh_metrics = compute_dichotomous_metrics(obs_t, pred_t, threshold=thresh)
-                for k, v in thresh_metrics.items():
-                    row_metrics[f"{k}_{thresh}"] = v
-                    
+        for index in range(obs.shape[0]):
+            observation = obs[index]
+            prediction = pred[index]
+            mask = valid_mask[index] if valid_mask is not None else None
+            effective = np.isfinite(observation) & np.isfinite(prediction)
+            if mask is not None:
+                effective &= mask.astype(bool)
+            error = np.where(effective, prediction - observation, 0.0)
+            row_metrics = compute_continuous_metrics(observation, prediction, mask)
+            row_metrics.update({
+                "lead_time": index + 1,
+                "valid_pixels": int(effective.sum()),
+                "error_sum": float(error.sum()),
+                "absolute_error_sum": float(np.abs(error).sum()),
+                "squared_error_sum": float(np.square(error).sum()),
+            })
+            for threshold in self.thresholds:
+                categorical = compute_dichotomous_metrics(
+                    observation,
+                    prediction,
+                    threshold=threshold,
+                    valid_mask=mask,
+                )
+                for name, value in categorical.items():
+                    row_metrics[f"{name}_{threshold}"] = value
                 if prob_pred is not None:
-                    prob_metrics = compute_probabilistic_metrics(obs_t, prob_pred[t], threshold=thresh)
-                    for k, v in prob_metrics.items():
-                        row_metrics[f"{k}_{thresh}"] = v
-            
+                    probabilistic = compute_probabilistic_metrics(
+                        observation,
+                        prob_pred[index],
+                        threshold=threshold,
+                        valid_mask=mask,
+                    )
+                    for name, value in probabilistic.items():
+                        row_metrics[f"{name}_{threshold}"] = value
             results.append(row_metrics)
-            
-        # Reorder columns to put lead_time first
-        df = pd.DataFrame(results)
-        cols = ["lead_time"] + [c for c in df.columns if c != "lead_time"]
-        return df[cols]
 
+        frame = pd.DataFrame(results)
+        columns = ["lead_time"] + [column for column in frame.columns if column != "lead_time"]
+        return frame[columns]

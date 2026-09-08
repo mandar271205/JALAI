@@ -10,6 +10,9 @@ import torch
 
 from jalrakshak_ml.deep_nowcast.convlstm import ConvLSTMNowcaster
 from jalrakshak_ml.deep_nowcast.dataset import LogRainNormalizer
+from jalrakshak_ml.deep_nowcast.residual_convlstm import (
+    PersistenceResidualConvLSTMNowcaster,
+)
 from jalrakshak_ml.deep_nowcast.train import resolve_device
 from jalrakshak_ml.nowcast.contracts import NowcastResult, build_result
 from jalrakshak_ml.utils.hashing import sha256_file
@@ -22,7 +25,13 @@ class ConvLSTMInference:
         self.checkpoint_path = Path(checkpoint_path).resolve()
         self.device = resolve_device(device)
         checkpoint = torch.load(self.checkpoint_path, map_location=self.device, weights_only=False)
-        self.model = ConvLSTMNowcaster(**checkpoint["model_config"])
+        model_config = dict(checkpoint["model_config"])
+        forecast_mode = model_config.pop("forecast_mode", "absolute_normalized")
+        if forecast_mode == PersistenceResidualConvLSTMNowcaster.forecast_mode:
+            self.model = PersistenceResidualConvLSTMNowcaster(**model_config)
+        else:
+            self.model = ConvLSTMNowcaster(**model_config)
+        self.forecast_mode = forecast_mode
         self.model.load_state_dict(checkpoint["model_state_dict"])
         self.model.to(self.device).eval()
         self.normalizer = LogRainNormalizer.from_dict(checkpoint["normalizer"])
@@ -32,6 +41,9 @@ class ConvLSTMInference:
         self.training_metadata = {
             "training_epoch": int(checkpoint["epoch"]),
             "best_validation_loss": float(checkpoint["best_validation_loss"]),
+            "best_validation_score": checkpoint.get("best_validation_score"),
+            "best_validation_metrics": checkpoint.get("best_validation_metrics"),
+            "best_epoch": checkpoint.get("best_epoch"),
             "forecast_type": checkpoint.get("forecast_type", "deterministic"),
         }
 
@@ -57,10 +69,16 @@ class ConvLSTMInference:
         normalized[~valid] = 0.0
         tensor = torch.from_numpy(normalized[None]).to(self.device)
         with torch.inference_mode():
-            prediction = self.model(tensor)[0, :requested, 0]
-            rainfall = self.normalizer.inverse(prediction).cpu().numpy().astype(np.float32)
-        latest_valid = valid[-1, 0]
-        rainfall[:, ~latest_valid] = np.nan
+            if self.forecast_mode == PersistenceResidualConvLSTMNowcaster.forecast_mode:
+                baseline = np.nan_to_num(recent[-1:, 0], nan=0.0)[None]
+                baseline_tensor = torch.from_numpy(baseline).to(self.device)
+                prediction = self.model(tensor, baseline_tensor)[0, :requested, 0]
+                rainfall = prediction.cpu().numpy().astype(np.float32)
+            else:
+                prediction = self.model(tensor)[0, :requested, 0]
+                rainfall = self.normalizer.inverse(prediction).cpu().numpy().astype(np.float32)
+                latest_valid = valid[-1, 0]
+                rainfall[:, ~latest_valid] = np.nan
         return rainfall
 
     def predict_result(

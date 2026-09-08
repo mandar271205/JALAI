@@ -13,7 +13,7 @@ from typing import Any
 import numpy as np
 import torch
 import zarr
-from torch.utils.data import Dataset
+from torch.utils.data import DataLoader, Dataset, WeightedRandomSampler
 
 from jalrakshak_ml.config import load_yaml
 
@@ -249,17 +249,119 @@ class RainfallSequenceDataset(Dataset):
         raw = self.get_raw(index)
         inputs = raw["inputs"].copy()
         rainfall_channel = self.input_channels.index("rainfall")
+        target_physical = raw["target"].copy()
+        persistence_baseline = inputs[-1, rainfall_channel : rainfall_channel + 1].copy()
         inputs[:, rainfall_channel] = self.normalizer.transform(inputs[:, rainfall_channel])
         target = self.normalizer.transform(raw["target"])
         inputs[~raw["input_mask"]] = 0.0
         target[~raw["target_mask"]] = 0.0
+        target_physical[~raw["target_mask"]] = 0.0
+        latest_mask = raw["input_mask"][-1, rainfall_channel : rainfall_channel + 1]
+        persistence_baseline[~latest_mask] = 0.0
         return {
             "inputs": torch.from_numpy(inputs.astype(np.float32)),
             "target": torch.from_numpy(target.astype(np.float32)),
+            "target_physical": torch.from_numpy(target_physical.astype(np.float32)),
+            "persistence_baseline": torch.from_numpy(
+                persistence_baseline.astype(np.float32)
+            ),
             "input_mask": torch.from_numpy(raw["input_mask"]),
             "target_mask": torch.from_numpy(raw["target_mask"]),
             "metadata": raw["metadata"],
         }
+
+
+def sequence_target_maxima(dataset: RainfallSequenceDataset) -> np.ndarray:
+    """Return one leakage-safe physical target maximum per sequence."""
+    if dataset.split != "train":
+        raise ValueError("Sequence sampling weights may only be computed for the training split")
+    maxima = np.zeros(len(dataset), dtype=np.float64)
+    for index in range(len(dataset)):
+        raw = dataset.get_raw(index)
+        valid = raw["target_mask"] & np.isfinite(raw["target"])
+        maxima[index] = float(np.max(raw["target"][valid])) if np.any(valid) else 0.0
+    return maxima
+
+
+def sequence_sampling_weights(
+    maxima_mm_h: np.ndarray,
+    *,
+    thresholds_mm_h: Sequence[float] = (1.0, 5.0, 10.0),
+    weights: Sequence[float] = (1.0, 2.0, 4.0, 6.0),
+) -> np.ndarray:
+    """Map physical target maxima to configurable piecewise sampling weights."""
+    thresholds = np.asarray(thresholds_mm_h, dtype=np.float64)
+    values = np.asarray(weights, dtype=np.float64)
+    if values.size != thresholds.size + 1:
+        raise ValueError("sampling weights must have one more value than thresholds")
+    if thresholds.size and (np.any(np.diff(thresholds) <= 0) or np.any(thresholds < 0)):
+        raise ValueError("sampling thresholds must be non-negative and strictly increasing")
+    if np.any(values <= 0):
+        raise ValueError("sampling weights must be positive")
+    maxima = np.asarray(maxima_mm_h, dtype=np.float64)
+    output = np.full(maxima.shape, values[0], dtype=np.float64)
+    for threshold, weight in zip(thresholds, values[1:], strict=True):
+        output[maxima >= threshold] = weight
+    return output
+
+
+def build_dataloaders(
+    datasets: dict[str, RainfallSequenceDataset],
+    training_config: dict[str, Any],
+) -> tuple[dict[str, DataLoader], dict[str, Any]]:
+    """Build deterministic loaders with optional train-only event oversampling."""
+    seed = int(training_config["seed"])
+    batch_size = int(training_config["batch_size"])
+    num_workers = int(training_config.get("num_workers", 0))
+    generator = torch.Generator().manual_seed(seed)
+    sampling = training_config.get("sampling", {})
+    sampler = None
+    diagnostics: dict[str, Any] = {"enabled": bool(sampling.get("enabled", False))}
+    if diagnostics["enabled"]:
+        maxima = sequence_target_maxima(datasets["train"])
+        sample_weights = sequence_sampling_weights(
+            maxima,
+            thresholds_mm_h=sampling.get("thresholds_mm_h", [1.0, 5.0, 10.0]),
+            weights=sampling.get("weights", [1.0, 2.0, 4.0, 6.0]),
+        )
+        requested_samples = sampling.get("num_samples")
+        num_samples = len(sample_weights) if requested_samples is None else int(requested_samples)
+        sampler = WeightedRandomSampler(
+            torch.as_tensor(sample_weights, dtype=torch.double),
+            num_samples=num_samples,
+            replacement=bool(sampling.get("replacement", True)),
+            generator=generator,
+        )
+        diagnostics.update({
+            "num_samples": num_samples,
+            "thresholds_mm_h": list(sampling.get("thresholds_mm_h", [1.0, 5.0, 10.0])),
+            "configured_weights": list(sampling.get("weights", [1.0, 2.0, 4.0, 6.0])),
+            "sequence_maxima_mm_h": maxima.tolist(),
+            "sequence_weights": sample_weights.tolist(),
+        })
+    loaders = {
+        "train": DataLoader(
+            datasets["train"],
+            batch_size=batch_size,
+            shuffle=sampler is None,
+            sampler=sampler,
+            num_workers=num_workers,
+            generator=generator if sampler is None else None,
+        ),
+        "validation": DataLoader(
+            datasets["validation"],
+            batch_size=batch_size,
+            shuffle=False,
+            num_workers=num_workers,
+        ),
+        "test": DataLoader(
+            datasets["test"],
+            batch_size=batch_size,
+            shuffle=False,
+            num_workers=num_workers,
+        ),
+    }
+    return loaders, diagnostics
 
 
 def build_datasets_from_config(config_path: str | Path):
@@ -292,4 +394,12 @@ def build_datasets_from_config(config_path: str | Path):
     )
     if overlap:
         raise RuntimeError(f"Event leakage detected across splits: {sorted(overlap)}")
+    expected = config["data"].get("expected_split_event_ids", {})
+    for split, expected_ids in expected.items():
+        actual_ids = set(datasets[split].event_ids)
+        if actual_ids != set(expected_ids):
+            raise RuntimeError(
+                f"{split} event set differs from the configured isolation contract: "
+                f"expected {sorted(expected_ids)}, got {sorted(actual_ids)}"
+            )
     return datasets, normalizer

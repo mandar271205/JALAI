@@ -16,6 +16,8 @@ def main() -> None:
     print(f"Best checkpoint: {outcome.best_checkpoint}")
     print(f"SHA-256: {outcome.checkpoint_hash}")
     print(f"Best validation loss: {outcome.best_validation_loss:.6f}")
+    print(f"Best validation score: {outcome.best_validation_score:.6f}")
+    print(f"Best epoch: {outcome.best_epoch}")
     print(f"Device: {outcome.device}")
 
 
