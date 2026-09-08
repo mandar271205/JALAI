@@ -7,8 +7,10 @@ import importlib
 import os
 import re
 import sys
+from collections.abc import Sequence
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
+from typing import Any
 
 import numpy as np
 import requests
@@ -176,3 +178,251 @@ def fetch_field(cycle, lead, cache_dir, product="prate_mean", *, allow_download=
             stream.write(data)
     digest = hashlib.sha256(path.read_bytes()).hexdigest()
     return path, requested, {"source_uri": uri, "source_message_sha256": digest}
+
+
+RICH_VARIABLE_IDX_PATTERNS: dict[str, tuple[str, str, str]] = {
+    "u10": ("UGRD", "10 m above ground", "instant"),
+    "v10": ("VGRD", "10 m above ground", "instant"),
+    "t2m": ("TMP", "2 m above ground", "instant"),
+    "rh2m": ("RH", "2 m above ground", "instant"),
+    "sp": ("PRES", "surface", "instant"),
+    "cape": ("CAPE", "surface", "instant"),
+    "pwat": ("PWAT", "entire atmosphere (considered as a single layer)", "instant"),
+    "prate_mean": ("PRATE", "surface", "interval_avg"),
+    "apcp_interval": ("APCP", "surface", "interval_accum"),
+}
+
+
+def rich_index_ranges(
+    index_text: str,
+    variable_keys: Sequence[str] | None = None,
+    lead: int = 1,
+    *,
+    lead_hour: int | None = None,
+) -> dict[str, tuple[int, int]]:
+    """Determine byte ranges for requested rich GFS variables from NOAA .idx inventory.
+
+    Enforces:
+    - strict field identity (variable, level, step semantics)
+    - failure on missing field
+    - failure on ambiguous field
+    - failure on missing boundary
+    - safety size bound [16 B, 16 MiB]
+    """
+    if lead_hour is not None:
+        lead = lead_hour
+    if variable_keys is None:
+        variable_keys = ("prate_mean", "u10", "v10", "t2m", "rh2m", "sp", "cape", "pwat")
+    if not 1 <= lead <= 120:
+        raise ValueError("Lead must be between 1 and 120 hours")
+    entries = [line.split(":") for line in index_text.splitlines() if line.strip()]
+    if not entries:
+        raise ValueError("Empty or invalid .idx inventory text")
+
+    start_accum = ((lead - 1) // 6) * 6
+    ranges: dict[str, tuple[int, int]] = {}
+
+    alias_map = {"prate": "prate_mean", "tp": "apcp_interval"}
+
+    all_var_matches: dict[str, tuple[str, str, str, str, list[tuple[int, int]]]] = {}
+    for raw_var in variable_keys:
+        var = alias_map.get(raw_var, raw_var)
+        if var not in RICH_VARIABLE_IDX_PATTERNS:
+            raise ValueError(f"Unsupported variable key for rich GFS index: {raw_var!r}")
+
+        expected_var, expected_level, step_mode = RICH_VARIABLE_IDX_PATTERNS[var]
+        if step_mode == "instant":
+            expected_step = f"{lead} hour fcst"
+        elif step_mode == "interval_avg":
+            expected_step = f"{start_accum}-{lead} hour ave fcst"
+        elif step_mode == "interval_accum":
+            expected_step = f"{start_accum}-{lead} hour acc fcst"
+        else:
+            raise ValueError(f"Unknown step mode {step_mode} for {var}")
+
+        matches = []
+        for i, parts in enumerate(entries):
+            if (
+                len(parts) >= 6
+                and parts[3] == expected_var
+                and parts[4] == expected_level
+                and parts[5] == expected_step
+            ):
+                begin = int(parts[1])
+                end = int(entries[i + 1][1]) - 1 if (i + 1 < len(entries)) else -1
+                matches.append((begin, end))
+        all_var_matches[raw_var] = (var, expected_var, expected_level, expected_step, matches)
+
+    # 1. Check for ambiguous / duplicate matches first
+    for raw_var, (var, expected_var, expected_level, expected_step, matches) in all_var_matches.items():
+        if len(matches) > 1:
+            raise ValueError(
+                f"Ambiguous GRIB field in .idx: {raw_var!r} matched {len(matches)} times at lead {lead}"
+            )
+
+    # 2. Check for missing matches second
+    for raw_var, (var, expected_var, expected_level, expected_step, matches) in all_var_matches.items():
+        if len(matches) == 0:
+            raise ValueError(
+                f"Missing required GRIB messages in .idx: exact GRIB field missing for {raw_var!r} at lead {lead}: "
+                f"expected ({expected_var}, {expected_level}, {expected_step})"
+            )
+
+    # 3. Check boundaries and size limits, then construct ranges
+    for raw_var, (var, expected_var, expected_level, expected_step, matches) in all_var_matches.items():
+        begin, end = matches[0]
+        if end == -1:
+            raise ValueError(f"Index lacks next-message boundary for {raw_var}")
+        size = end - begin + 1
+        if not 16 <= size <= 16 * 1024 * 1024:
+            raise ValueError(f"GRIB message size {size} out of bounds [16 B, 16 MiB] for {raw_var}")
+
+        ranges[var] = (begin, end)
+        if raw_var != var:
+            ranges[raw_var] = (begin, end)
+        elif var == "prate_mean":
+            ranges["prate"] = (begin, end)
+
+    return ranges
+
+
+def fetch_rich_gfs_lead(
+    cycle: str | datetime | None = None,
+    lead: int | None = None,
+    cache_dir: str | Path | None = None,
+    variable_keys: Sequence[str] = (
+        "u10", "v10", "t2m", "rh2m", "sp", "cape", "pwat", "prate_mean"
+    ),
+    *,
+    cycle_dt: str | datetime | None = None,
+    lead_hour: int | None = None,
+    allow_download: bool = False,
+    dry_run: bool = False,
+    session: requests.Session | None = None,
+) -> dict[str, Any]:
+    """Fetch or plan byte-range retrieval for all requested rich variables at (cycle, lead).
+
+    In dry_run mode, verifies URLs and planned ranges without downloading GRIB payloads.
+    Never falls back to full global GRIB files.
+    """
+    if cycle is None:
+        if cycle_dt is None:
+            raise ValueError("cycle or cycle_dt must be provided")
+        cycle = cycle_dt
+    if lead is None:
+        if lead_hour is None:
+            raise ValueError("lead or lead_hour must be provided")
+        lead = lead_hour
+    if cache_dir is None:
+        cache_dir = Path("data/cache/gfs")
+
+    cycle_dt_val = utc(cycle)
+    uri = source_uri(cycle_dt_val, lead)
+    cache = Path(cache_dir)
+    http = session or requests
+
+    results: dict[str, dict[str, Any]] = {}
+
+    all_cached = True
+    for var in variable_keys:
+        p = cache / f"{cycle_dt_val:%Y%m%dT%H}_{var}_f{lead:03d}.grib2"
+        if not p.exists():
+            all_cached = False
+            break
+
+    if all_cached and not dry_run:
+        for var in variable_keys:
+            p = cache / f"{cycle_dt_val:%Y%m%dT%H}_{var}_f{lead:03d}.grib2"
+            digest = hashlib.sha256(p.read_bytes()).hexdigest()
+            results[var] = {
+                "path": p,
+                "status": "CACHED",
+                "source_uri": uri,
+                "sha256": digest,
+            }
+        return results
+
+    if not allow_download and not dry_run:
+        raise FileNotFoundError(
+            f"Missing cached rich fields for cycle {cycle_dt_val.isoformat()} lead {lead} at {cache}; "
+            f"enable --download explicitly."
+        )
+
+    if dry_run:
+        dry_ranges = {}
+        for var in variable_keys:
+            p = cache / f"{cycle_dt_val:%Y%m%dT%H}_{var}_f{lead:03d}.grib2"
+            var_info = {
+                "destination_path": str(p),
+                "source_uri": uri,
+                "index_uri": uri + ".idx",
+                "variable": var,
+                "cycle": cycle_dt_val.isoformat(),
+                "lead": lead,
+                "status": "PLANNED_DRY_RUN",
+                "full_grib_download_required": False,
+            }
+            results[var] = var_info
+            dry_ranges[var] = var_info
+        return {
+            "status": "dry_run",
+            "full_grib_download_required": False,
+            "ranges": dry_ranges,
+            "variables": results,
+            **results,
+        }
+
+    with http.get(uri + ".idx", timeout=30) as resp:
+        resp.raise_for_status()
+        idx_text = resp.text
+
+    ranges = rich_index_ranges(idx_text, variable_keys, lead)
+
+    cache.mkdir(parents=True, exist_ok=True)
+    for var, (begin, end) in ranges.items():
+        p = cache / f"{cycle_dt:%Y%m%dT%H}_{var}_f{lead:03d}.grib2"
+        if p.exists():
+            digest = hashlib.sha256(p.read_bytes()).hexdigest()
+            results[var] = {
+                "path": p,
+                "status": "ALREADY_CACHED",
+                "source_uri": uri,
+                "byte_range": [begin, end],
+                "sha256": digest,
+            }
+            continue
+
+        size = end - begin + 1
+        with http.get(
+            uri,
+            headers={"Range": f"bytes={begin}-{end}"},
+            stream=True,
+            timeout=60,
+        ) as resp:
+            resp.raise_for_status()
+            expected = rf"bytes {begin}-{end}/\d+"
+            if resp.status_code != 206 or not re.fullmatch(expected, resp.headers.get("Content-Range", "")):
+                raise ValueError("Server ignored or altered bounded byte-range request")
+            data = resp.raw.read(size + 1)
+
+        if len(data) != size or data[:4] != b"GRIB" or data[-4:] != b"7777":
+            raise ValueError(f"Truncated or invalid GRIB message for {var}")
+        if int.from_bytes(data[8:16], "big") != size:
+            raise ValueError(f"GRIB message size does not match requested range for {var}")
+
+        with p.open("xb") as f:
+            f.write(data)
+
+        digest = hashlib.sha256(data).hexdigest()
+        results[var] = {
+            "path": p,
+            "status": "DOWNLOADED",
+            "source_uri": uri,
+            "byte_range": [begin, end],
+            "downloaded_bytes": len(data),
+            "sha256": digest,
+            "retrieved_at": datetime.now(UTC).isoformat(),
+        }
+
+    return results
+

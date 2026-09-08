@@ -21,14 +21,15 @@ from jalrakshak_ml.deep_nowcast.splits import (
     LOCKED_TEST_EVENTS_AUTHORITATIVE,
     TRAIN_EVENTS_AUTHORITATIVE,
     VALIDATION_EVENTS_AUTHORITATIVE,
+    build_event_sequences,
     is_locked_test_event,
 )
 
 log = logging.getLogger(__name__)
 
 # Standard multi-source channel catalog for Phase 4E (13 target genuine channels)
-CHANNEL_NAMES = (
-    "rainfall_gpm",
+OBSERVATION_CHANNELS: tuple[str, ...] = ("rainfall_gpm",)
+NWP_CHANNELS: tuple[str, ...] = (
     "gfs_precipitation",
     "gfs_u10",
     "gfs_v10",
@@ -40,15 +41,31 @@ CHANNEL_NAMES = (
     "gfs_surface_pressure",
     "gfs_cape",
     "gfs_pwat",
-    "static_elevation",
+)
+STATIC_CHANNELS: tuple[str, ...] = ("static_elevation",)
+
+CHANNEL_NAMES: tuple[str, ...] = (
+    *OBSERVATION_CHANNELS,
+    *NWP_CHANNELS,
+    *STATIC_CHANNELS,
 )
 
 
 @dataclass(slots=True)
 class MultiSourceStats:
-    """Channel normalization parameters fitted strictly on the authoritative training split."""
+    """Channel normalization parameters fitted strictly on the authoritative training split.
+
+    Separately describes observation, NWP, and static channels.
+    Any pre-filled reference values are explicitly marked provisional (is_final_phase4e_statistics=False).
+    Final Phase 4E statistics will only be computed once genuine rich GFS training data is downloaded.
+    """
 
     channel_stats: dict[str, dict[str, float]]
+    obs_channel_stats: dict[str, dict[str, float]] | None = None
+    nwp_channel_stats: dict[str, dict[str, float]] | None = None
+    static_channel_stats: dict[str, dict[str, float]] | None = None
+    is_final_phase4e_statistics: bool = False
+    is_provisional: bool = True
     fitted_split: str = "train"
     fitted_event_ids: tuple[str, ...] = TRAIN_EVENTS_AUTHORITATIVE
     data_version: str = "gpm_imerg_v07_mumbai_monsoon_expanded_v1"
@@ -61,6 +78,25 @@ class MultiSourceStats:
                 raise ValueError(f"Locked test event {eid!r} must never contribute to normalization!")
             if eid in VALIDATION_EVENTS_AUTHORITATIVE:
                 raise ValueError(f"Validation event {eid!r} must never contribute to normalization!")
+
+        if self.obs_channel_stats is None:
+            object.__setattr__(
+                self,
+                "obs_channel_stats",
+                {k: v for k, v in self.channel_stats.items() if k in OBSERVATION_CHANNELS},
+            )
+        if self.nwp_channel_stats is None:
+            object.__setattr__(
+                self,
+                "nwp_channel_stats",
+                {k: v for k, v in self.channel_stats.items() if k in NWP_CHANNELS or k == "gfs_sp"},
+            )
+        if self.static_channel_stats is None:
+            object.__setattr__(
+                self,
+                "static_channel_stats",
+                {k: v for k, v in self.channel_stats.items() if k in STATIC_CHANNELS},
+            )
 
     @classmethod
     def fit_from_training(
@@ -79,7 +115,7 @@ class MultiSourceStats:
             if eid in VALIDATION_EVENTS_AUTHORITATIVE:
                 raise ValueError(f"CRITICAL: Validation event {eid} attempted in normalization fitting!")
 
-        # Default robust reference statistics derived from authentic MMR monsoon training data
+        # Provisional robust reference statistics derived from authentic MMR monsoon training data
         stats: dict[str, dict[str, float]] = {
             "rainfall_gpm": {"scale": 1.8344, "type": "log1p_scale"},
             "gfs_precipitation": {"scale": 1.8344, "type": "log1p_scale"},
@@ -106,6 +142,11 @@ class MultiSourceStats:
                     if loaded.get("fitted_split") == "train":
                         return cls(
                             channel_stats=loaded["channel_stats"],
+                            obs_channel_stats=loaded.get("obs_channel_stats"),
+                            nwp_channel_stats=loaded.get("nwp_channel_stats"),
+                            static_channel_stats=loaded.get("static_channel_stats"),
+                            is_final_phase4e_statistics=loaded.get("is_final_phase4e_statistics", False),
+                            is_provisional=loaded.get("is_provisional", True),
                             fitted_split="train",
                             fitted_event_ids=tuple(loaded.get("fitted_event_ids", target_train_ids)),
                             data_version=loaded.get("data_version", "gpm_imerg_v07_mumbai_monsoon_expanded_v1"),
@@ -115,6 +156,8 @@ class MultiSourceStats:
 
         inst = cls(
             channel_stats=stats,
+            is_final_phase4e_statistics=False,
+            is_provisional=True,
             fitted_split="train",
             fitted_event_ids=target_train_ids,
         )
@@ -157,6 +200,11 @@ class MultiSourceStats:
             "fitted_event_ids": list(self.fitted_event_ids),
             "data_version": self.data_version,
             "channel_stats": self.channel_stats,
+            "obs_channel_stats": self.obs_channel_stats,
+            "nwp_channel_stats": self.nwp_channel_stats,
+            "static_channel_stats": self.static_channel_stats,
+            "is_final_phase4e_statistics": self.is_final_phase4e_statistics,
+            "is_provisional": self.is_provisional,
         }
 
 
@@ -263,22 +311,15 @@ class MultiSourceNowcastDataset(Dataset):
     def _index_event(self, record: dict[str, Any]) -> None:
         root = self._open(record["path"])
         times = [str(value) for value in root["time"][:]]
-        window = self.history_length + self.prediction_horizon
-        for start in range(len(times) - window + 1):
-            candidate = times[start : start + window]
-            deltas = [
-                (_time(right) - _time(left)).total_seconds() / 60.0
-                for left, right in pairwise(candidate)
-            ]
-            if any(delta != self.temporal_step_minutes for delta in deltas):
-                continue
-            self.indices.append(SequenceIndex(
-                event_id=record["event_id"],
-                event_path=record["path"],
-                start_index=start,
-                input_times=tuple(candidate[: self.history_length]),
-                target_times=tuple(candidate[self.history_length :]),
-            ))
+        event_indices = build_event_sequences(
+            event_id=record["event_id"],
+            times=times,
+            history_length=self.history_length,
+            prediction_horizon=self.prediction_horizon,
+            temporal_step_minutes=self.temporal_step_minutes,
+            event_path=record["path"],
+        )
+        self.indices.extend(event_indices)
 
     def __len__(self) -> int:
         return len(self.indices)
@@ -377,81 +418,142 @@ class MultiSourceNowcastDataset(Dataset):
         target_mask = np.asarray(root["valid_mask"][middle:end, rows, cols], dtype=bool)[:, None]
         target_physical[~target_mask] = 0.0
 
-        # Issue time is latest observation time
+        # Timestamp semantics and verification
+        obs_times = list(item.input_times)
+        target_times = list(item.target_times)
         issue_time = item.input_times[-1]
+        nwp_valid_times = list(item.target_times)
+        assert nwp_valid_times == target_times, (
+            f"CRITICAL: NWP valid times {nwp_valid_times} do not match target horizons {target_times}"
+        )
 
-        # 2. Multi-channel assembly across T=history_length
-        num_channels = len(self.active_channels)
-        channel_data = np.zeros((self.history_length, num_channels, crop_h, crop_w), dtype=np.float32)
-        missing_mask = np.zeros(num_channels, dtype=bool)
+        # 2. Build decoupled observation history: [T_hist=4, C_obs, H, W]
+        active_obs = [c for c in self.active_channels if c in OBSERVATION_CHANNELS] or ["rainfall_gpm"]
+        obs_data = np.zeros((self.history_length, len(active_obs), crop_h, crop_w), dtype=np.float32)
+        missing_obs = np.zeros(len(active_obs), dtype=bool)
+        for o_idx, o_name in enumerate(active_obs):
+            if o_name == "rainfall_gpm":
+                norm_rain = self.stats.normalize_channel(rainfall_history, "rainfall_gpm")
+                norm_rain[~valid_history] = 0.0
+                obs_data[:, o_idx] = norm_rain
+                missing_obs[o_idx] = False
+
+        # 3. Build decoupled static features: [C_static, H, W]
+        active_static = [c for c in self.active_channels if c in STATIC_CHANNELS] or ["static_elevation"]
+        static_data = np.zeros((len(active_static), crop_h, crop_w), dtype=np.float32)
+        missing_static = np.zeros(len(active_static), dtype=bool)
+        for s_idx, s_name in enumerate(active_static):
+            if s_name == "static_elevation" and self.dem is not None:
+                cropped_dem = self.dem[rows, cols]
+                norm_dem = self.stats.normalize_channel(cropped_dem, "static_elevation")
+                static_data[s_idx] = norm_dem
+                missing_static[s_idx] = False
+            else:
+                missing_static[s_idx] = True
+
+        # 4. Build decoupled NWP future conditioning: [T_future=4, C_nwp, H, W]
+        active_nwp = [c for c in self.active_channels if c in NWP_CHANNELS]
+        if not active_nwp and "gfs_precipitation" in self.active_channels:
+            active_nwp = ["gfs_precipitation"]
+        if not active_nwp:
+            active_nwp = list(NWP_CHANNELS)
+
+        nwp_data = np.zeros((self.prediction_horizon, len(active_nwp), crop_h, crop_w), dtype=np.float32)
+        missing_nwp = np.zeros(len(active_nwp), dtype=bool)
         forecast_age = 0.0
 
-        # Pre-load GFS meteorology if any rich channel is requested
         meteo_fields: dict[str, np.ndarray] | None = None
-        has_rich_gfs = any(
-            c.startswith("gfs_") and c != "gfs_precipitation" for c in self.active_channels
-        )
+        has_rich_gfs = any(c.startswith("gfs_") and c != "gfs_precipitation" for c in active_nwp)
         if has_rich_gfs:
             meteo_fields = self._load_gfs_meteorology(item.event_id, issue_time, rows, cols)
 
+        for n_idx, n_name in enumerate(active_nwp):
+            if self.dropout_prob > 0.0 and self.rng.random() < self.dropout_prob:
+                missing_nwp[n_idx] = True
+                continue
+
+            if n_name == "gfs_precipitation":
+                gfs_prate, age = self._load_gfs_precipitation(item.event_id, issue_time, rows, cols)
+                forecast_age = age
+                if gfs_prate is not None:
+                    norm_gfs = self.stats.normalize_channel(gfs_prate, "gfs_precipitation")
+                    nwp_data[:, n_idx] = norm_gfs
+                    missing_nwp[n_idx] = False
+                else:
+                    missing_nwp[n_idx] = True
+            elif meteo_fields is not None:
+                field_arr = None
+                if n_name in meteo_fields:
+                    field_arr = meteo_fields[n_name]
+                elif n_name == "gfs_surface_pressure" and "gfs_sp" in meteo_fields:
+                    field_arr = meteo_fields["gfs_sp"]
+                elif n_name == "gfs_sp" and "gfs_surface_pressure" in meteo_fields:
+                    field_arr = meteo_fields["gfs_surface_pressure"]
+
+                if field_arr is not None:
+                    norm_arr = self.stats.normalize_channel(field_arr, n_name)
+                    nwp_data[:, n_idx] = norm_arr
+                    missing_nwp[n_idx] = False
+                else:
+                    missing_nwp[n_idx] = True
+            else:
+                missing_nwp[n_idx] = True
+
+        # 5. Assemble legacy multi-channel tensor across T=history_length for backwards compatibility
+        num_channels = len(self.active_channels)
+        channel_data = np.zeros((self.history_length, num_channels, crop_h, crop_w), dtype=np.float32)
+        missing_mask = np.zeros(num_channels, dtype=bool)
+
         for c_idx, chan_name in enumerate(self.active_channels):
-            # Source dropout simulation during training
             if self.dropout_prob > 0.0 and chan_name != "rainfall_gpm" and self.rng.random() < self.dropout_prob:
                 missing_mask[c_idx] = True
                 continue
 
             if chan_name == "rainfall_gpm":
-                norm_rain = self.stats.normalize_channel(rainfall_history, "rainfall_gpm")
-                norm_rain[~valid_history] = 0.0
-                channel_data[:, c_idx] = norm_rain
+                channel_data[:, c_idx] = obs_data[:, 0]
                 missing_mask[c_idx] = False
-
             elif chan_name == "gfs_precipitation":
-                gfs_prate, age = self._load_gfs_precipitation(item.event_id, issue_time, rows, cols)
-                forecast_age = age
-                if gfs_prate is not None:
-                    norm_gfs = self.stats.normalize_channel(gfs_prate, "gfs_precipitation")
-                    channel_data[:, c_idx] = norm_gfs
-                    missing_mask[c_idx] = False
+                if "gfs_precipitation" in active_nwp:
+                    n_pos = active_nwp.index("gfs_precipitation")
+                    channel_data[:, c_idx] = nwp_data[:, n_pos]
+                    missing_mask[c_idx] = missing_nwp[n_pos]
                 else:
                     missing_mask[c_idx] = True
-
             elif chan_name == "static_elevation":
                 if self.dem is not None:
-                    cropped_dem = self.dem[rows, cols]
-                    norm_dem = self.stats.normalize_channel(cropped_dem, "static_elevation")
                     for t_idx in range(self.history_length):
-                        channel_data[t_idx, c_idx] = norm_dem
+                        channel_data[t_idx, c_idx] = static_data[0]
                     missing_mask[c_idx] = False
                 else:
                     missing_mask[c_idx] = True
-
-            elif meteo_fields is not None:
-                # Resolve field name or aliases
-                field_arr = None
-                if chan_name in meteo_fields:
-                    field_arr = meteo_fields[chan_name]
-                elif chan_name == "gfs_surface_pressure" and "gfs_sp" in meteo_fields:
-                    field_arr = meteo_fields["gfs_sp"]
-                elif chan_name == "gfs_sp" and "gfs_surface_pressure" in meteo_fields:
-                    field_arr = meteo_fields["gfs_surface_pressure"]
-
-                if field_arr is not None:
-                    norm_arr = self.stats.normalize_channel(field_arr, chan_name)
-                    channel_data[:, c_idx] = norm_arr
-                    missing_mask[c_idx] = False
-                else:
-                    missing_mask[c_idx] = True
+            elif chan_name in active_nwp:
+                n_pos = active_nwp.index(chan_name)
+                channel_data[:, c_idx] = nwp_data[:, n_pos]
+                missing_mask[c_idx] = missing_nwp[n_pos]
             else:
-                # Ancillary GFS field with no meteorology file present
                 missing_mask[c_idx] = True
 
         return {
-            "inputs": torch.from_numpy(channel_data),                       # [T, C, H, W]
-            "persistence_baseline": torch.from_numpy(persistence_baseline), # [1, H, W]
-            "target_physical": torch.from_numpy(target_physical),           # [horizon, 1, H, W]
-            "target_mask": torch.from_numpy(target_mask),                   # [horizon, 1, H, W]
-            "missing_channel_mask": torch.from_numpy(missing_mask),         # [C]
+            # Decoupled representations
+            "obs_history": torch.from_numpy(obs_data),                      # [T_hist=4, C_obs, H, W]
+            "nwp_future": torch.from_numpy(nwp_data),                        # [T_future=4, C_nwp, H, W]
+            "static_features": torch.from_numpy(static_data),                # [C_static, H, W]
+            "target": torch.from_numpy(target_physical),                     # [T_future=4, 1, H, W]
+            "target_physical": torch.from_numpy(target_physical),            # [T_future=4, 1, H, W]
+            "target_mask": torch.from_numpy(target_mask),                    # [T_future=4, 1, H, W]
+            "persistence_baseline": torch.from_numpy(persistence_baseline),  # [1, H, W]
+            # Timestamps
+            "obs_times": obs_times,
+            "nwp_valid_times": nwp_valid_times,
+            "target_times": target_times,
+            "issue_time": issue_time,
+            # Source masks
+            "missing_channel_mask": torch.from_numpy(missing_mask),          # [C_active]
+            "missing_obs_mask": torch.from_numpy(missing_obs),               # [C_obs]
+            "missing_nwp_mask": torch.from_numpy(missing_nwp),               # [C_nwp]
+            "missing_static_mask": torch.from_numpy(missing_static),         # [C_static]
+            # Legacy backwards compatibility
+            "inputs": torch.from_numpy(channel_data),                        # [T, C_active, H, W]
             "metadata": {
                 "event_id": item.event_id,
                 "split": self.split,
@@ -460,6 +562,9 @@ class MultiSourceNowcastDataset(Dataset):
                 "forecast_age_hours": forecast_age,
                 "active_channels": list(self.active_channels),
                 "crop_size": list(self.crop_size),
+                "obs_times": obs_times,
+                "nwp_valid_times": nwp_valid_times,
+                "target_times": target_times,
             },
         }
 

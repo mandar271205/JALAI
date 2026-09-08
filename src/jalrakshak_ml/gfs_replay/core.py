@@ -115,7 +115,7 @@ def finite_rain(values: np.ndarray) -> np.ndarray:
     if not np.isfinite(arr).all():
         raise ValueError("Non-finite rainfall or insufficient spatial coverage")
     if np.any(arr < 0):
-        raise ValueError("Negative rainfall / accumulation reset error")
+        raise ValueError("Negative rainfall / accumulation reset error: non-negative values required")
     return arr
 
 

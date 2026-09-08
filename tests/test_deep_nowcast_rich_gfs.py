@@ -12,10 +12,14 @@ import pytest
 import torch
 
 from jalrakshak_ml.config import load_yaml
+from jalrakshak_ml.deep_nowcast.convlstm_v3 import ConvLSTMNowcasterV3
 from jalrakshak_ml.deep_nowcast.multisource_dataset import (
     CHANNEL_NAMES,
     MultiSourceNowcastDataset,
     MultiSourceStats,
+    NWP_CHANNELS,
+    OBSERVATION_CHANNELS,
+    STATIC_CHANNELS,
 )
 from jalrakshak_ml.deep_nowcast.splits import (
     LOCKED_TEST_EVENTS_AUTHORITATIVE,
@@ -24,14 +28,30 @@ from jalrakshak_ml.deep_nowcast.splits import (
     get_authoritative_splits,
     is_locked_test_event,
 )
+from jalrakshak_ml.deep_nowcast.st_attention import STAttentionNowcasterV1
+from jalrakshak_ml.deep_nowcast.unet_convgru import UNetConvGRUNowcaster
 from jalrakshak_ml.gfs_replay.core import select_gfs_forecast_as_of, utc
+from jalrakshak_ml.gfs_replay.grib import (
+    RICH_VARIABLE_IDX_PATTERNS,
+    fetch_rich_gfs_lead,
+    rich_index_ranges,
+)
 from jalrakshak_ml.gfs_replay.rich_pipeline import (
     METEOROLOGY_ARRAY_KEYS,
     RICH_GFS_REPLAY_VERSION,
     RichIssuePayload,
+    align_instantaneous_horizons,
+    check_colab_drive_persistence,
     derive_cyclic_wind_direction,
     plan_rich_replay_for_events,
+    resolve_rich_gfs_output_dir,
     save_rich_issue,
+    select_rich_gfs_leads_for_issue,
+)
+from jalrakshak_ml.gfs_replay.pipeline import build_target_grid
+from jalrakshak_ml.gfs_replay.spatial import (
+    reproject_field,
+    reproject_rate,
 )
 from jalrakshak_ml.weather.adapters.gfs_rich import (
     GFS_VARIABLE_SPECS,
@@ -314,14 +334,384 @@ def test_15_immutable_versioned_replay_behavior():
 
 
 def test_16_plan_rich_replay_for_all_15_non_test_events():
-    """16. Verify replay planning correctly schedules the 15 non-test events without test contamination."""
+    """16. Verify replay planning correctly schedules the 15 non-test events with 17 issues per event."""
     cfg = load_yaml(Path("configs/replay/gfs_mumbai_phase4e_rich_non_test_v1.yaml"))
     events = cfg["events"]
     assert len(events) == 15
 
     plan = plan_rich_replay_for_events(events, assumed_latency_hours=6.0)
     assert plan["total_events"] == 15
-    assert plan["num_unique_cycles"] > 0
-    # Exactly 0 test events
+    assert plan["total_issues"] == 255
+    assert plan["train_issues"] == 204
+    assert plan["validation_issues"] == 51
+    assert plan["num_unique_cycles"] == 30
+
+    # Verify locked test events are completely absent
     for eid in plan["events"]:
         assert not is_locked_test_event(eid)
+
+    for eid, ev_data in plan["events"].items():
+        assert ev_data["num_issues"] == 17, f"Event {eid} must have 17 issues, got {ev_data['num_issues']}"
+        assert len(ev_data["issues"]) == 17
+
+        # First issue time must be 01:30, last issue time must be 09:30
+        first_issue = ev_data["issues"][0]
+        last_issue = ev_data["issues"][-1]
+        assert first_issue["issue_time"].endswith("01:30:00+00:00") or first_issue["issue_time"].endswith("01:30:00Z")
+        assert last_issue["issue_time"].endswith("09:30:00+00:00") or last_issue["issue_time"].endswith("09:30:00Z")
+
+        for issue in ev_data["issues"]:
+            # Every issue must have all 4 future target timestamps available in the GPM event
+            assert len(issue["target_times"]) == 4
+            issue_dt = datetime.fromisoformat(issue["issue_time"].replace("Z", "+00:00"))
+            for h_idx, target_str in enumerate(issue["target_times"]):
+                target_dt = datetime.fromisoformat(target_str.replace("Z", "+00:00"))
+                expected_delta = (h_idx + 1) * 30
+                assert (target_dt - issue_dt).total_seconds() / 60.0 == expected_delta
+                # Must be strictly within the 12-hour event window (0 to 11.5 hours)
+                event_start_dt = issue_dt.replace(hour=0, minute=0, second=0, microsecond=0)
+                assert (target_dt - event_start_dt).total_seconds() / 60.0 <= 690  # 11:30 UTC is max frame
+
+
+def test_17_planner_timestamps_exact_equality_with_dataset_indices():
+    """17. Verify planner issue timestamps match MultiSourceNowcastDataset sequence indices exactly."""
+    version_dir = Path("data/processed/training/gpm_imerg_v07_mumbai_monsoon_expanded_v1")
+    cfg = load_yaml(Path("configs/replay/gfs_mumbai_phase4e_rich_non_test_v1.yaml"))
+    events = cfg["events"]
+    plan = plan_rich_replay_for_events(events, assumed_latency_hours=6.0)
+
+    # For train events in dataset
+    ds_train = MultiSourceNowcastDataset(
+        version_dir,
+        split="train",
+        active_channels=("rainfall_gpm",),
+    )
+    for eid in set(item.event_id for item in ds_train.indices):
+        dataset_issue_times = [
+            item.input_times[-1]
+            for item in ds_train.indices
+            if item.event_id == eid
+        ]
+        assert len(dataset_issue_times) == 17
+        planner_issue_times = [
+            issue["issue_time"]
+            for issue in plan["events"][eid]["issues"]
+        ]
+        assert planner_issue_times == dataset_issue_times, (
+            f"Mismatch between dataset indices and planner for {eid}!\n"
+            f"Dataset: {dataset_issue_times}\nPlanner: {planner_issue_times}"
+        )
+
+    # For validation events in dataset
+    ds_val = MultiSourceNowcastDataset(
+        version_dir,
+        split="validation",
+        active_channels=("rainfall_gpm",),
+    )
+    for eid in set(item.event_id for item in ds_val.indices):
+        dataset_issue_times = [
+            item.input_times[-1]
+            for item in ds_val.indices
+            if item.event_id == eid
+        ]
+        assert len(dataset_issue_times) == 17
+        planner_issue_times = [
+            issue["issue_time"]
+            for issue in plan["events"][eid]["issues"]
+        ]
+        assert planner_issue_times == dataset_issue_times, (
+            f"Mismatch between validation dataset indices and planner for {eid}!\n"
+            f"Dataset: {dataset_issue_times}\nPlanner: {planner_issue_times}"
+        )
+
+
+# =========================================================================
+# PHASE 4E PRE-DOWNLOAD AUDIT FIX VERIFICATION SUITE (TESTS 1 - 18)
+# =========================================================================
+
+SAMPLE_NOAA_IDX_TEXT = """1:0:d=2023071800:PRATE:surface:0-1 hour ave fcst:
+2:100000:d=2023071800:UGRD:10 m above ground:1 hour fcst:
+3:220000:d=2023071800:VGRD:10 m above ground:1 hour fcst:
+4:340000:d=2023071800:TMP:2 m above ground:1 hour fcst:
+5:460000:d=2023071800:RH:2 m above ground:1 hour fcst:
+6:580000:d=2023071800:PRES:surface:1 hour fcst:
+7:700000:d=2023071800:CAPE:surface:1 hour fcst:
+8:820000:d=2023071800:PWAT:entire atmosphere (considered as a single layer):1 hour fcst:
+9:950000:d=2023071800:HGT:500 mb:1 hour fcst:
+"""
+
+
+def test_fix1_negative_uv_wind_reprojection():
+    """1. negative u/v wind reprojection: signed values preserved without finite_rain rejection."""
+    lat = np.arange(18.0, 20.26, 0.25)
+    lon = np.arange(72.0, 74.01, 0.25)
+    source_values = np.full((len(lat), len(lon)), -8.5, dtype=np.float32)
+    source_values[0, 0] = 5.0
+    source_values[-1, -1] = -12.0
+
+    target_grid = build_target_grid(
+        bbox_wgs84=[72.7, 18.8, 73.1, 19.3],
+        analysis_crs="EPSG:32643",
+        width=32,
+        height=32,
+    )
+
+    out_arr, meta = reproject_field(
+        source_values,
+        lat,
+        lon,
+        target_grid,
+        variable_name="u10",
+        physical_range=(-100.0, 100.0),
+    )
+    assert out_arr.shape == (32, 32)
+    assert np.isfinite(out_arr).all()
+    # Negative values must be preserved
+    assert (out_arr < 0.0).any()
+    assert meta["interpolation_method"] == "bilinear"
+    assert meta["physical_range"] == [-100.0, 100.0]
+
+    # Out of range values must fail
+    with pytest.raises(ValueError, match="physical_range"):
+        reproject_field(
+            source_values,
+            lat,
+            lon,
+            target_grid,
+            variable_name="u10",
+            physical_range=(-5.0, 5.0),
+        )
+
+    # reproject_rate on negative values must reject (precipitation-specific non-negativity)
+    with pytest.raises(ValueError, match="non-negative"):
+        reproject_rate(source_values, lat, lon, target_grid)
+
+
+def test_fix2_rich_idx_message_selection():
+    """2. rich .idx message selection: exact parameter matching for all 7 rich variables + precipitation."""
+    ranges = rich_index_ranges(SAMPLE_NOAA_IDX_TEXT, lead_hour=1)
+    for v in ("prate", "u10", "v10", "t2m", "rh2m", "sp", "cape", "pwat"):
+        assert v in ranges
+        start, end = ranges[v]
+        assert start < end
+
+
+def test_fix3_ambiguous_or_missing_grib_field_rejection():
+    """3. ambiguous/missing GRIB field rejection: fail loudly on bad .idx definitions."""
+    # Missing required variable
+    idx_missing = """1:0:d=2023071800:PRATE:surface:0-1 hour ave fcst:
+2:100000:d=2023071800:VGRD:10 m above ground:1 hour fcst:
+"""
+    with pytest.raises(ValueError, match="Missing required GRIB messages in .idx"):
+        rich_index_ranges(idx_missing, lead_hour=1)
+
+    # Duplicate / ambiguous variable definition
+    idx_ambiguous = """1:0:d=2023071800:UGRD:10 m above ground:1 hour fcst:
+2:100000:d=2023071800:UGRD:10 m above ground:1 hour fcst:
+3:200000:d=2023071800:VGRD:10 m above ground:1 hour fcst:
+"""
+    with pytest.raises(ValueError, match="Ambiguous"):
+        rich_index_ranges(idx_ambiguous, lead_hour=1)
+
+
+def test_fix4_byte_range_computation():
+    """4. byte-range computation: precise byte boundary offsets calculated from adjacent .idx lines."""
+    ranges = rich_index_ranges(SAMPLE_NOAA_IDX_TEXT, lead_hour=1)
+    assert ranges["prate"] == (0, 100000 - 1)
+    assert ranges["u10"] == (100000, 220000 - 1)
+    assert ranges["v10"] == (220000, 340000 - 1)
+    assert ranges["t2m"] == (340000, 460000 - 1)
+    assert ranges["rh2m"] == (460000, 580000 - 1)
+    assert ranges["sp"] == (580000, 700000 - 1)
+    assert ranges["cape"] == (700000, 820000 - 1)
+    assert ranges["pwat"] == (820000, 950000 - 1)
+
+
+def test_fix5_no_full_grib_fallback():
+    """5. no full-GRIB fallback: dry-run and download plans confirm full_grib_download_required=False."""
+    res = fetch_rich_gfs_lead(
+        cycle_dt=datetime(2023, 7, 18, 0, 0, tzinfo=UTC),
+        lead_hour=1,
+        dry_run=True,
+    )
+    assert res["status"] == "dry_run"
+    assert res["full_grib_download_required"] is False
+    assert len(res["ranges"]) == 8
+
+
+def test_fix6_minimal_lead_selection_225_total_pairs():
+    """6. minimal lead selection = 225 total unique cycle+lead pairs across 15 non-test events."""
+    cfg = load_yaml(Path("configs/replay/gfs_mumbai_phase4e_rich_non_test_v1.yaml"))
+    events = cfg["events"]
+    plan = plan_rich_replay_for_events(events, assumed_latency_hours=6.0)
+
+    assert plan["unique_cycles_count"] == 30
+    assert plan["unique_cycle_lead_pairs_count"] == 225
+    assert plan["total_issues"] == 255
+    assert plan["overfetch_fixed"] is True
+
+
+def test_fix7_causal_cycle_availability():
+    """7. causal cycle availability: selected cycle time satisfies assumed_availability <= issue_time."""
+    cfg = load_yaml(Path("configs/replay/gfs_mumbai_phase4e_rich_non_test_v1.yaml"))
+    events = cfg["events"]
+    plan = plan_rich_replay_for_events(events, assumed_latency_hours=6.0)
+
+    for eid, edata in plan["events"].items():
+        for issue in edata["issues"]:
+            issue_dt = datetime.fromisoformat(issue["issue_time"])
+            cycle_dt = datetime.fromisoformat(issue["cycle_time"])
+            assert cycle_dt + timedelta(hours=6) <= issue_dt
+            assert issue["cycle_availability_status"] == "ASSUMED"
+
+
+def test_fix8_instantaneous_temporal_alignment():
+    """8. instantaneous temporal alignment: latest native valid time <= target valid time."""
+    issue_dt = datetime(2023, 7, 18, 1, 30, tzinfo=UTC)
+    cycle_dt = datetime(2023, 7, 17, 18, 0, tzinfo=UTC)
+    alignments = align_instantaneous_horizons(cycle_dt, issue_dt)
+
+    assert len(alignments) == 4
+    for al in alignments:
+        assert al.source_valid_time <= al.target_valid_time
+        assert 0 <= al.age_minutes < 60
+
+    # Horizon +30m (02:00 UTC) -> source 02:00 (lead 8, age 0m)
+    assert alignments[0].horizon_minutes == 30
+    assert alignments[0].selected_lead_hour == 8
+    assert alignments[0].age_minutes == 0
+
+    # Horizon +60m (02:30 UTC) -> source 02:00 (lead 8, age 30m)
+    assert alignments[1].horizon_minutes == 60
+    assert alignments[1].selected_lead_hour == 8
+    assert alignments[1].age_minutes == 30
+
+    # Horizon +90m (03:00 UTC) -> source 03:00 (lead 9, age 0m)
+    assert alignments[2].horizon_minutes == 90
+    assert alignments[2].selected_lead_hour == 9
+    assert alignments[2].age_minutes == 0
+
+    # Horizon +120m (03:30 UTC) -> source 03:00 (lead 9, age 30m)
+    assert alignments[3].horizon_minutes == 120
+    assert alignments[3].selected_lead_hour == 9
+    assert alignments[3].age_minutes == 30
+
+
+def test_fix9_to_14_decoupled_temporal_dataset_architecture():
+    """9-14. Verification of obs_history, nwp_future, target, and static feature separation."""
+    version_dir = Path("data/processed/training/gpm_imerg_v07_mumbai_monsoon_expanded_v1")
+    ds = MultiSourceNowcastDataset(
+        version_dir,
+        split="train",
+        active_channels=CHANNEL_NAMES,
+        crop_size=(128, 128),
+        dropout_prob=0.0,
+    )
+    sample = ds[0]
+
+    # 9. obs_history timestamps
+    obs_times = sample["obs_times"]
+    assert len(obs_times) == 4
+    for i in range(1, 4):
+        t_prev = datetime.fromisoformat(obs_times[i-1])
+        t_curr = datetime.fromisoformat(obs_times[i])
+        assert (t_curr - t_prev).total_seconds() == 1800
+    assert obs_times[-1] == sample["issue_time"]
+
+    # 10. nwp_future timestamps
+    nwp_times = sample["nwp_valid_times"]
+    assert len(nwp_times) == 4
+    issue_dt = datetime.fromisoformat(sample["issue_time"])
+    assert datetime.fromisoformat(nwp_times[0]) == issue_dt + timedelta(minutes=30)
+    assert datetime.fromisoformat(nwp_times[3]) == issue_dt + timedelta(minutes=120)
+
+    # 11. target timestamps
+    target_times = sample["target_times"]
+    assert len(target_times) == 4
+    assert datetime.fromisoformat(target_times[0]) == issue_dt + timedelta(minutes=30)
+    assert datetime.fromisoformat(target_times[3]) == issue_dt + timedelta(minutes=120)
+
+    # 12. nwp/target horizon alignment
+    assert nwp_times == target_times
+
+    # 13. static feature shape [C_static=1, H, W] without fake temporal axis
+    assert sample["static_features"].shape == (1, 128, 128)
+    assert sample["static_features"].ndim == 3
+
+    # 14. no temporal-axis collision
+    assert sample["obs_history"].shape == (4, 1, 128, 128)
+    assert sample["nwp_future"].shape == (4, 11, 128, 128)
+    assert sample["target"].shape == (4, 1, 128, 128)
+    assert sample["target_physical"].shape == (4, 1, 128, 128)
+
+
+def test_fix15_missing_channel_masks():
+    """15. missing-channel masks: fine-grained masks for obs, nwp, static, and active channels."""
+    version_dir = Path("data/processed/training/gpm_imerg_v07_mumbai_monsoon_expanded_v1")
+    ds = MultiSourceNowcastDataset(
+        version_dir,
+        split="train",
+        active_channels=CHANNEL_NAMES,
+        dropout_prob=1.0,
+        rng_seed=42,
+    )
+    sample = ds[0]
+    # Observation rainfall is never dropped
+    assert sample["missing_obs_mask"][0].item() is False
+    # All optional NWP channels dropped under prob 1.0
+    assert sample["missing_nwp_mask"].all().item() is True
+    assert sample["missing_channel_mask"][0].item() is False
+
+
+def test_fix16_locked_test_exclusion():
+    """16. locked test exclusion: locked test events can never be loaded in train/val or normalization."""
+    version_dir = Path("data/processed/training/gpm_imerg_v07_mumbai_monsoon_expanded_v1")
+    for locked_id in LOCKED_TEST_EVENTS_AUTHORITATIVE:
+        assert is_locked_test_event(locked_id) is True
+        with pytest.raises(ValueError, match="CRITICAL"):
+            MultiSourceStats.fit_from_training(version_dir, train_event_ids=(locked_id,))
+
+
+def test_fix17_drive_output_override_and_dry_run(monkeypatch):
+    """17. Drive output override/dry-run: CLI and env overrides work, and Colab ephemeral path warns."""
+    custom_dir = Path("tmp/custom_rich_gfs")
+    monkeypatch.setenv("JALAI_RICH_GFS_DIR", str(custom_dir))
+    assert resolve_rich_gfs_output_dir(None) == custom_dir
+
+    cli_dir = Path("tmp/cli_rich_gfs")
+    assert resolve_rich_gfs_output_dir(cli_dir) == cli_dir
+
+    with pytest.warns(UserWarning, match="EPHEMERAL STORAGE WARNING"):
+        check_colab_drive_persistence(Path("/content/JALAI/data/processed/gfs_replay"))
+
+
+def test_fix18_legacy_baseline_and_model_compatibility():
+    """18. legacy baseline compatibility: ConvLSTM V3, U-Net, and ST-Attention work with both legacy and separated inputs."""
+    m1 = ConvLSTMNowcasterV3(input_channels=3)
+    m2 = UNetConvGRUNowcaster(input_channels=3)
+    m3 = STAttentionNowcasterV1(input_channels=3)
+
+    # Legacy calling convention
+    x = torch.randn(2, 4, 3, 128, 128)
+    p = torch.clamp(torch.randn(2, 1, 128, 128), min=0.0)
+
+    out1 = m1(x, p)
+    out2 = m2(x, p)
+    out3 = m3(x, p)
+    assert out1.shape == (2, 4, 1, 128, 128)
+    assert out2.shape == (2, 4, 1, 128, 128)
+    assert out3.shape == (2, 4, 1, 128, 128)
+    assert (out1 >= 0.0).all()
+    assert (out2 >= 0.0).all()
+    assert (out3 >= 0.0).all()
+
+    # Separated conditioning calling convention
+    m1_sep = ConvLSTMNowcasterV3(input_channels=13)
+    obs = torch.randn(2, 4, 1, 128, 128)
+    nwp = torch.randn(2, 4, 11, 128, 128)
+    static = torch.randn(2, 1, 128, 128)
+
+    out_sep = m1_sep(obs_history=obs, nwp_future=nwp, static_features=static, persistence_baseline=p)
+    assert out_sep.shape == (2, 4, 1, 128, 128)
+    assert (out_sep >= 0.0).all()
+

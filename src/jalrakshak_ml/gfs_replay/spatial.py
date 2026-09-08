@@ -83,3 +83,74 @@ def reproject_rate(values, latitudes, longitudes, target_grid):
         },
     }
     return output, metadata
+
+
+def reproject_field(
+    values,
+    latitudes,
+    longitudes,
+    target_grid: dict,
+    *,
+    physical_range: tuple[float, float] | None = None,
+    variable_name: str = "field",
+) -> tuple[np.ndarray, dict]:
+    """Reproject general meteorological field to target grid using bilinear interpolation.
+
+    Supports signed variables (e.g. u10/v10 wind components).
+    Does NOT enforce non-negativity (finite_rain is NOT called).
+    Validates finite values and physical bounds.
+    """
+    bbox = transform_bounds(target_grid["crs"], "EPSG:4326", *target_grid["bounds"], densify_pts=21)
+    arr, _, _, affine = crop_with_halo(values, latitudes, longitudes, bbox)
+    if not np.isfinite(arr).all():
+        raise ValueError(f"Non-finite input values in {variable_name} or insufficient spatial coverage")
+    if physical_range is not None:
+        min_v, max_v = physical_range
+        if np.any(arr < min_v) or np.any(arr > max_v):
+            raise ValueError(
+                f"Variable '{variable_name}' violates physical_range [{min_v}, {max_v}]: "
+                f"observed [{np.nanmin(arr)}, {np.nanmax(arr)}]"
+            )
+    output = np.full((target_grid["height"], target_grid["width"]), np.nan, dtype=np.float64)
+    reproject(
+        source=arr,
+        destination=output,
+        src_transform=affine,
+        src_crs="EPSG:4326",
+        src_nodata=np.nan,
+        dst_transform=target_grid["transform"],
+        dst_crs=target_grid["crs"],
+        dst_nodata=np.nan,
+        resampling=Resampling.bilinear,
+    )
+    if not np.isfinite(output).all():
+        raise ValueError(f"Non-finite output values after reprojecting {variable_name}")
+    if physical_range is not None:
+        min_v, max_v = physical_range
+        if np.any(output < min_v) or np.any(output > max_v):
+            raise ValueError(
+                f"Variable '{variable_name}' violates physical_range [{min_v}, {max_v}] after reprojection: "
+                f"observed [{np.nanmin(output)}, {np.nanmax(output)}]"
+            )
+    metadata = {
+        "variable_name": variable_name,
+        "source_crs": "EPSG:4326",
+        "source_resolution_degrees": [0.25, 0.25],
+        "source_resolution_note": "approximately 28 km; resampling creates no new detail",
+        "source_affine": list(affine)[:6],
+        "source_shape": list(arr.shape),
+        "source_latitude_orientation": "descending_north_to_south",
+        "source_longitude_convention": "-180_to_180_ascending",
+        "halo_cells": 2,
+        "resampling": "bilinear",
+        "interpolation_method": "bilinear",
+        "physical_range": list(physical_range) if physical_range else None,
+        "target_grid": {
+            "crs": target_grid["crs"],
+            "shape": list(output.shape),
+            "affine": list(target_grid["transform"])[:6],
+            "bounds": list(target_grid["bounds"]),
+        },
+    }
+    return output, metadata
+

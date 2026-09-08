@@ -29,7 +29,12 @@ import numpy as np
 
 from jalrakshak_ml.gfs_replay.core import select_gfs_forecast_as_of, utc
 from jalrakshak_ml.gfs_replay.grib import eccodes_module
-from jalrakshak_ml.gfs_replay.spatial import canonicalize_grid, crop_with_halo, reproject_rate
+from jalrakshak_ml.gfs_replay.spatial import (
+    canonicalize_grid,
+    crop_with_halo,
+    reproject_field,
+    reproject_rate,
+)
 from jalrakshak_ml.weather.adapters.base import BaseMeteorologicalAdapter
 from jalrakshak_ml.weather.contracts import MeteorologicalField
 
@@ -282,7 +287,17 @@ class GFSRichAdapter(BaseMeteorologicalAdapter):
             )
 
         # Reproject to target grid
-        reprojected, spatial_meta = reproject_rate(arr, lat, lon, target_grid)
+        if variable_key in ("precipitation", "prate", "apcp"):
+            reprojected, spatial_meta = reproject_rate(arr, lat, lon, target_grid)
+        else:
+            reprojected, spatial_meta = reproject_field(
+                arr,
+                lat,
+                lon,
+                target_grid,
+                physical_range=spec.get("physical_range"),
+                variable_name=variable_key,
+            )
 
         ref_time = utc(meta["forecast_reference_time"])
         val_time = utc(meta["valid_time"])
