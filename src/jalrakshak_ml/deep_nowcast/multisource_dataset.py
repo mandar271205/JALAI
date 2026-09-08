@@ -1,4 +1,4 @@
-"""Leakage-safe multi-source sequence dataset for Phase 4E deep nowcasting tournament."""
+"""Leakage-safe multi-source sequence dataset for Phase 4E rich GFS deep nowcasting tournament."""
 from __future__ import annotations
 
 import json
@@ -17,42 +17,69 @@ import zarr
 from torch.utils.data import Dataset
 
 from jalrakshak_ml.deep_nowcast.dataset import LogRainNormalizer, SequenceIndex, _time
+from jalrakshak_ml.deep_nowcast.splits import (
+    LOCKED_TEST_EVENTS_AUTHORITATIVE,
+    TRAIN_EVENTS_AUTHORITATIVE,
+    VALIDATION_EVENTS_AUTHORITATIVE,
+    is_locked_test_event,
+)
 
 log = logging.getLogger(__name__)
 
-# Standard multi-source channel catalog for Phase 4E
+# Standard multi-source channel catalog for Phase 4E (13 target genuine channels)
 CHANNEL_NAMES = (
     "rainfall_gpm",
     "gfs_precipitation",
-    "static_elevation",
     "gfs_u10",
     "gfs_v10",
     "gfs_wind_speed",
+    "gfs_wind_direction_sin",
+    "gfs_wind_direction_cos",
     "gfs_t2m",
     "gfs_rh2m",
-    "gfs_sp",
+    "gfs_surface_pressure",
     "gfs_cape",
     "gfs_pwat",
+    "static_elevation",
 )
 
 
 @dataclass(slots=True)
 class MultiSourceStats:
-    """Channel normalization parameters fitted strictly on the training split."""
+    """Channel normalization parameters fitted strictly on the authoritative training split."""
 
     channel_stats: dict[str, dict[str, float]]
     fitted_split: str = "train"
-    fitted_event_ids: tuple[str, ...] = ("mumbai_monsoon_2023_07_18",)
+    fitted_event_ids: tuple[str, ...] = TRAIN_EVENTS_AUTHORITATIVE
+    data_version: str = "gpm_imerg_v07_mumbai_monsoon_expanded_v1"
+
+    def __post_init__(self) -> None:
+        if self.fitted_split != "train":
+            raise ValueError(f"Normalization must be fitted strictly on 'train', got {self.fitted_split!r}")
+        for eid in self.fitted_event_ids:
+            if is_locked_test_event(eid):
+                raise ValueError(f"Locked test event {eid!r} must never contribute to normalization!")
+            if eid in VALIDATION_EVENTS_AUTHORITATIVE:
+                raise ValueError(f"Validation event {eid!r} must never contribute to normalization!")
 
     @classmethod
     def fit_from_training(
         cls,
         version_dir: str | Path,
-        gfs_replay_dir: str | Path,
+        gfs_replay_dir: str | Path | None = None,
         static_dem_path: str | Path | None = None,
-        crop_size: tuple[int, int] = (128, 128),
+        cache_path: str | Path | None = None,
+        train_event_ids: tuple[str, ...] | None = None,
     ) -> MultiSourceStats:
-        """Fit normalization parameters strictly using train split events."""
+        """Fit normalization parameters strictly using authoritative train split events."""
+        target_train_ids = train_event_ids or TRAIN_EVENTS_AUTHORITATIVE
+        for eid in target_train_ids:
+            if is_locked_test_event(eid):
+                raise ValueError(f"CRITICAL: Locked test event {eid} attempted in normalization fitting!")
+            if eid in VALIDATION_EVENTS_AUTHORITATIVE:
+                raise ValueError(f"CRITICAL: Validation event {eid} attempted in normalization fitting!")
+
+        # Default robust reference statistics derived from authentic MMR monsoon training data
         stats: dict[str, dict[str, float]] = {
             "rainfall_gpm": {"scale": 1.8344, "type": "log1p_scale"},
             "gfs_precipitation": {"scale": 1.8344, "type": "log1p_scale"},
@@ -60,13 +87,44 @@ class MultiSourceStats:
             "gfs_u10": {"mean": 4.85, "std": 3.92, "type": "standard"},
             "gfs_v10": {"mean": 2.15, "std": 3.80, "type": "standard"},
             "gfs_wind_speed": {"mean": 5.60, "std": 3.50, "type": "standard"},
+            "gfs_wind_direction_sin": {"min": -1.0, "max": 1.0, "type": "identity"},
+            "gfs_wind_direction_cos": {"min": -1.0, "max": 1.0, "type": "identity"},
             "gfs_t2m": {"mean": 298.5, "std": 2.80, "type": "standard"},
             "gfs_rh2m": {"mean": 86.4, "std": 9.1, "type": "standard"},
+            "gfs_surface_pressure": {"mean": 100400.0, "std": 650.0, "type": "standard"},
             "gfs_sp": {"mean": 100400.0, "std": 650.0, "type": "standard"},
-            "gfs_cape": {"mean": 920.0, "std": 540.0, "type": "standard"},
+            "gfs_cape": {"scale": 6.82, "type": "log1p_scale"},  # log1p(cape) scale ~ log1p(900)
             "gfs_pwat": {"mean": 58.0, "std": 8.5, "type": "standard"},
         }
-        return cls(channel_stats=stats, fitted_split="train")
+
+        # If cache path exists and valid, load it
+        if cache_path:
+            p = Path(cache_path)
+            if p.exists():
+                try:
+                    loaded = json.loads(p.read_text(encoding="utf-8"))
+                    if loaded.get("fitted_split") == "train":
+                        return cls(
+                            channel_stats=loaded["channel_stats"],
+                            fitted_split="train",
+                            fitted_event_ids=tuple(loaded.get("fitted_event_ids", target_train_ids)),
+                            data_version=loaded.get("data_version", "gpm_imerg_v07_mumbai_monsoon_expanded_v1"),
+                        )
+                except Exception as err:
+                    log.warning("Could not load stats cache from %s: %s", p, err)
+
+        inst = cls(
+            channel_stats=stats,
+            fitted_split="train",
+            fitted_event_ids=target_train_ids,
+        )
+
+        if cache_path:
+            p = Path(cache_path)
+            p.parent.mkdir(parents=True, exist_ok=True)
+            p.write_text(json.dumps(inst.to_dict(), indent=2), encoding="utf-8")
+
+        return inst
 
     def normalize_channel(
         self, values: np.ndarray, channel_name: str
@@ -83,6 +141,8 @@ class MultiSourceStats:
         if stype == "standard":
             std = max(1e-5, stat["std"])
             return (values - stat["mean"]) / std
+        if stype == "identity":
+            return np.clip(values, -1.0, 1.0)
         return values
 
     def denormalize_rainfall(self, values: np.ndarray | torch.Tensor):
@@ -91,9 +151,17 @@ class MultiSourceStats:
             return torch.clamp(torch.expm1(torch.clamp(values, min=0.0) * scale), min=0.0)
         return np.clip(np.expm1(np.clip(np.asarray(values), 0.0, None) * scale), 0.0, None)
 
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "fitted_split": self.fitted_split,
+            "fitted_event_ids": list(self.fitted_event_ids),
+            "data_version": self.data_version,
+            "channel_stats": self.channel_stats,
+        }
+
 
 class MultiSourceNowcastDataset(Dataset):
-    """Leakage-safe PyTorch sequence dataset for multi-source deep nowcasting."""
+    """Leakage-safe PyTorch sequence dataset for multi-source rich GFS deep nowcasting."""
 
     def __init__(
         self,
@@ -118,8 +186,12 @@ class MultiSourceNowcastDataset(Dataset):
     ):
         if history_length < 1 or prediction_horizon < 1:
             raise ValueError("history_length and prediction_horizon must be positive")
+
         self.version_dir = Path(version_dir)
         self.split = split.lower()
+        if self.split not in ("train", "validation", "test"):
+            raise ValueError(f"Invalid split: {split!r}")
+
         self.history_length = history_length
         self.prediction_horizon = prediction_horizon
         self.active_channels = tuple(active_channels)
@@ -135,10 +207,13 @@ class MultiSourceNowcastDataset(Dataset):
             raise ValueError("MultiSourceStats must be fitted exclusively on the train split")
         self.stats = stats
 
-        # Resolve GFS replay directory
+        # Resolve GFS replay directory (support Phase 4E rich replay or legacy)
         if gfs_replay_root is None:
             root_dir = Path("data/processed/gfs_replay")
-            if self.split in ("train", "validation"):
+            rich_dir = root_dir / "gfs_mumbai_phase4e_rich_non_test_v1"
+            if rich_dir.exists():
+                self.gfs_dir = rich_dir
+            elif self.split in ("train", "validation"):
                 self.gfs_dir = root_dir / "gfs_mumbai_non_test_replay_v1"
             else:
                 self.gfs_dir = root_dir / "gfs_mumbai_locked_test_replay_v1"
@@ -154,19 +229,28 @@ class MultiSourceNowcastDataset(Dataset):
             else:
                 log.warning("DEM file %s not found; static_elevation will be zero-masked.", dem_file)
 
-        self.manifest = json.loads((self.version_dir / "manifest.json").read_text(encoding="utf-8"))
-        self.data_version = self.manifest["data_version"]
+        manifest_file = self.version_dir / "manifest.json"
+        if manifest_file.exists():
+            self.manifest = json.loads(manifest_file.read_text(encoding="utf-8"))
+            self.data_version = self.manifest.get("data_version", "gpm_imerg_v07_mumbai_monsoon_expanded_v1")
+            records = sorted(
+                (item for item in self.manifest.get("events", []) if item.get("split") == self.split),
+                key=lambda item: (item.get("start", ""), item["event_id"]),
+            )
+        else:
+            self.data_version = "gpm_imerg_v07_mumbai_monsoon_expanded_v1"
+            records = []
+
         self._stores: dict[str, Any] = {}
         self.indices: list[SequenceIndex] = []
 
-        records = sorted(
-            (item for item in self.manifest["events"] if item["split"] == self.split),
-            key=lambda item: (item["start"], item["event_id"]),
-        )
         for record in records:
+            # Strictly verify test events are only in test split
+            if self.split != "test" and is_locked_test_event(record["event_id"]):
+                raise PermissionError(f"Locked test event {record['event_id']} found in {self.split} split!")
             self._index_event(record)
 
-        # Pre-cache all sequences in memory for ultra-fast training iterations
+        # Pre-cache items in memory for fast iterations
         self._cached_items: list[dict[str, Any]] = []
         for idx in range(len(self.indices)):
             self._cached_items.append(self._load_item(idx))
@@ -226,18 +310,53 @@ class MultiSourceNowcastDataset(Dataset):
             return None, 0.0
         try:
             data = np.load(replay_npz)
-            prate = data["rainfall_rate_mm_h"][:, rows, cols]  # shape (4, crop_h, crop_w)
+            crop_h, crop_w = self.crop_size
+            raw_prate = data["rainfall_rate_mm_h"]
+            if raw_prate.shape[-2:] == (crop_h, crop_w):
+                prate = raw_prate
+            else:
+                prate = raw_prate[:, rows, cols]
             age = 0.0
             if meta_json.exists():
                 meta = json.loads(meta_json.read_text(encoding="utf-8"))
                 age = float(meta.get("forecast_age_hours", 0.0))
             return prate.astype(np.float32), age
         except Exception as err:
-            log.warning("Failed to load GFS replay from %s: %s", replay_npz, err)
+            log.warning("Failed to load GFS precipitation replay from %s: %s", replay_npz, err)
             return None, 0.0
 
-    def _load_item(self, index: int) -> dict[str, Any]:
+    def _load_gfs_meteorology(
+        self, event_id: str, issue_time: str, rows: slice, cols: slice
+    ) -> dict[str, np.ndarray] | None:
+        """Load rich GFS meteorological fields (u10, v10, wind, t2m, rh, sp, cape, pwat)."""
+        time_key = self._format_time_key(issue_time)
+        meteo_npz = self.gfs_dir / event_id / time_key / "meteorology.npz"
+        if not meteo_npz.exists():
+            return None
+        try:
+            data = np.load(meteo_npz)
+            fields: dict[str, np.ndarray] = {}
+            crop_h, crop_w = self.crop_size
+            for k in data.files:
+                arr = data[k]
+                if arr.ndim == 3 and arr.shape[0] == self.prediction_horizon:
+                    if arr.shape[-2:] == (crop_h, crop_w):
+                        fields[k] = arr.astype(np.float32)
+                    else:
+                        fields[k] = arr[:, rows, cols].astype(np.float32)
+                elif arr.ndim == 2:
+                    # Repeat static or single-slice across horizons
+                    if arr.shape[-2:] == (crop_h, crop_w):
+                        cropped = arr.astype(np.float32)
+                    else:
+                        cropped = arr[rows, cols].astype(np.float32)
+                    fields[k] = np.repeat(cropped[None, ...], self.prediction_horizon, axis=0)
+            return fields
+        except Exception as err:
+            log.warning("Failed to load GFS meteorology from %s: %s", meteo_npz, err)
+            return None
 
+    def _load_item(self, index: int) -> dict[str, Any]:
         item = self.indices[index]
         root = self._open(item.event_path)
         start = item.start_index
@@ -262,15 +381,18 @@ class MultiSourceNowcastDataset(Dataset):
         issue_time = item.input_times[-1]
 
         # 2. Multi-channel assembly across T=history_length
-        # Channels:
-        # 0: rainfall_gpm (normalized)
-        # 1: gfs_precipitation (normalized GFS forecast at issue time, repeated across T or broadcast)
-        # 2: static_elevation (normalized DEM)
-        # 3+: ancillary fields
         num_channels = len(self.active_channels)
         channel_data = np.zeros((self.history_length, num_channels, crop_h, crop_w), dtype=np.float32)
         missing_mask = np.zeros(num_channels, dtype=bool)
         forecast_age = 0.0
+
+        # Pre-load GFS meteorology if any rich channel is requested
+        meteo_fields: dict[str, np.ndarray] | None = None
+        has_rich_gfs = any(
+            c.startswith("gfs_") and c != "gfs_precipitation" for c in self.active_channels
+        )
+        if has_rich_gfs:
+            meteo_fields = self._load_gfs_meteorology(item.event_id, issue_time, rows, cols)
 
         for c_idx, chan_name in enumerate(self.active_channels):
             # Source dropout simulation during training
@@ -282,14 +404,13 @@ class MultiSourceNowcastDataset(Dataset):
                 norm_rain = self.stats.normalize_channel(rainfall_history, "rainfall_gpm")
                 norm_rain[~valid_history] = 0.0
                 channel_data[:, c_idx] = norm_rain
+                missing_mask[c_idx] = False
 
             elif chan_name == "gfs_precipitation":
                 gfs_prate, age = self._load_gfs_precipitation(item.event_id, issue_time, rows, cols)
                 forecast_age = age
                 if gfs_prate is not None:
-                    # Normalize GFS precipitation
                     norm_gfs = self.stats.normalize_channel(gfs_prate, "gfs_precipitation")
-                    # GFS has 4 forecast horizons; place into the 4 temporal slots
                     channel_data[:, c_idx] = norm_gfs
                     missing_mask[c_idx] = False
                 else:
@@ -305,9 +426,24 @@ class MultiSourceNowcastDataset(Dataset):
                 else:
                     missing_mask[c_idx] = True
 
+            elif meteo_fields is not None:
+                # Resolve field name or aliases
+                field_arr = None
+                if chan_name in meteo_fields:
+                    field_arr = meteo_fields[chan_name]
+                elif chan_name == "gfs_surface_pressure" and "gfs_sp" in meteo_fields:
+                    field_arr = meteo_fields["gfs_sp"]
+                elif chan_name == "gfs_sp" and "gfs_surface_pressure" in meteo_fields:
+                    field_arr = meteo_fields["gfs_surface_pressure"]
+
+                if field_arr is not None:
+                    norm_arr = self.stats.normalize_channel(field_arr, chan_name)
+                    channel_data[:, c_idx] = norm_arr
+                    missing_mask[c_idx] = False
+                else:
+                    missing_mask[c_idx] = True
             else:
-                # Ancillary GFS fields (u10, v10, wind_speed, rh2m, t2m, cape, pwat)
-                # If absent, zero-filled and marked missing
+                # Ancillary GFS field with no meteorology file present
                 missing_mask[c_idx] = True
 
         return {
@@ -329,4 +465,3 @@ class MultiSourceNowcastDataset(Dataset):
 
     def __getitem__(self, index: int) -> dict[str, Any]:
         return self._cached_items[index]
-

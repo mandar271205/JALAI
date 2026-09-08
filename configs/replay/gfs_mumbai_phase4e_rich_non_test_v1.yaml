@@ -1,0 +1,113 @@
+version: "gfs_mumbai_phase4e_rich_non_test_v1"
+created_at: "2026-09-09T00:45:00Z"
+description: "Authoritative Phase 4E Rich GFS replay configuration for the 15 non-test MMR events"
+
+purpose: "non_test_rich_replay"
+expected_total_events: 15
+expected_train_events: 12
+expected_validation_events: 3
+expected_test_events: 0  # Test events are permanently locked and excluded
+
+spatial:
+  crs: "EPSG:32643"
+  api_crs: "EPSG:4326"
+  shape: [256, 256]
+  bounds_wgs84: [72.70, 18.85, 73.10, 19.35]
+  native_resolution: "0.25_deg (~28 km)"
+  canonical_resolution: "256x256 (EPSG:32643)"
+
+temporal:
+  native_cadence_minutes: 60
+  output_cadence_minutes: 30
+  history_length: 4
+  prediction_horizon: 4
+  assumed_latency_hours: 6.0
+  availability_basis: "assumed_operational_cycle_latency_6h"
+  alignment_policy: "step_forward_nearest_causal"
+
+output_dir: "data/processed/gfs_replay/gfs_mumbai_phase4e_rich_non_test_v1"
+
+variables:
+  precipitation:
+    name: "prate"
+    source: "NOAA GFS 0.25-deg"
+    units: "mm/h"
+    file: "rainfall.npz"
+  meteorology:
+    file: "meteorology.npz"
+    fields:
+      - "gfs_u10"
+      - "gfs_v10"
+      - "gfs_wind_speed"
+      - "gfs_wind_direction_sin"
+      - "gfs_wind_direction_cos"
+      - "gfs_t2m"
+      - "gfs_rh2m"
+      - "gfs_surface_pressure"
+      - "gfs_cape"
+      - "gfs_pwat"
+
+events:
+  # Train (12 events)
+  - event_id: "mumbai_monsoon_2021_06_18"
+    start_time: "2021-06-18T00:00:00Z"
+    end_time: "2021-06-18T12:00:00Z"
+    split: "train"
+  - event_id: "mumbai_monsoon_2021_07_16"
+    start_time: "2021-07-16T00:00:00Z"
+    end_time: "2021-07-16T12:00:00Z"
+    split: "train"
+  - event_id: "mumbai_monsoon_2021_08_08"
+    start_time: "2021-08-08T00:00:00Z"
+    end_time: "2021-08-08T12:00:00Z"
+    split: "train"
+  - event_id: "mumbai_monsoon_2021_09_07"
+    start_time: "2021-09-07T00:00:00Z"
+    end_time: "2021-09-07T12:00:00Z"
+    split: "train"
+  - event_id: "mumbai_monsoon_2022_06_22"
+    start_time: "2022-06-22T00:00:00Z"
+    end_time: "2022-06-22T12:00:00Z"
+    split: "train"
+  - event_id: "mumbai_monsoon_2022_07_05"
+    start_time: "2022-07-05T00:00:00Z"
+    end_time: "2022-07-05T12:00:00Z"
+    split: "train"
+  - event_id: "mumbai_monsoon_2022_07_14"
+    start_time: "2022-07-14T00:00:00Z"
+    end_time: "2022-07-14T12:00:00Z"
+    split: "train"
+  - event_id: "mumbai_monsoon_2022_08_09"
+    start_time: "2022-08-09T00:00:00Z"
+    end_time: "2022-08-09T12:00:00Z"
+    split: "train"
+  - event_id: "mumbai_monsoon_2023_06_28"
+    start_time: "2023-06-28T00:00:00Z"
+    end_time: "2023-06-28T12:00:00Z"
+    split: "train"
+  - event_id: "mumbai_monsoon_2023_07_18"
+    start_time: "2023-07-18T00:00:00Z"
+    end_time: "2023-07-18T12:00:00Z"
+    split: "train"
+  - event_id: "mumbai_monsoon_2023_08_08"
+    start_time: "2023-08-08T00:00:00Z"
+    end_time: "2023-08-08T12:00:00Z"
+    split: "train"
+  - event_id: "mumbai_monsoon_2023_09_07"
+    start_time: "2023-09-07T00:00:00Z"
+    end_time: "2023-09-07T12:00:00Z"
+    split: "train"
+
+  # Validation (3 events)
+  - event_id: "mumbai_monsoon_2023_07_25"
+    start_time: "2023-07-25T00:00:00Z"
+    end_time: "2023-07-25T12:00:00Z"
+    split: "validation"
+  - event_id: "mumbai_monsoon_2024_07_08"
+    start_time: "2024-07-08T00:00:00Z"
+    end_time: "2024-07-08T12:00:00Z"
+    split: "validation"
+  - event_id: "mumbai_monsoon_2024_07_21"
+    start_time: "2024-07-21T00:00:00Z"
+    end_time: "2024-07-21T12:00:00Z"
+    split: "validation"

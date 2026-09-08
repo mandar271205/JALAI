@@ -111,6 +111,8 @@ def create_phase4e_notebook():
                     "from google.colab import drive\n",
                     "\n",
                     "DRIVE_ROOT = Path(\"/content/drive/MyDrive/JALAI_DATA\")\n",
+                    "DRIVE_GPM_DIR = DRIVE_ROOT / \"processed\" / \"training\" / \"gpm_imerg_v07_mumbai_monsoon_expanded_v1\"\n",
+                    "DRIVE_RICH_GFS_DIR = DRIVE_ROOT / \"processed\" / \"gfs_replay\" / \"gfs_mumbai_phase4e_rich_non_test_v1\"\n",
                     "DRIVE_MODELS_DIR = DRIVE_ROOT / \"models\" / \"phase4e\"\n",
                     "DRIVE_REPORTS_DIR = DRIVE_ROOT / \"reports\" / \"phase4e\"\n",
                     "\n",
@@ -119,8 +121,10 @@ def create_phase4e_notebook():
                     "\n",
                     "DRIVE_MODELS_DIR.mkdir(parents=True, exist_ok=True)\n",
                     "DRIVE_REPORTS_DIR.mkdir(parents=True, exist_ok=True)\n",
-                    "print(f\"Persistent Models Dir:  {DRIVE_MODELS_DIR}\")\n",
-                    "print(f\"Persistent Reports Dir: {DRIVE_REPORTS_DIR}\")\n"
+                    "print(f\"Persistent GPM Dir:      {DRIVE_GPM_DIR}\")\n",
+                    "print(f\"Persistent Rich GFS Dir: {DRIVE_RICH_GFS_DIR}\")\n",
+                    "print(f\"Persistent Models Dir:   {DRIVE_MODELS_DIR}\")\n",
+                    "print(f\"Persistent Reports Dir:  {DRIVE_REPORTS_DIR}\")\n"
                 ]
             },
             {
@@ -141,7 +145,7 @@ def create_phase4e_notebook():
                     "import yaml\n",
                     "from jalrakshak_ml.config import load_yaml\n",
                     "\n",
-                    "DATA_DIR = Path(\"data/processed/training/gpm_imerg_v07_mumbai_monsoon_expanded_v1\")\n",
+                    "DATA_DIR = DRIVE_GPM_DIR if DRIVE_GPM_DIR.exists() else Path(\"data/processed/training/gpm_imerg_v07_mumbai_monsoon_expanded_v1\")\n",
                     "MANIFEST_PATH = Path(\"configs/training/multisource_channels_v1.yaml\")\n",
                     "\n",
                     "assert DATA_DIR.exists(), f\"Dataset directory missing: {DATA_DIR}\"\n",
@@ -150,7 +154,7 @@ def create_phase4e_notebook():
                     "manifest = load_yaml(MANIFEST_PATH)\n",
                     "print(\"Active Multisource Channels:\")\n",
                     "for ch_name, ch_meta in manifest[\"channels\"].items():\n",
-                    "    print(f\"  - {ch_name:22s} | Source: {ch_meta['source']:12s} | REAL_DATA: {ch_meta['REAL_DATA']}\")\n",
+                    "    print(f\"  - {ch_name:24s} | Source: {ch_meta['source']:12s} | REAL_DATA: {ch_meta.get('REAL_DATA', False)}\")\n",
                     "\n",
                     "# Strictly verify unavailable channels are not claimed real\n",
                     "assert manifest[\"channels\"][\"radar_reflectivity\"][\"REAL_DATA\"] is False\n",
@@ -162,8 +166,8 @@ def create_phase4e_notebook():
                 "cell_type": "markdown",
                 "metadata": {},
                 "source": [
-                    "## Part E: Verify Strict Train / Validation / Test Event Isolation\n",
-                    "Ensure that all event boundaries are strictly isolated and held-out test events are untouchable."
+                    "## Part E: Verify Strict Train / Validation / Test Event Isolation (12/3/3 Split)\n",
+                    "Ensure that all 18 event boundaries are strictly isolated and held-out test events are untouchable."
                 ]
             },
             {
@@ -172,20 +176,21 @@ def create_phase4e_notebook():
                 "metadata": {},
                 "outputs": [],
                 "source": [
-                    "# Part E: Event Split Isolation\n",
-                    "import json\n",
+                    "# Part E: Authoritative 18-Event Split Isolation\n",
+                    "from jalrakshak_ml.deep_nowcast.splits import get_authoritative_splits\n",
                     "\n",
-                    "CATALOG_PATH = Path(\"data/catalogs/mumbai_rainfall_events_v1.json\")\n",
-                    "catalog = json.loads(CATALOG_PATH.read_text(encoding=\"utf-8\"))\n",
-                    "splits = catalog[\"research_splits_locked\"]\n",
-                    "\n",
-                    "train_events = set(splits[\"train\"])\n",
-                    "val_events = set(splits[\"validation\"])\n",
-                    "test_events = set(splits[\"test\"])\n",
+                    "splits = get_authoritative_splits()\n",
+                    "train_events = set(splits.train)\n",
+                    "val_events = set(splits.validation)\n",
+                    "test_events = set(splits.test)\n",
                     "\n",
                     "print(f\"TRAIN Events ({len(train_events)}):      {sorted(train_events)}\")\n",
                     "print(f\"VALIDATION Events ({len(val_events)}): {sorted(val_events)}\")\n",
                     "print(f\"TEST Events (LOCKED) ({len(test_events)}): {sorted(test_events)}\")\n",
+                    "\n",
+                    "assert len(train_events) == 12, f\"Expected 12 train events, got {len(train_events)}\"\n",
+                    "assert len(val_events) == 3, f\"Expected 3 validation events, got {len(val_events)}\"\n",
+                    "assert len(test_events) == 3, f\"Expected 3 test events, got {len(test_events)}\"\n",
                     "\n",
                     "assert len(train_events.intersection(val_events)) == 0, \"Train and Val overlap!\"\n",
                     "assert len(train_events.intersection(test_events)) == 0, \"Train and Test overlap!\"\n",
@@ -193,7 +198,7 @@ def create_phase4e_notebook():
                     "assert \"mumbai_monsoon_2023_08_24\" in test_events\n",
                     "assert \"mumbai_monsoon_2024_08_04\" in test_events\n",
                     "assert \"mumbai_monsoon_2024_09_05\" in test_events\n",
-                    "print(\"PASSED: Strict event-level split isolation confirmed.\")\n"
+                    "print(\"PASSED: Strict 12/3/3 event-level split isolation confirmed.\")\n"
                 ]
             },
             {

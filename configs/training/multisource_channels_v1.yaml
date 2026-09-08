@@ -102,6 +102,46 @@ channels:
     REAL_DATA: true
     operational_status: "ACTIVE_REPLAY_ANCILLARY"
 
+  gfs_wind_direction_sin:
+    name: "gfs_wind_direction_sin"
+    source: "NOAA GFS 0.25-deg (Derived)"
+    variable: "sin(theta_rad)"
+    units: "dimensionless"
+    physical_range: [-1.0, 1.0]
+    native_resolution: "0.25 deg (~25 km)"
+    native_cadence_minutes: 60
+    canonical_resolution: "0.002 deg (~200 m)"
+    availability_semantics: "latest_prior_cycle_as_of_issue_time"
+    temporal_mode: "cyclic_direction_component"
+    normalization:
+      kind: "identity"
+      fitted_split: "train"
+      train_mean: 0.0
+      train_std: 1.0
+    missing_data_behavior: "zero_fill_with_missing_channel_mask"
+    REAL_DATA: true
+    operational_status: "ACTIVE_REPLAY_ANCILLARY"
+
+  gfs_wind_direction_cos:
+    name: "gfs_wind_direction_cos"
+    source: "NOAA GFS 0.25-deg (Derived)"
+    variable: "cos(theta_rad)"
+    units: "dimensionless"
+    physical_range: [-1.0, 1.0]
+    native_resolution: "0.25 deg (~25 km)"
+    native_cadence_minutes: 60
+    canonical_resolution: "0.002 deg (~200 m)"
+    availability_semantics: "latest_prior_cycle_as_of_issue_time"
+    temporal_mode: "cyclic_direction_component"
+    normalization:
+      kind: "identity"
+      fitted_split: "train"
+      train_mean: 0.0
+      train_std: 1.0
+    missing_data_behavior: "zero_fill_with_missing_channel_mask"
+    REAL_DATA: true
+    operational_status: "ACTIVE_REPLAY_ANCILLARY"
+
   gfs_t2m:
     name: "gfs_t2m"
     source: "NOAA GFS 0.25-deg"
@@ -142,8 +182,29 @@ channels:
     REAL_DATA: true
     operational_status: "ACTIVE_REPLAY_ANCILLARY"
 
+  gfs_surface_pressure:
+    name: "gfs_surface_pressure"
+    source: "NOAA GFS 0.25-deg"
+    variable: "sp"
+    units: "Pa"
+    physical_range: [50000.0, 110000.0]
+    native_resolution: "0.25 deg (~25 km)"
+    native_cadence_minutes: 60
+    canonical_resolution: "0.002 deg (~200 m)"
+    availability_semantics: "latest_prior_cycle_as_of_issue_time"
+    temporal_mode: "issue_time_context"
+    normalization:
+      kind: "standard_zscore"
+      fitted_split: "train"
+      train_mean: 100400.0
+      train_std: 650.0
+    missing_data_behavior: "zero_fill_with_missing_channel_mask"
+    REAL_DATA: true
+    operational_status: "ACTIVE_REPLAY_ANCILLARY"
+
   gfs_sp:
     name: "gfs_sp"
+    alias_of: "gfs_surface_pressure"
     source: "NOAA GFS 0.25-deg"
     variable: "sp"
     units: "Pa"
