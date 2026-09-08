@@ -27,6 +27,7 @@ dependencies = [
 
 [project.optional-dependencies]
 weather = ["cfgrib", "pysteps"]
+gfs = ["eccodes", "requests"]
 deep = ["torch", "matplotlib", "pillow"]
 ml = [
   "scikit-learn",

@@ -1,0 +1,52 @@
+data:
+  version: "gpm_imerg_v07_mumbai_monsoon_expanded_v1"
+  source_version: "IMERG_V07"
+  temporal_step_minutes: 30
+  output_root: "data/processed/training"
+  expected_split_event_ids:
+    train: ["mumbai_monsoon_2023_07_18"]
+    validation: ["mumbai_monsoon_2023_07_25"]
+    test:
+      - "mumbai_monsoon_2023_08_24"
+      - "mumbai_monsoon_2024_08_04"
+      - "mumbai_monsoon_2024_09_05"
+
+dataset:
+  history_length: 4
+  prediction_horizon: 4
+  active_channels:
+    - "rainfall_gpm"
+    - "gfs_precipitation"
+    - "static_elevation"
+  crop_size: [128, 128]
+  crop_origin: null
+  temporal_step_minutes: 30
+
+model:
+  name: "st_attention_nowcaster_v1"
+  architecture: "STAttentionNowcasterV1"
+  input_channels: 3
+  embed_dim: 64
+  num_heads: 4
+  patch_size: 8
+  output_horizons: 4
+  head_channels: 16
+
+training:
+  seeds: [26071, 26072, 26073]
+  primary_seed: 26071
+  device: "cpu"
+  batch_size: 4
+  epochs: 15
+  learning_rate: 0.001
+  weight_decay: 0.0001
+  gradient_clip_norm: 1.0
+  early_stopping_patience: 4
+  dropout_prob: 0.1
+  loss:
+    name: "multi_scale_piecewise_loss"
+    thresholds_mm_h: [1.0, 5.0, 10.0]
+    weights: [1.0, 2.0, 6.0, 10.0]
+    mse_weight: 0.05
+    coarse_scale_weight: 0.25
+    pool_kernel: 2

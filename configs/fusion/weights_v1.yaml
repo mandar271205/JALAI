@@ -1,0 +1,56 @@
+calibration_version: fusion_weights_v1
+calibration_timestamp: '2026-09-08T11:49:30.755288+00:00'
+calibration_splits:
+- train
+- validation
+calibration_events:
+  train:
+  - mumbai_monsoon_2023_07_18
+  validation:
+  - mumbai_monsoon_2023_07_25
+anti_leakage_guarantee: Strictly zero test event access during weight calibration.
+objective: inverse_mae_validation_skill_with_nwp_lead_transition
+validation_metrics:
+  persistence:
+    mae_by_lead:
+    - 0.7271760274869373
+    - 1.1167402852381259
+    - 1.4343348028041474
+    - 1.7722440752292674
+    rmse_by_lead:
+    - 1.0134247043906952
+    - 1.404968119311929
+    - 1.8258313638139723
+    - 2.1500416556098427
+  pysteps:
+    mae_by_lead:
+    - 0.8142898036194367
+    - 1.109788678059095
+    - 1.4632286526754645
+    - 1.7009695002233087
+    rmse_by_lead:
+    - 1.0842836548552486
+    - 1.4710925127280425
+    - 1.8924450762385834
+    - 2.0619943507924434
+weights_by_horizon:
+  30:
+    pysteps: 0.401
+    persistence: 0.449
+    gfs: 0.15
+    convlstm_v2: 0.0
+  60:
+    pysteps: 0.3511
+    persistence: 0.3489
+    gfs: 0.3
+    convlstm_v2: 0.0
+  90:
+    pysteps: 0.2475
+    persistence: 0.2525
+    gfs: 0.5
+    convlstm_v2: 0.0
+  120:
+    pysteps: 0.1531
+    persistence: 0.1469
+    gfs: 0.7
+    convlstm_v2: 0.0

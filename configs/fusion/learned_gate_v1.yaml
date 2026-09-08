@@ -1,0 +1,22 @@
+model_version: learned_gate_mlp_v1
+model_artifact: models/fusion/learned_gate_v1/model.pt
+model_sha256: 6387077de055b322964a445695e09b4ca15fdb7a358339e8dff65a8b6442063b
+feature_count: 44
+providers:
+- persistence
+- pysteps
+- convlstm_v2
+- gfs
+training:
+  train_split: train
+  val_split: validation
+  seed: 26071
+  epochs: 40
+  lr: 0.005
+  best_epoch: 25
+  best_val_mae: 0.9302474856376648
+mean_weights_on_validation:
+  persistence: 0.5214859843254089
+  pysteps: 0.09565199166536331
+  convlstm_v2: 9.80908925027372e-45
+  gfs: 0.38286203145980835

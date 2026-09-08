@@ -1,0 +1,2354 @@
+{
+  "manifest_version": "phase4c_non_test_replay_v1",
+  "source_data_version": "gfs_mumbai_non_test_replay_v1",
+  "purpose": "non_test_fusion_training_and_validation",
+  "sample_count": 34,
+  "event_counts": {
+    "mumbai_monsoon_2023_07_18": 17,
+    "mumbai_monsoon_2023_07_25": 17
+  },
+  "samples": [
+    {
+      "event_id": "mumbai_monsoon_2023_07_18",
+      "split": "train",
+      "issue_time": "2023-07-18T01:30:00+00:00",
+      "forecast_reference_time": "2023-07-17T18:00:00+00:00",
+      "availability_time": "2023-07-18T00:00:00+00:00",
+      "forecast_age_minutes": 450.0,
+      "lead_minutes": [
+        480,
+        510,
+        540,
+        570
+      ],
+      "valid_time": [
+        "2023-07-18T02:00:00+00:00",
+        "2023-07-18T02:30:00+00:00",
+        "2023-07-18T03:00:00+00:00",
+        "2023-07-18T03:30:00+00:00"
+      ],
+      "native_interval_start": [
+        "2023-07-17T18:00:00+00:00",
+        "2023-07-17T19:00:00+00:00",
+        "2023-07-17T20:00:00+00:00",
+        "2023-07-17T21:00:00+00:00",
+        "2023-07-17T22:00:00+00:00",
+        "2023-07-17T23:00:00+00:00",
+        "2023-07-18T00:00:00+00:00",
+        "2023-07-18T01:00:00+00:00",
+        "2023-07-18T02:00:00+00:00",
+        "2023-07-18T03:00:00+00:00"
+      ],
+      "native_interval_end": [
+        "2023-07-17T19:00:00+00:00",
+        "2023-07-17T20:00:00+00:00",
+        "2023-07-17T21:00:00+00:00",
+        "2023-07-17T22:00:00+00:00",
+        "2023-07-17T23:00:00+00:00",
+        "2023-07-18T00:00:00+00:00",
+        "2023-07-18T01:00:00+00:00",
+        "2023-07-18T02:00:00+00:00",
+        "2023-07-18T03:00:00+00:00",
+        "2023-07-18T04:00:00+00:00"
+      ],
+      "native_cadence_minutes": 60,
+      "output_cadence_minutes": 30,
+      "temporal_disaggregation_method": "uniform_within_native_interval",
+      "source_uri": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/",
+      "source_version": "GFS 0.25deg GRIB2",
+      "variable_metadata": {
+        "product": "prate_mean",
+        "units": "mm/h",
+        "internal_crs": "EPSG:32643",
+        "api_crs": "EPSG:4326",
+        "grid_shape": [
+          4,
+          256,
+          256
+        ]
+      },
+      "valid_mask_summary": {
+        "valid_cells": 262144,
+        "total_cells": 262144,
+        "valid_fraction": 1.0
+      },
+      "artifact_path": "mumbai_monsoon_2023_07_18/20230718T0130Z",
+      "array_sha256": "d223cc424592ed4954863bc8de938331c70c6bb7b8ebed7a03f1acb929088cbb"
+    },
+    {
+      "event_id": "mumbai_monsoon_2023_07_18",
+      "split": "train",
+      "issue_time": "2023-07-18T02:00:00+00:00",
+      "forecast_reference_time": "2023-07-17T18:00:00+00:00",
+      "availability_time": "2023-07-18T00:00:00+00:00",
+      "forecast_age_minutes": 480.0,
+      "lead_minutes": [
+        510,
+        540,
+        570,
+        600
+      ],
+      "valid_time": [
+        "2023-07-18T02:30:00+00:00",
+        "2023-07-18T03:00:00+00:00",
+        "2023-07-18T03:30:00+00:00",
+        "2023-07-18T04:00:00+00:00"
+      ],
+      "native_interval_start": [
+        "2023-07-17T18:00:00+00:00",
+        "2023-07-17T19:00:00+00:00",
+        "2023-07-17T20:00:00+00:00",
+        "2023-07-17T21:00:00+00:00",
+        "2023-07-17T22:00:00+00:00",
+        "2023-07-17T23:00:00+00:00",
+        "2023-07-18T00:00:00+00:00",
+        "2023-07-18T01:00:00+00:00",
+        "2023-07-18T02:00:00+00:00",
+        "2023-07-18T03:00:00+00:00"
+      ],
+      "native_interval_end": [
+        "2023-07-17T19:00:00+00:00",
+        "2023-07-17T20:00:00+00:00",
+        "2023-07-17T21:00:00+00:00",
+        "2023-07-17T22:00:00+00:00",
+        "2023-07-17T23:00:00+00:00",
+        "2023-07-18T00:00:00+00:00",
+        "2023-07-18T01:00:00+00:00",
+        "2023-07-18T02:00:00+00:00",
+        "2023-07-18T03:00:00+00:00",
+        "2023-07-18T04:00:00+00:00"
+      ],
+      "native_cadence_minutes": 60,
+      "output_cadence_minutes": 30,
+      "temporal_disaggregation_method": "uniform_within_native_interval",
+      "source_uri": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/",
+      "source_version": "GFS 0.25deg GRIB2",
+      "variable_metadata": {
+        "product": "prate_mean",
+        "units": "mm/h",
+        "internal_crs": "EPSG:32643",
+        "api_crs": "EPSG:4326",
+        "grid_shape": [
+          4,
+          256,
+          256
+        ]
+      },
+      "valid_mask_summary": {
+        "valid_cells": 262144,
+        "total_cells": 262144,
+        "valid_fraction": 1.0
+      },
+      "artifact_path": "mumbai_monsoon_2023_07_18/20230718T0200Z",
+      "array_sha256": "1a1172735bdde4e820c78e204e808c22e306690852705601f0f715b8062ba53c"
+    },
+    {
+      "event_id": "mumbai_monsoon_2023_07_18",
+      "split": "train",
+      "issue_time": "2023-07-18T02:30:00+00:00",
+      "forecast_reference_time": "2023-07-17T18:00:00+00:00",
+      "availability_time": "2023-07-18T00:00:00+00:00",
+      "forecast_age_minutes": 510.0,
+      "lead_minutes": [
+        540,
+        570,
+        600,
+        630
+      ],
+      "valid_time": [
+        "2023-07-18T03:00:00+00:00",
+        "2023-07-18T03:30:00+00:00",
+        "2023-07-18T04:00:00+00:00",
+        "2023-07-18T04:30:00+00:00"
+      ],
+      "native_interval_start": [
+        "2023-07-17T18:00:00+00:00",
+        "2023-07-17T19:00:00+00:00",
+        "2023-07-17T20:00:00+00:00",
+        "2023-07-17T21:00:00+00:00",
+        "2023-07-17T22:00:00+00:00",
+        "2023-07-17T23:00:00+00:00",
+        "2023-07-18T00:00:00+00:00",
+        "2023-07-18T01:00:00+00:00",
+        "2023-07-18T02:00:00+00:00",
+        "2023-07-18T03:00:00+00:00",
+        "2023-07-18T04:00:00+00:00"
+      ],
+      "native_interval_end": [
+        "2023-07-17T19:00:00+00:00",
+        "2023-07-17T20:00:00+00:00",
+        "2023-07-17T21:00:00+00:00",
+        "2023-07-17T22:00:00+00:00",
+        "2023-07-17T23:00:00+00:00",
+        "2023-07-18T00:00:00+00:00",
+        "2023-07-18T01:00:00+00:00",
+        "2023-07-18T02:00:00+00:00",
+        "2023-07-18T03:00:00+00:00",
+        "2023-07-18T04:00:00+00:00",
+        "2023-07-18T05:00:00+00:00"
+      ],
+      "native_cadence_minutes": 60,
+      "output_cadence_minutes": 30,
+      "temporal_disaggregation_method": "uniform_within_native_interval",
+      "source_uri": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/",
+      "source_version": "GFS 0.25deg GRIB2",
+      "variable_metadata": {
+        "product": "prate_mean",
+        "units": "mm/h",
+        "internal_crs": "EPSG:32643",
+        "api_crs": "EPSG:4326",
+        "grid_shape": [
+          4,
+          256,
+          256
+        ]
+      },
+      "valid_mask_summary": {
+        "valid_cells": 262144,
+        "total_cells": 262144,
+        "valid_fraction": 1.0
+      },
+      "artifact_path": "mumbai_monsoon_2023_07_18/20230718T0230Z",
+      "array_sha256": "3e548992a12686dcae7b4903dc65c0456fea12b6a2a86b65848f455fc5c3d404"
+    },
+    {
+      "event_id": "mumbai_monsoon_2023_07_18",
+      "split": "train",
+      "issue_time": "2023-07-18T03:00:00+00:00",
+      "forecast_reference_time": "2023-07-17T18:00:00+00:00",
+      "availability_time": "2023-07-18T00:00:00+00:00",
+      "forecast_age_minutes": 540.0,
+      "lead_minutes": [
+        570,
+        600,
+        630,
+        660
+      ],
+      "valid_time": [
+        "2023-07-18T03:30:00+00:00",
+        "2023-07-18T04:00:00+00:00",
+        "2023-07-18T04:30:00+00:00",
+        "2023-07-18T05:00:00+00:00"
+      ],
+      "native_interval_start": [
+        "2023-07-17T18:00:00+00:00",
+        "2023-07-17T19:00:00+00:00",
+        "2023-07-17T20:00:00+00:00",
+        "2023-07-17T21:00:00+00:00",
+        "2023-07-17T22:00:00+00:00",
+        "2023-07-17T23:00:00+00:00",
+        "2023-07-18T00:00:00+00:00",
+        "2023-07-18T01:00:00+00:00",
+        "2023-07-18T02:00:00+00:00",
+        "2023-07-18T03:00:00+00:00",
+        "2023-07-18T04:00:00+00:00"
+      ],
+      "native_interval_end": [
+        "2023-07-17T19:00:00+00:00",
+        "2023-07-17T20:00:00+00:00",
+        "2023-07-17T21:00:00+00:00",
+        "2023-07-17T22:00:00+00:00",
+        "2023-07-17T23:00:00+00:00",
+        "2023-07-18T00:00:00+00:00",
+        "2023-07-18T01:00:00+00:00",
+        "2023-07-18T02:00:00+00:00",
+        "2023-07-18T03:00:00+00:00",
+        "2023-07-18T04:00:00+00:00",
+        "2023-07-18T05:00:00+00:00"
+      ],
+      "native_cadence_minutes": 60,
+      "output_cadence_minutes": 30,
+      "temporal_disaggregation_method": "uniform_within_native_interval",
+      "source_uri": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/",
+      "source_version": "GFS 0.25deg GRIB2",
+      "variable_metadata": {
+        "product": "prate_mean",
+        "units": "mm/h",
+        "internal_crs": "EPSG:32643",
+        "api_crs": "EPSG:4326",
+        "grid_shape": [
+          4,
+          256,
+          256
+        ]
+      },
+      "valid_mask_summary": {
+        "valid_cells": 262144,
+        "total_cells": 262144,
+        "valid_fraction": 1.0
+      },
+      "artifact_path": "mumbai_monsoon_2023_07_18/20230718T0300Z",
+      "array_sha256": "14a7dfc1808fd8d488f6e35d32d504c367340cfe8d290022b4ae11f84768d413"
+    },
+    {
+      "event_id": "mumbai_monsoon_2023_07_18",
+      "split": "train",
+      "issue_time": "2023-07-18T03:30:00+00:00",
+      "forecast_reference_time": "2023-07-17T18:00:00+00:00",
+      "availability_time": "2023-07-18T00:00:00+00:00",
+      "forecast_age_minutes": 570.0,
+      "lead_minutes": [
+        600,
+        630,
+        660,
+        690
+      ],
+      "valid_time": [
+        "2023-07-18T04:00:00+00:00",
+        "2023-07-18T04:30:00+00:00",
+        "2023-07-18T05:00:00+00:00",
+        "2023-07-18T05:30:00+00:00"
+      ],
+      "native_interval_start": [
+        "2023-07-17T18:00:00+00:00",
+        "2023-07-17T19:00:00+00:00",
+        "2023-07-17T20:00:00+00:00",
+        "2023-07-17T21:00:00+00:00",
+        "2023-07-17T22:00:00+00:00",
+        "2023-07-17T23:00:00+00:00",
+        "2023-07-18T00:00:00+00:00",
+        "2023-07-18T01:00:00+00:00",
+        "2023-07-18T02:00:00+00:00",
+        "2023-07-18T03:00:00+00:00",
+        "2023-07-18T04:00:00+00:00",
+        "2023-07-18T05:00:00+00:00"
+      ],
+      "native_interval_end": [
+        "2023-07-17T19:00:00+00:00",
+        "2023-07-17T20:00:00+00:00",
+        "2023-07-17T21:00:00+00:00",
+        "2023-07-17T22:00:00+00:00",
+        "2023-07-17T23:00:00+00:00",
+        "2023-07-18T00:00:00+00:00",
+        "2023-07-18T01:00:00+00:00",
+        "2023-07-18T02:00:00+00:00",
+        "2023-07-18T03:00:00+00:00",
+        "2023-07-18T04:00:00+00:00",
+        "2023-07-18T05:00:00+00:00",
+        "2023-07-18T06:00:00+00:00"
+      ],
+      "native_cadence_minutes": 60,
+      "output_cadence_minutes": 30,
+      "temporal_disaggregation_method": "uniform_within_native_interval",
+      "source_uri": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/",
+      "source_version": "GFS 0.25deg GRIB2",
+      "variable_metadata": {
+        "product": "prate_mean",
+        "units": "mm/h",
+        "internal_crs": "EPSG:32643",
+        "api_crs": "EPSG:4326",
+        "grid_shape": [
+          4,
+          256,
+          256
+        ]
+      },
+      "valid_mask_summary": {
+        "valid_cells": 262144,
+        "total_cells": 262144,
+        "valid_fraction": 1.0
+      },
+      "artifact_path": "mumbai_monsoon_2023_07_18/20230718T0330Z",
+      "array_sha256": "31db6f466e815831668555ed81bfecaabc1e4cb9ddd403d74f1764a5ece124fd"
+    },
+    {
+      "event_id": "mumbai_monsoon_2023_07_18",
+      "split": "train",
+      "issue_time": "2023-07-18T04:00:00+00:00",
+      "forecast_reference_time": "2023-07-17T18:00:00+00:00",
+      "availability_time": "2023-07-18T00:00:00+00:00",
+      "forecast_age_minutes": 600.0,
+      "lead_minutes": [
+        630,
+        660,
+        690,
+        720
+      ],
+      "valid_time": [
+        "2023-07-18T04:30:00+00:00",
+        "2023-07-18T05:00:00+00:00",
+        "2023-07-18T05:30:00+00:00",
+        "2023-07-18T06:00:00+00:00"
+      ],
+      "native_interval_start": [
+        "2023-07-17T18:00:00+00:00",
+        "2023-07-17T19:00:00+00:00",
+        "2023-07-17T20:00:00+00:00",
+        "2023-07-17T21:00:00+00:00",
+        "2023-07-17T22:00:00+00:00",
+        "2023-07-17T23:00:00+00:00",
+        "2023-07-18T00:00:00+00:00",
+        "2023-07-18T01:00:00+00:00",
+        "2023-07-18T02:00:00+00:00",
+        "2023-07-18T03:00:00+00:00",
+        "2023-07-18T04:00:00+00:00",
+        "2023-07-18T05:00:00+00:00"
+      ],
+      "native_interval_end": [
+        "2023-07-17T19:00:00+00:00",
+        "2023-07-17T20:00:00+00:00",
+        "2023-07-17T21:00:00+00:00",
+        "2023-07-17T22:00:00+00:00",
+        "2023-07-17T23:00:00+00:00",
+        "2023-07-18T00:00:00+00:00",
+        "2023-07-18T01:00:00+00:00",
+        "2023-07-18T02:00:00+00:00",
+        "2023-07-18T03:00:00+00:00",
+        "2023-07-18T04:00:00+00:00",
+        "2023-07-18T05:00:00+00:00",
+        "2023-07-18T06:00:00+00:00"
+      ],
+      "native_cadence_minutes": 60,
+      "output_cadence_minutes": 30,
+      "temporal_disaggregation_method": "uniform_within_native_interval",
+      "source_uri": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/",
+      "source_version": "GFS 0.25deg GRIB2",
+      "variable_metadata": {
+        "product": "prate_mean",
+        "units": "mm/h",
+        "internal_crs": "EPSG:32643",
+        "api_crs": "EPSG:4326",
+        "grid_shape": [
+          4,
+          256,
+          256
+        ]
+      },
+      "valid_mask_summary": {
+        "valid_cells": 262144,
+        "total_cells": 262144,
+        "valid_fraction": 1.0
+      },
+      "artifact_path": "mumbai_monsoon_2023_07_18/20230718T0400Z",
+      "array_sha256": "9d1e8b27e8b6aaf81d232788bc581cf8855968d197b52903fdda23836b30be95"
+    },
+    {
+      "event_id": "mumbai_monsoon_2023_07_18",
+      "split": "train",
+      "issue_time": "2023-07-18T04:30:00+00:00",
+      "forecast_reference_time": "2023-07-17T18:00:00+00:00",
+      "availability_time": "2023-07-18T00:00:00+00:00",
+      "forecast_age_minutes": 630.0,
+      "lead_minutes": [
+        660,
+        690,
+        720,
+        750
+      ],
+      "valid_time": [
+        "2023-07-18T05:00:00+00:00",
+        "2023-07-18T05:30:00+00:00",
+        "2023-07-18T06:00:00+00:00",
+        "2023-07-18T06:30:00+00:00"
+      ],
+      "native_interval_start": [
+        "2023-07-17T18:00:00+00:00",
+        "2023-07-17T19:00:00+00:00",
+        "2023-07-17T20:00:00+00:00",
+        "2023-07-17T21:00:00+00:00",
+        "2023-07-17T22:00:00+00:00",
+        "2023-07-17T23:00:00+00:00",
+        "2023-07-18T00:00:00+00:00",
+        "2023-07-18T01:00:00+00:00",
+        "2023-07-18T02:00:00+00:00",
+        "2023-07-18T03:00:00+00:00",
+        "2023-07-18T04:00:00+00:00",
+        "2023-07-18T05:00:00+00:00",
+        "2023-07-18T06:00:00+00:00"
+      ],
+      "native_interval_end": [
+        "2023-07-17T19:00:00+00:00",
+        "2023-07-17T20:00:00+00:00",
+        "2023-07-17T21:00:00+00:00",
+        "2023-07-17T22:00:00+00:00",
+        "2023-07-17T23:00:00+00:00",
+        "2023-07-18T00:00:00+00:00",
+        "2023-07-18T01:00:00+00:00",
+        "2023-07-18T02:00:00+00:00",
+        "2023-07-18T03:00:00+00:00",
+        "2023-07-18T04:00:00+00:00",
+        "2023-07-18T05:00:00+00:00",
+        "2023-07-18T06:00:00+00:00",
+        "2023-07-18T07:00:00+00:00"
+      ],
+      "native_cadence_minutes": 60,
+      "output_cadence_minutes": 30,
+      "temporal_disaggregation_method": "uniform_within_native_interval",
+      "source_uri": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/",
+      "source_version": "GFS 0.25deg GRIB2",
+      "variable_metadata": {
+        "product": "prate_mean",
+        "units": "mm/h",
+        "internal_crs": "EPSG:32643",
+        "api_crs": "EPSG:4326",
+        "grid_shape": [
+          4,
+          256,
+          256
+        ]
+      },
+      "valid_mask_summary": {
+        "valid_cells": 262144,
+        "total_cells": 262144,
+        "valid_fraction": 1.0
+      },
+      "artifact_path": "mumbai_monsoon_2023_07_18/20230718T0430Z",
+      "array_sha256": "3a1467ec8a2f25faab970001e6a90b66f21d16025b01e85433942647c4c0e49f"
+    },
+    {
+      "event_id": "mumbai_monsoon_2023_07_18",
+      "split": "train",
+      "issue_time": "2023-07-18T05:00:00+00:00",
+      "forecast_reference_time": "2023-07-17T18:00:00+00:00",
+      "availability_time": "2023-07-18T00:00:00+00:00",
+      "forecast_age_minutes": 660.0,
+      "lead_minutes": [
+        690,
+        720,
+        750,
+        780
+      ],
+      "valid_time": [
+        "2023-07-18T05:30:00+00:00",
+        "2023-07-18T06:00:00+00:00",
+        "2023-07-18T06:30:00+00:00",
+        "2023-07-18T07:00:00+00:00"
+      ],
+      "native_interval_start": [
+        "2023-07-17T18:00:00+00:00",
+        "2023-07-17T19:00:00+00:00",
+        "2023-07-17T20:00:00+00:00",
+        "2023-07-17T21:00:00+00:00",
+        "2023-07-17T22:00:00+00:00",
+        "2023-07-17T23:00:00+00:00",
+        "2023-07-18T00:00:00+00:00",
+        "2023-07-18T01:00:00+00:00",
+        "2023-07-18T02:00:00+00:00",
+        "2023-07-18T03:00:00+00:00",
+        "2023-07-18T04:00:00+00:00",
+        "2023-07-18T05:00:00+00:00",
+        "2023-07-18T06:00:00+00:00"
+      ],
+      "native_interval_end": [
+        "2023-07-17T19:00:00+00:00",
+        "2023-07-17T20:00:00+00:00",
+        "2023-07-17T21:00:00+00:00",
+        "2023-07-17T22:00:00+00:00",
+        "2023-07-17T23:00:00+00:00",
+        "2023-07-18T00:00:00+00:00",
+        "2023-07-18T01:00:00+00:00",
+        "2023-07-18T02:00:00+00:00",
+        "2023-07-18T03:00:00+00:00",
+        "2023-07-18T04:00:00+00:00",
+        "2023-07-18T05:00:00+00:00",
+        "2023-07-18T06:00:00+00:00",
+        "2023-07-18T07:00:00+00:00"
+      ],
+      "native_cadence_minutes": 60,
+      "output_cadence_minutes": 30,
+      "temporal_disaggregation_method": "uniform_within_native_interval",
+      "source_uri": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/",
+      "source_version": "GFS 0.25deg GRIB2",
+      "variable_metadata": {
+        "product": "prate_mean",
+        "units": "mm/h",
+        "internal_crs": "EPSG:32643",
+        "api_crs": "EPSG:4326",
+        "grid_shape": [
+          4,
+          256,
+          256
+        ]
+      },
+      "valid_mask_summary": {
+        "valid_cells": 262144,
+        "total_cells": 262144,
+        "valid_fraction": 1.0
+      },
+      "artifact_path": "mumbai_monsoon_2023_07_18/20230718T0500Z",
+      "array_sha256": "2e6be365ee07f52b819713a923918b8d5bb36cbbda71e55a25a584be58576733"
+    },
+    {
+      "event_id": "mumbai_monsoon_2023_07_18",
+      "split": "train",
+      "issue_time": "2023-07-18T05:30:00+00:00",
+      "forecast_reference_time": "2023-07-17T18:00:00+00:00",
+      "availability_time": "2023-07-18T00:00:00+00:00",
+      "forecast_age_minutes": 690.0,
+      "lead_minutes": [
+        720,
+        750,
+        780,
+        810
+      ],
+      "valid_time": [
+        "2023-07-18T06:00:00+00:00",
+        "2023-07-18T06:30:00+00:00",
+        "2023-07-18T07:00:00+00:00",
+        "2023-07-18T07:30:00+00:00"
+      ],
+      "native_interval_start": [
+        "2023-07-17T18:00:00+00:00",
+        "2023-07-17T19:00:00+00:00",
+        "2023-07-17T20:00:00+00:00",
+        "2023-07-17T21:00:00+00:00",
+        "2023-07-17T22:00:00+00:00",
+        "2023-07-17T23:00:00+00:00",
+        "2023-07-18T00:00:00+00:00",
+        "2023-07-18T01:00:00+00:00",
+        "2023-07-18T02:00:00+00:00",
+        "2023-07-18T03:00:00+00:00",
+        "2023-07-18T04:00:00+00:00",
+        "2023-07-18T05:00:00+00:00",
+        "2023-07-18T06:00:00+00:00",
+        "2023-07-18T07:00:00+00:00"
+      ],
+      "native_interval_end": [
+        "2023-07-17T19:00:00+00:00",
+        "2023-07-17T20:00:00+00:00",
+        "2023-07-17T21:00:00+00:00",
+        "2023-07-17T22:00:00+00:00",
+        "2023-07-17T23:00:00+00:00",
+        "2023-07-18T00:00:00+00:00",
+        "2023-07-18T01:00:00+00:00",
+        "2023-07-18T02:00:00+00:00",
+        "2023-07-18T03:00:00+00:00",
+        "2023-07-18T04:00:00+00:00",
+        "2023-07-18T05:00:00+00:00",
+        "2023-07-18T06:00:00+00:00",
+        "2023-07-18T07:00:00+00:00",
+        "2023-07-18T08:00:00+00:00"
+      ],
+      "native_cadence_minutes": 60,
+      "output_cadence_minutes": 30,
+      "temporal_disaggregation_method": "uniform_within_native_interval",
+      "source_uri": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/",
+      "source_version": "GFS 0.25deg GRIB2",
+      "variable_metadata": {
+        "product": "prate_mean",
+        "units": "mm/h",
+        "internal_crs": "EPSG:32643",
+        "api_crs": "EPSG:4326",
+        "grid_shape": [
+          4,
+          256,
+          256
+        ]
+      },
+      "valid_mask_summary": {
+        "valid_cells": 262144,
+        "total_cells": 262144,
+        "valid_fraction": 1.0
+      },
+      "artifact_path": "mumbai_monsoon_2023_07_18/20230718T0530Z",
+      "array_sha256": "aafcfca4772b39df756ff1b09e8f222a344637255c0611213bf615d45e61a27c"
+    },
+    {
+      "event_id": "mumbai_monsoon_2023_07_18",
+      "split": "train",
+      "issue_time": "2023-07-18T06:00:00+00:00",
+      "forecast_reference_time": "2023-07-18T00:00:00+00:00",
+      "availability_time": "2023-07-18T06:00:00+00:00",
+      "forecast_age_minutes": 360.0,
+      "lead_minutes": [
+        390,
+        420,
+        450,
+        480
+      ],
+      "valid_time": [
+        "2023-07-18T06:30:00+00:00",
+        "2023-07-18T07:00:00+00:00",
+        "2023-07-18T07:30:00+00:00",
+        "2023-07-18T08:00:00+00:00"
+      ],
+      "native_interval_start": [
+        "2023-07-18T00:00:00+00:00",
+        "2023-07-18T01:00:00+00:00",
+        "2023-07-18T02:00:00+00:00",
+        "2023-07-18T03:00:00+00:00",
+        "2023-07-18T04:00:00+00:00",
+        "2023-07-18T05:00:00+00:00",
+        "2023-07-18T06:00:00+00:00",
+        "2023-07-18T07:00:00+00:00"
+      ],
+      "native_interval_end": [
+        "2023-07-18T01:00:00+00:00",
+        "2023-07-18T02:00:00+00:00",
+        "2023-07-18T03:00:00+00:00",
+        "2023-07-18T04:00:00+00:00",
+        "2023-07-18T05:00:00+00:00",
+        "2023-07-18T06:00:00+00:00",
+        "2023-07-18T07:00:00+00:00",
+        "2023-07-18T08:00:00+00:00"
+      ],
+      "native_cadence_minutes": 60,
+      "output_cadence_minutes": 30,
+      "temporal_disaggregation_method": "uniform_within_native_interval",
+      "source_uri": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/",
+      "source_version": "GFS 0.25deg GRIB2",
+      "variable_metadata": {
+        "product": "prate_mean",
+        "units": "mm/h",
+        "internal_crs": "EPSG:32643",
+        "api_crs": "EPSG:4326",
+        "grid_shape": [
+          4,
+          256,
+          256
+        ]
+      },
+      "valid_mask_summary": {
+        "valid_cells": 262144,
+        "total_cells": 262144,
+        "valid_fraction": 1.0
+      },
+      "artifact_path": "mumbai_monsoon_2023_07_18/20230718T0600Z",
+      "array_sha256": "a672efa837da0c868896660d61461a3e641730e1d67d3482d41bdc78b8ddead8"
+    },
+    {
+      "event_id": "mumbai_monsoon_2023_07_18",
+      "split": "train",
+      "issue_time": "2023-07-18T06:30:00+00:00",
+      "forecast_reference_time": "2023-07-18T00:00:00+00:00",
+      "availability_time": "2023-07-18T06:00:00+00:00",
+      "forecast_age_minutes": 390.0,
+      "lead_minutes": [
+        420,
+        450,
+        480,
+        510
+      ],
+      "valid_time": [
+        "2023-07-18T07:00:00+00:00",
+        "2023-07-18T07:30:00+00:00",
+        "2023-07-18T08:00:00+00:00",
+        "2023-07-18T08:30:00+00:00"
+      ],
+      "native_interval_start": [
+        "2023-07-18T00:00:00+00:00",
+        "2023-07-18T01:00:00+00:00",
+        "2023-07-18T02:00:00+00:00",
+        "2023-07-18T03:00:00+00:00",
+        "2023-07-18T04:00:00+00:00",
+        "2023-07-18T05:00:00+00:00",
+        "2023-07-18T06:00:00+00:00",
+        "2023-07-18T07:00:00+00:00",
+        "2023-07-18T08:00:00+00:00"
+      ],
+      "native_interval_end": [
+        "2023-07-18T01:00:00+00:00",
+        "2023-07-18T02:00:00+00:00",
+        "2023-07-18T03:00:00+00:00",
+        "2023-07-18T04:00:00+00:00",
+        "2023-07-18T05:00:00+00:00",
+        "2023-07-18T06:00:00+00:00",
+        "2023-07-18T07:00:00+00:00",
+        "2023-07-18T08:00:00+00:00",
+        "2023-07-18T09:00:00+00:00"
+      ],
+      "native_cadence_minutes": 60,
+      "output_cadence_minutes": 30,
+      "temporal_disaggregation_method": "uniform_within_native_interval",
+      "source_uri": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/",
+      "source_version": "GFS 0.25deg GRIB2",
+      "variable_metadata": {
+        "product": "prate_mean",
+        "units": "mm/h",
+        "internal_crs": "EPSG:32643",
+        "api_crs": "EPSG:4326",
+        "grid_shape": [
+          4,
+          256,
+          256
+        ]
+      },
+      "valid_mask_summary": {
+        "valid_cells": 262144,
+        "total_cells": 262144,
+        "valid_fraction": 1.0
+      },
+      "artifact_path": "mumbai_monsoon_2023_07_18/20230718T0630Z",
+      "array_sha256": "fb35a739bb484b32146ffd4678746b7faa324a5ed788c5bc560e84104f956a33"
+    },
+    {
+      "event_id": "mumbai_monsoon_2023_07_18",
+      "split": "train",
+      "issue_time": "2023-07-18T07:00:00+00:00",
+      "forecast_reference_time": "2023-07-18T00:00:00+00:00",
+      "availability_time": "2023-07-18T06:00:00+00:00",
+      "forecast_age_minutes": 420.0,
+      "lead_minutes": [
+        450,
+        480,
+        510,
+        540
+      ],
+      "valid_time": [
+        "2023-07-18T07:30:00+00:00",
+        "2023-07-18T08:00:00+00:00",
+        "2023-07-18T08:30:00+00:00",
+        "2023-07-18T09:00:00+00:00"
+      ],
+      "native_interval_start": [
+        "2023-07-18T00:00:00+00:00",
+        "2023-07-18T01:00:00+00:00",
+        "2023-07-18T02:00:00+00:00",
+        "2023-07-18T03:00:00+00:00",
+        "2023-07-18T04:00:00+00:00",
+        "2023-07-18T05:00:00+00:00",
+        "2023-07-18T06:00:00+00:00",
+        "2023-07-18T07:00:00+00:00",
+        "2023-07-18T08:00:00+00:00"
+      ],
+      "native_interval_end": [
+        "2023-07-18T01:00:00+00:00",
+        "2023-07-18T02:00:00+00:00",
+        "2023-07-18T03:00:00+00:00",
+        "2023-07-18T04:00:00+00:00",
+        "2023-07-18T05:00:00+00:00",
+        "2023-07-18T06:00:00+00:00",
+        "2023-07-18T07:00:00+00:00",
+        "2023-07-18T08:00:00+00:00",
+        "2023-07-18T09:00:00+00:00"
+      ],
+      "native_cadence_minutes": 60,
+      "output_cadence_minutes": 30,
+      "temporal_disaggregation_method": "uniform_within_native_interval",
+      "source_uri": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/",
+      "source_version": "GFS 0.25deg GRIB2",
+      "variable_metadata": {
+        "product": "prate_mean",
+        "units": "mm/h",
+        "internal_crs": "EPSG:32643",
+        "api_crs": "EPSG:4326",
+        "grid_shape": [
+          4,
+          256,
+          256
+        ]
+      },
+      "valid_mask_summary": {
+        "valid_cells": 262144,
+        "total_cells": 262144,
+        "valid_fraction": 1.0
+      },
+      "artifact_path": "mumbai_monsoon_2023_07_18/20230718T0700Z",
+      "array_sha256": "dfe768cfa54d61ddc10fc0042cd152e59f5d1599d0d89de5ce66a7b2e5dc2913"
+    },
+    {
+      "event_id": "mumbai_monsoon_2023_07_18",
+      "split": "train",
+      "issue_time": "2023-07-18T07:30:00+00:00",
+      "forecast_reference_time": "2023-07-18T00:00:00+00:00",
+      "availability_time": "2023-07-18T06:00:00+00:00",
+      "forecast_age_minutes": 450.0,
+      "lead_minutes": [
+        480,
+        510,
+        540,
+        570
+      ],
+      "valid_time": [
+        "2023-07-18T08:00:00+00:00",
+        "2023-07-18T08:30:00+00:00",
+        "2023-07-18T09:00:00+00:00",
+        "2023-07-18T09:30:00+00:00"
+      ],
+      "native_interval_start": [
+        "2023-07-18T00:00:00+00:00",
+        "2023-07-18T01:00:00+00:00",
+        "2023-07-18T02:00:00+00:00",
+        "2023-07-18T03:00:00+00:00",
+        "2023-07-18T04:00:00+00:00",
+        "2023-07-18T05:00:00+00:00",
+        "2023-07-18T06:00:00+00:00",
+        "2023-07-18T07:00:00+00:00",
+        "2023-07-18T08:00:00+00:00",
+        "2023-07-18T09:00:00+00:00"
+      ],
+      "native_interval_end": [
+        "2023-07-18T01:00:00+00:00",
+        "2023-07-18T02:00:00+00:00",
+        "2023-07-18T03:00:00+00:00",
+        "2023-07-18T04:00:00+00:00",
+        "2023-07-18T05:00:00+00:00",
+        "2023-07-18T06:00:00+00:00",
+        "2023-07-18T07:00:00+00:00",
+        "2023-07-18T08:00:00+00:00",
+        "2023-07-18T09:00:00+00:00",
+        "2023-07-18T10:00:00+00:00"
+      ],
+      "native_cadence_minutes": 60,
+      "output_cadence_minutes": 30,
+      "temporal_disaggregation_method": "uniform_within_native_interval",
+      "source_uri": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/",
+      "source_version": "GFS 0.25deg GRIB2",
+      "variable_metadata": {
+        "product": "prate_mean",
+        "units": "mm/h",
+        "internal_crs": "EPSG:32643",
+        "api_crs": "EPSG:4326",
+        "grid_shape": [
+          4,
+          256,
+          256
+        ]
+      },
+      "valid_mask_summary": {
+        "valid_cells": 262144,
+        "total_cells": 262144,
+        "valid_fraction": 1.0
+      },
+      "artifact_path": "mumbai_monsoon_2023_07_18/20230718T0730Z",
+      "array_sha256": "8d8bac29b42f1dc6f6c19b76882011e3c1dcc05be2c9de112fabbab1716a849b"
+    },
+    {
+      "event_id": "mumbai_monsoon_2023_07_18",
+      "split": "train",
+      "issue_time": "2023-07-18T08:00:00+00:00",
+      "forecast_reference_time": "2023-07-18T00:00:00+00:00",
+      "availability_time": "2023-07-18T06:00:00+00:00",
+      "forecast_age_minutes": 480.0,
+      "lead_minutes": [
+        510,
+        540,
+        570,
+        600
+      ],
+      "valid_time": [
+        "2023-07-18T08:30:00+00:00",
+        "2023-07-18T09:00:00+00:00",
+        "2023-07-18T09:30:00+00:00",
+        "2023-07-18T10:00:00+00:00"
+      ],
+      "native_interval_start": [
+        "2023-07-18T00:00:00+00:00",
+        "2023-07-18T01:00:00+00:00",
+        "2023-07-18T02:00:00+00:00",
+        "2023-07-18T03:00:00+00:00",
+        "2023-07-18T04:00:00+00:00",
+        "2023-07-18T05:00:00+00:00",
+        "2023-07-18T06:00:00+00:00",
+        "2023-07-18T07:00:00+00:00",
+        "2023-07-18T08:00:00+00:00",
+        "2023-07-18T09:00:00+00:00"
+      ],
+      "native_interval_end": [
+        "2023-07-18T01:00:00+00:00",
+        "2023-07-18T02:00:00+00:00",
+        "2023-07-18T03:00:00+00:00",
+        "2023-07-18T04:00:00+00:00",
+        "2023-07-18T05:00:00+00:00",
+        "2023-07-18T06:00:00+00:00",
+        "2023-07-18T07:00:00+00:00",
+        "2023-07-18T08:00:00+00:00",
+        "2023-07-18T09:00:00+00:00",
+        "2023-07-18T10:00:00+00:00"
+      ],
+      "native_cadence_minutes": 60,
+      "output_cadence_minutes": 30,
+      "temporal_disaggregation_method": "uniform_within_native_interval",
+      "source_uri": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/",
+      "source_version": "GFS 0.25deg GRIB2",
+      "variable_metadata": {
+        "product": "prate_mean",
+        "units": "mm/h",
+        "internal_crs": "EPSG:32643",
+        "api_crs": "EPSG:4326",
+        "grid_shape": [
+          4,
+          256,
+          256
+        ]
+      },
+      "valid_mask_summary": {
+        "valid_cells": 262144,
+        "total_cells": 262144,
+        "valid_fraction": 1.0
+      },
+      "artifact_path": "mumbai_monsoon_2023_07_18/20230718T0800Z",
+      "array_sha256": "bcab1660f8753a42a33c3eb0b6cbede4104652734a4482fd6736f2f95ef9ef9e"
+    },
+    {
+      "event_id": "mumbai_monsoon_2023_07_18",
+      "split": "train",
+      "issue_time": "2023-07-18T08:30:00+00:00",
+      "forecast_reference_time": "2023-07-18T00:00:00+00:00",
+      "availability_time": "2023-07-18T06:00:00+00:00",
+      "forecast_age_minutes": 510.0,
+      "lead_minutes": [
+        540,
+        570,
+        600,
+        630
+      ],
+      "valid_time": [
+        "2023-07-18T09:00:00+00:00",
+        "2023-07-18T09:30:00+00:00",
+        "2023-07-18T10:00:00+00:00",
+        "2023-07-18T10:30:00+00:00"
+      ],
+      "native_interval_start": [
+        "2023-07-18T00:00:00+00:00",
+        "2023-07-18T01:00:00+00:00",
+        "2023-07-18T02:00:00+00:00",
+        "2023-07-18T03:00:00+00:00",
+        "2023-07-18T04:00:00+00:00",
+        "2023-07-18T05:00:00+00:00",
+        "2023-07-18T06:00:00+00:00",
+        "2023-07-18T07:00:00+00:00",
+        "2023-07-18T08:00:00+00:00",
+        "2023-07-18T09:00:00+00:00",
+        "2023-07-18T10:00:00+00:00"
+      ],
+      "native_interval_end": [
+        "2023-07-18T01:00:00+00:00",
+        "2023-07-18T02:00:00+00:00",
+        "2023-07-18T03:00:00+00:00",
+        "2023-07-18T04:00:00+00:00",
+        "2023-07-18T05:00:00+00:00",
+        "2023-07-18T06:00:00+00:00",
+        "2023-07-18T07:00:00+00:00",
+        "2023-07-18T08:00:00+00:00",
+        "2023-07-18T09:00:00+00:00",
+        "2023-07-18T10:00:00+00:00",
+        "2023-07-18T11:00:00+00:00"
+      ],
+      "native_cadence_minutes": 60,
+      "output_cadence_minutes": 30,
+      "temporal_disaggregation_method": "uniform_within_native_interval",
+      "source_uri": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/",
+      "source_version": "GFS 0.25deg GRIB2",
+      "variable_metadata": {
+        "product": "prate_mean",
+        "units": "mm/h",
+        "internal_crs": "EPSG:32643",
+        "api_crs": "EPSG:4326",
+        "grid_shape": [
+          4,
+          256,
+          256
+        ]
+      },
+      "valid_mask_summary": {
+        "valid_cells": 262144,
+        "total_cells": 262144,
+        "valid_fraction": 1.0
+      },
+      "artifact_path": "mumbai_monsoon_2023_07_18/20230718T0830Z",
+      "array_sha256": "f8395bf5d7a28472b29c76f7ce02cf83c8551bc77acabd8009a3ba8942ddbb1e"
+    },
+    {
+      "event_id": "mumbai_monsoon_2023_07_18",
+      "split": "train",
+      "issue_time": "2023-07-18T09:00:00+00:00",
+      "forecast_reference_time": "2023-07-18T00:00:00+00:00",
+      "availability_time": "2023-07-18T06:00:00+00:00",
+      "forecast_age_minutes": 540.0,
+      "lead_minutes": [
+        570,
+        600,
+        630,
+        660
+      ],
+      "valid_time": [
+        "2023-07-18T09:30:00+00:00",
+        "2023-07-18T10:00:00+00:00",
+        "2023-07-18T10:30:00+00:00",
+        "2023-07-18T11:00:00+00:00"
+      ],
+      "native_interval_start": [
+        "2023-07-18T00:00:00+00:00",
+        "2023-07-18T01:00:00+00:00",
+        "2023-07-18T02:00:00+00:00",
+        "2023-07-18T03:00:00+00:00",
+        "2023-07-18T04:00:00+00:00",
+        "2023-07-18T05:00:00+00:00",
+        "2023-07-18T06:00:00+00:00",
+        "2023-07-18T07:00:00+00:00",
+        "2023-07-18T08:00:00+00:00",
+        "2023-07-18T09:00:00+00:00",
+        "2023-07-18T10:00:00+00:00"
+      ],
+      "native_interval_end": [
+        "2023-07-18T01:00:00+00:00",
+        "2023-07-18T02:00:00+00:00",
+        "2023-07-18T03:00:00+00:00",
+        "2023-07-18T04:00:00+00:00",
+        "2023-07-18T05:00:00+00:00",
+        "2023-07-18T06:00:00+00:00",
+        "2023-07-18T07:00:00+00:00",
+        "2023-07-18T08:00:00+00:00",
+        "2023-07-18T09:00:00+00:00",
+        "2023-07-18T10:00:00+00:00",
+        "2023-07-18T11:00:00+00:00"
+      ],
+      "native_cadence_minutes": 60,
+      "output_cadence_minutes": 30,
+      "temporal_disaggregation_method": "uniform_within_native_interval",
+      "source_uri": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/",
+      "source_version": "GFS 0.25deg GRIB2",
+      "variable_metadata": {
+        "product": "prate_mean",
+        "units": "mm/h",
+        "internal_crs": "EPSG:32643",
+        "api_crs": "EPSG:4326",
+        "grid_shape": [
+          4,
+          256,
+          256
+        ]
+      },
+      "valid_mask_summary": {
+        "valid_cells": 262144,
+        "total_cells": 262144,
+        "valid_fraction": 1.0
+      },
+      "artifact_path": "mumbai_monsoon_2023_07_18/20230718T0900Z",
+      "array_sha256": "42c7e3f7b75e5501a8e3c1d263285ae50da825c92f1288610fc921c0466a3a79"
+    },
+    {
+      "event_id": "mumbai_monsoon_2023_07_18",
+      "split": "train",
+      "issue_time": "2023-07-18T09:30:00+00:00",
+      "forecast_reference_time": "2023-07-18T00:00:00+00:00",
+      "availability_time": "2023-07-18T06:00:00+00:00",
+      "forecast_age_minutes": 570.0,
+      "lead_minutes": [
+        600,
+        630,
+        660,
+        690
+      ],
+      "valid_time": [
+        "2023-07-18T10:00:00+00:00",
+        "2023-07-18T10:30:00+00:00",
+        "2023-07-18T11:00:00+00:00",
+        "2023-07-18T11:30:00+00:00"
+      ],
+      "native_interval_start": [
+        "2023-07-18T00:00:00+00:00",
+        "2023-07-18T01:00:00+00:00",
+        "2023-07-18T02:00:00+00:00",
+        "2023-07-18T03:00:00+00:00",
+        "2023-07-18T04:00:00+00:00",
+        "2023-07-18T05:00:00+00:00",
+        "2023-07-18T06:00:00+00:00",
+        "2023-07-18T07:00:00+00:00",
+        "2023-07-18T08:00:00+00:00",
+        "2023-07-18T09:00:00+00:00",
+        "2023-07-18T10:00:00+00:00",
+        "2023-07-18T11:00:00+00:00"
+      ],
+      "native_interval_end": [
+        "2023-07-18T01:00:00+00:00",
+        "2023-07-18T02:00:00+00:00",
+        "2023-07-18T03:00:00+00:00",
+        "2023-07-18T04:00:00+00:00",
+        "2023-07-18T05:00:00+00:00",
+        "2023-07-18T06:00:00+00:00",
+        "2023-07-18T07:00:00+00:00",
+        "2023-07-18T08:00:00+00:00",
+        "2023-07-18T09:00:00+00:00",
+        "2023-07-18T10:00:00+00:00",
+        "2023-07-18T11:00:00+00:00",
+        "2023-07-18T12:00:00+00:00"
+      ],
+      "native_cadence_minutes": 60,
+      "output_cadence_minutes": 30,
+      "temporal_disaggregation_method": "uniform_within_native_interval",
+      "source_uri": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/",
+      "source_version": "GFS 0.25deg GRIB2",
+      "variable_metadata": {
+        "product": "prate_mean",
+        "units": "mm/h",
+        "internal_crs": "EPSG:32643",
+        "api_crs": "EPSG:4326",
+        "grid_shape": [
+          4,
+          256,
+          256
+        ]
+      },
+      "valid_mask_summary": {
+        "valid_cells": 262144,
+        "total_cells": 262144,
+        "valid_fraction": 1.0
+      },
+      "artifact_path": "mumbai_monsoon_2023_07_18/20230718T0930Z",
+      "array_sha256": "cb1787a04c934dd76509a781047746008b6b8954d0ea924a1142a840fcafecdd"
+    },
+    {
+      "event_id": "mumbai_monsoon_2023_07_25",
+      "split": "validation",
+      "issue_time": "2023-07-25T01:30:00+00:00",
+      "forecast_reference_time": "2023-07-24T18:00:00+00:00",
+      "availability_time": "2023-07-25T00:00:00+00:00",
+      "forecast_age_minutes": 450.0,
+      "lead_minutes": [
+        480,
+        510,
+        540,
+        570
+      ],
+      "valid_time": [
+        "2023-07-25T02:00:00+00:00",
+        "2023-07-25T02:30:00+00:00",
+        "2023-07-25T03:00:00+00:00",
+        "2023-07-25T03:30:00+00:00"
+      ],
+      "native_interval_start": [
+        "2023-07-24T18:00:00+00:00",
+        "2023-07-24T19:00:00+00:00",
+        "2023-07-24T20:00:00+00:00",
+        "2023-07-24T21:00:00+00:00",
+        "2023-07-24T22:00:00+00:00",
+        "2023-07-24T23:00:00+00:00",
+        "2023-07-25T00:00:00+00:00",
+        "2023-07-25T01:00:00+00:00",
+        "2023-07-25T02:00:00+00:00",
+        "2023-07-25T03:00:00+00:00"
+      ],
+      "native_interval_end": [
+        "2023-07-24T19:00:00+00:00",
+        "2023-07-24T20:00:00+00:00",
+        "2023-07-24T21:00:00+00:00",
+        "2023-07-24T22:00:00+00:00",
+        "2023-07-24T23:00:00+00:00",
+        "2023-07-25T00:00:00+00:00",
+        "2023-07-25T01:00:00+00:00",
+        "2023-07-25T02:00:00+00:00",
+        "2023-07-25T03:00:00+00:00",
+        "2023-07-25T04:00:00+00:00"
+      ],
+      "native_cadence_minutes": 60,
+      "output_cadence_minutes": 30,
+      "temporal_disaggregation_method": "uniform_within_native_interval",
+      "source_uri": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/",
+      "source_version": "GFS 0.25deg GRIB2",
+      "variable_metadata": {
+        "product": "prate_mean",
+        "units": "mm/h",
+        "internal_crs": "EPSG:32643",
+        "api_crs": "EPSG:4326",
+        "grid_shape": [
+          4,
+          256,
+          256
+        ]
+      },
+      "valid_mask_summary": {
+        "valid_cells": 262144,
+        "total_cells": 262144,
+        "valid_fraction": 1.0
+      },
+      "artifact_path": "mumbai_monsoon_2023_07_25/20230725T0130Z",
+      "array_sha256": "b5916ae8e0d0410e6af4af5d71c6f8f0be9ab968ec52e2552ffd2bdd5f6aeb37"
+    },
+    {
+      "event_id": "mumbai_monsoon_2023_07_25",
+      "split": "validation",
+      "issue_time": "2023-07-25T02:00:00+00:00",
+      "forecast_reference_time": "2023-07-24T18:00:00+00:00",
+      "availability_time": "2023-07-25T00:00:00+00:00",
+      "forecast_age_minutes": 480.0,
+      "lead_minutes": [
+        510,
+        540,
+        570,
+        600
+      ],
+      "valid_time": [
+        "2023-07-25T02:30:00+00:00",
+        "2023-07-25T03:00:00+00:00",
+        "2023-07-25T03:30:00+00:00",
+        "2023-07-25T04:00:00+00:00"
+      ],
+      "native_interval_start": [
+        "2023-07-24T18:00:00+00:00",
+        "2023-07-24T19:00:00+00:00",
+        "2023-07-24T20:00:00+00:00",
+        "2023-07-24T21:00:00+00:00",
+        "2023-07-24T22:00:00+00:00",
+        "2023-07-24T23:00:00+00:00",
+        "2023-07-25T00:00:00+00:00",
+        "2023-07-25T01:00:00+00:00",
+        "2023-07-25T02:00:00+00:00",
+        "2023-07-25T03:00:00+00:00"
+      ],
+      "native_interval_end": [
+        "2023-07-24T19:00:00+00:00",
+        "2023-07-24T20:00:00+00:00",
+        "2023-07-24T21:00:00+00:00",
+        "2023-07-24T22:00:00+00:00",
+        "2023-07-24T23:00:00+00:00",
+        "2023-07-25T00:00:00+00:00",
+        "2023-07-25T01:00:00+00:00",
+        "2023-07-25T02:00:00+00:00",
+        "2023-07-25T03:00:00+00:00",
+        "2023-07-25T04:00:00+00:00"
+      ],
+      "native_cadence_minutes": 60,
+      "output_cadence_minutes": 30,
+      "temporal_disaggregation_method": "uniform_within_native_interval",
+      "source_uri": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/",
+      "source_version": "GFS 0.25deg GRIB2",
+      "variable_metadata": {
+        "product": "prate_mean",
+        "units": "mm/h",
+        "internal_crs": "EPSG:32643",
+        "api_crs": "EPSG:4326",
+        "grid_shape": [
+          4,
+          256,
+          256
+        ]
+      },
+      "valid_mask_summary": {
+        "valid_cells": 262144,
+        "total_cells": 262144,
+        "valid_fraction": 1.0
+      },
+      "artifact_path": "mumbai_monsoon_2023_07_25/20230725T0200Z",
+      "array_sha256": "731378d692fb3e3307bc8add970456fe2437b444b045e682c98eb583b7b39f08"
+    },
+    {
+      "event_id": "mumbai_monsoon_2023_07_25",
+      "split": "validation",
+      "issue_time": "2023-07-25T02:30:00+00:00",
+      "forecast_reference_time": "2023-07-24T18:00:00+00:00",
+      "availability_time": "2023-07-25T00:00:00+00:00",
+      "forecast_age_minutes": 510.0,
+      "lead_minutes": [
+        540,
+        570,
+        600,
+        630
+      ],
+      "valid_time": [
+        "2023-07-25T03:00:00+00:00",
+        "2023-07-25T03:30:00+00:00",
+        "2023-07-25T04:00:00+00:00",
+        "2023-07-25T04:30:00+00:00"
+      ],
+      "native_interval_start": [
+        "2023-07-24T18:00:00+00:00",
+        "2023-07-24T19:00:00+00:00",
+        "2023-07-24T20:00:00+00:00",
+        "2023-07-24T21:00:00+00:00",
+        "2023-07-24T22:00:00+00:00",
+        "2023-07-24T23:00:00+00:00",
+        "2023-07-25T00:00:00+00:00",
+        "2023-07-25T01:00:00+00:00",
+        "2023-07-25T02:00:00+00:00",
+        "2023-07-25T03:00:00+00:00",
+        "2023-07-25T04:00:00+00:00"
+      ],
+      "native_interval_end": [
+        "2023-07-24T19:00:00+00:00",
+        "2023-07-24T20:00:00+00:00",
+        "2023-07-24T21:00:00+00:00",
+        "2023-07-24T22:00:00+00:00",
+        "2023-07-24T23:00:00+00:00",
+        "2023-07-25T00:00:00+00:00",
+        "2023-07-25T01:00:00+00:00",
+        "2023-07-25T02:00:00+00:00",
+        "2023-07-25T03:00:00+00:00",
+        "2023-07-25T04:00:00+00:00",
+        "2023-07-25T05:00:00+00:00"
+      ],
+      "native_cadence_minutes": 60,
+      "output_cadence_minutes": 30,
+      "temporal_disaggregation_method": "uniform_within_native_interval",
+      "source_uri": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/",
+      "source_version": "GFS 0.25deg GRIB2",
+      "variable_metadata": {
+        "product": "prate_mean",
+        "units": "mm/h",
+        "internal_crs": "EPSG:32643",
+        "api_crs": "EPSG:4326",
+        "grid_shape": [
+          4,
+          256,
+          256
+        ]
+      },
+      "valid_mask_summary": {
+        "valid_cells": 262144,
+        "total_cells": 262144,
+        "valid_fraction": 1.0
+      },
+      "artifact_path": "mumbai_monsoon_2023_07_25/20230725T0230Z",
+      "array_sha256": "045e31bc47050dc2a523e9d6e0748a6579f8d3492cb57bdfa9eda0d7cb67e305"
+    },
+    {
+      "event_id": "mumbai_monsoon_2023_07_25",
+      "split": "validation",
+      "issue_time": "2023-07-25T03:00:00+00:00",
+      "forecast_reference_time": "2023-07-24T18:00:00+00:00",
+      "availability_time": "2023-07-25T00:00:00+00:00",
+      "forecast_age_minutes": 540.0,
+      "lead_minutes": [
+        570,
+        600,
+        630,
+        660
+      ],
+      "valid_time": [
+        "2023-07-25T03:30:00+00:00",
+        "2023-07-25T04:00:00+00:00",
+        "2023-07-25T04:30:00+00:00",
+        "2023-07-25T05:00:00+00:00"
+      ],
+      "native_interval_start": [
+        "2023-07-24T18:00:00+00:00",
+        "2023-07-24T19:00:00+00:00",
+        "2023-07-24T20:00:00+00:00",
+        "2023-07-24T21:00:00+00:00",
+        "2023-07-24T22:00:00+00:00",
+        "2023-07-24T23:00:00+00:00",
+        "2023-07-25T00:00:00+00:00",
+        "2023-07-25T01:00:00+00:00",
+        "2023-07-25T02:00:00+00:00",
+        "2023-07-25T03:00:00+00:00",
+        "2023-07-25T04:00:00+00:00"
+      ],
+      "native_interval_end": [
+        "2023-07-24T19:00:00+00:00",
+        "2023-07-24T20:00:00+00:00",
+        "2023-07-24T21:00:00+00:00",
+        "2023-07-24T22:00:00+00:00",
+        "2023-07-24T23:00:00+00:00",
+        "2023-07-25T00:00:00+00:00",
+        "2023-07-25T01:00:00+00:00",
+        "2023-07-25T02:00:00+00:00",
+        "2023-07-25T03:00:00+00:00",
+        "2023-07-25T04:00:00+00:00",
+        "2023-07-25T05:00:00+00:00"
+      ],
+      "native_cadence_minutes": 60,
+      "output_cadence_minutes": 30,
+      "temporal_disaggregation_method": "uniform_within_native_interval",
+      "source_uri": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/",
+      "source_version": "GFS 0.25deg GRIB2",
+      "variable_metadata": {
+        "product": "prate_mean",
+        "units": "mm/h",
+        "internal_crs": "EPSG:32643",
+        "api_crs": "EPSG:4326",
+        "grid_shape": [
+          4,
+          256,
+          256
+        ]
+      },
+      "valid_mask_summary": {
+        "valid_cells": 262144,
+        "total_cells": 262144,
+        "valid_fraction": 1.0
+      },
+      "artifact_path": "mumbai_monsoon_2023_07_25/20230725T0300Z",
+      "array_sha256": "e866f584e708ebb41b503f46601e00d7736c48d78aa8e5cc15868f108bcb0a58"
+    },
+    {
+      "event_id": "mumbai_monsoon_2023_07_25",
+      "split": "validation",
+      "issue_time": "2023-07-25T03:30:00+00:00",
+      "forecast_reference_time": "2023-07-24T18:00:00+00:00",
+      "availability_time": "2023-07-25T00:00:00+00:00",
+      "forecast_age_minutes": 570.0,
+      "lead_minutes": [
+        600,
+        630,
+        660,
+        690
+      ],
+      "valid_time": [
+        "2023-07-25T04:00:00+00:00",
+        "2023-07-25T04:30:00+00:00",
+        "2023-07-25T05:00:00+00:00",
+        "2023-07-25T05:30:00+00:00"
+      ],
+      "native_interval_start": [
+        "2023-07-24T18:00:00+00:00",
+        "2023-07-24T19:00:00+00:00",
+        "2023-07-24T20:00:00+00:00",
+        "2023-07-24T21:00:00+00:00",
+        "2023-07-24T22:00:00+00:00",
+        "2023-07-24T23:00:00+00:00",
+        "2023-07-25T00:00:00+00:00",
+        "2023-07-25T01:00:00+00:00",
+        "2023-07-25T02:00:00+00:00",
+        "2023-07-25T03:00:00+00:00",
+        "2023-07-25T04:00:00+00:00",
+        "2023-07-25T05:00:00+00:00"
+      ],
+      "native_interval_end": [
+        "2023-07-24T19:00:00+00:00",
+        "2023-07-24T20:00:00+00:00",
+        "2023-07-24T21:00:00+00:00",
+        "2023-07-24T22:00:00+00:00",
+        "2023-07-24T23:00:00+00:00",
+        "2023-07-25T00:00:00+00:00",
+        "2023-07-25T01:00:00+00:00",
+        "2023-07-25T02:00:00+00:00",
+        "2023-07-25T03:00:00+00:00",
+        "2023-07-25T04:00:00+00:00",
+        "2023-07-25T05:00:00+00:00",
+        "2023-07-25T06:00:00+00:00"
+      ],
+      "native_cadence_minutes": 60,
+      "output_cadence_minutes": 30,
+      "temporal_disaggregation_method": "uniform_within_native_interval",
+      "source_uri": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/",
+      "source_version": "GFS 0.25deg GRIB2",
+      "variable_metadata": {
+        "product": "prate_mean",
+        "units": "mm/h",
+        "internal_crs": "EPSG:32643",
+        "api_crs": "EPSG:4326",
+        "grid_shape": [
+          4,
+          256,
+          256
+        ]
+      },
+      "valid_mask_summary": {
+        "valid_cells": 262144,
+        "total_cells": 262144,
+        "valid_fraction": 1.0
+      },
+      "artifact_path": "mumbai_monsoon_2023_07_25/20230725T0330Z",
+      "array_sha256": "5024298ba2dc9ceec9c854a745a42bd76a9ddef2201eb2031ead92d5cd006a12"
+    },
+    {
+      "event_id": "mumbai_monsoon_2023_07_25",
+      "split": "validation",
+      "issue_time": "2023-07-25T04:00:00+00:00",
+      "forecast_reference_time": "2023-07-24T18:00:00+00:00",
+      "availability_time": "2023-07-25T00:00:00+00:00",
+      "forecast_age_minutes": 600.0,
+      "lead_minutes": [
+        630,
+        660,
+        690,
+        720
+      ],
+      "valid_time": [
+        "2023-07-25T04:30:00+00:00",
+        "2023-07-25T05:00:00+00:00",
+        "2023-07-25T05:30:00+00:00",
+        "2023-07-25T06:00:00+00:00"
+      ],
+      "native_interval_start": [
+        "2023-07-24T18:00:00+00:00",
+        "2023-07-24T19:00:00+00:00",
+        "2023-07-24T20:00:00+00:00",
+        "2023-07-24T21:00:00+00:00",
+        "2023-07-24T22:00:00+00:00",
+        "2023-07-24T23:00:00+00:00",
+        "2023-07-25T00:00:00+00:00",
+        "2023-07-25T01:00:00+00:00",
+        "2023-07-25T02:00:00+00:00",
+        "2023-07-25T03:00:00+00:00",
+        "2023-07-25T04:00:00+00:00",
+        "2023-07-25T05:00:00+00:00"
+      ],
+      "native_interval_end": [
+        "2023-07-24T19:00:00+00:00",
+        "2023-07-24T20:00:00+00:00",
+        "2023-07-24T21:00:00+00:00",
+        "2023-07-24T22:00:00+00:00",
+        "2023-07-24T23:00:00+00:00",
+        "2023-07-25T00:00:00+00:00",
+        "2023-07-25T01:00:00+00:00",
+        "2023-07-25T02:00:00+00:00",
+        "2023-07-25T03:00:00+00:00",
+        "2023-07-25T04:00:00+00:00",
+        "2023-07-25T05:00:00+00:00",
+        "2023-07-25T06:00:00+00:00"
+      ],
+      "native_cadence_minutes": 60,
+      "output_cadence_minutes": 30,
+      "temporal_disaggregation_method": "uniform_within_native_interval",
+      "source_uri": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/",
+      "source_version": "GFS 0.25deg GRIB2",
+      "variable_metadata": {
+        "product": "prate_mean",
+        "units": "mm/h",
+        "internal_crs": "EPSG:32643",
+        "api_crs": "EPSG:4326",
+        "grid_shape": [
+          4,
+          256,
+          256
+        ]
+      },
+      "valid_mask_summary": {
+        "valid_cells": 262144,
+        "total_cells": 262144,
+        "valid_fraction": 1.0
+      },
+      "artifact_path": "mumbai_monsoon_2023_07_25/20230725T0400Z",
+      "array_sha256": "1c739e3d7d9e0b1df4b995d3d5c376193baa188c22a92cd0cbb12a7b78445287"
+    },
+    {
+      "event_id": "mumbai_monsoon_2023_07_25",
+      "split": "validation",
+      "issue_time": "2023-07-25T04:30:00+00:00",
+      "forecast_reference_time": "2023-07-24T18:00:00+00:00",
+      "availability_time": "2023-07-25T00:00:00+00:00",
+      "forecast_age_minutes": 630.0,
+      "lead_minutes": [
+        660,
+        690,
+        720,
+        750
+      ],
+      "valid_time": [
+        "2023-07-25T05:00:00+00:00",
+        "2023-07-25T05:30:00+00:00",
+        "2023-07-25T06:00:00+00:00",
+        "2023-07-25T06:30:00+00:00"
+      ],
+      "native_interval_start": [
+        "2023-07-24T18:00:00+00:00",
+        "2023-07-24T19:00:00+00:00",
+        "2023-07-24T20:00:00+00:00",
+        "2023-07-24T21:00:00+00:00",
+        "2023-07-24T22:00:00+00:00",
+        "2023-07-24T23:00:00+00:00",
+        "2023-07-25T00:00:00+00:00",
+        "2023-07-25T01:00:00+00:00",
+        "2023-07-25T02:00:00+00:00",
+        "2023-07-25T03:00:00+00:00",
+        "2023-07-25T04:00:00+00:00",
+        "2023-07-25T05:00:00+00:00",
+        "2023-07-25T06:00:00+00:00"
+      ],
+      "native_interval_end": [
+        "2023-07-24T19:00:00+00:00",
+        "2023-07-24T20:00:00+00:00",
+        "2023-07-24T21:00:00+00:00",
+        "2023-07-24T22:00:00+00:00",
+        "2023-07-24T23:00:00+00:00",
+        "2023-07-25T00:00:00+00:00",
+        "2023-07-25T01:00:00+00:00",
+        "2023-07-25T02:00:00+00:00",
+        "2023-07-25T03:00:00+00:00",
+        "2023-07-25T04:00:00+00:00",
+        "2023-07-25T05:00:00+00:00",
+        "2023-07-25T06:00:00+00:00",
+        "2023-07-25T07:00:00+00:00"
+      ],
+      "native_cadence_minutes": 60,
+      "output_cadence_minutes": 30,
+      "temporal_disaggregation_method": "uniform_within_native_interval",
+      "source_uri": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/",
+      "source_version": "GFS 0.25deg GRIB2",
+      "variable_metadata": {
+        "product": "prate_mean",
+        "units": "mm/h",
+        "internal_crs": "EPSG:32643",
+        "api_crs": "EPSG:4326",
+        "grid_shape": [
+          4,
+          256,
+          256
+        ]
+      },
+      "valid_mask_summary": {
+        "valid_cells": 262144,
+        "total_cells": 262144,
+        "valid_fraction": 1.0
+      },
+      "artifact_path": "mumbai_monsoon_2023_07_25/20230725T0430Z",
+      "array_sha256": "a0845068119e74bb35c3cde1c781e44ddc5073f051c05b1333da5830f718b34d"
+    },
+    {
+      "event_id": "mumbai_monsoon_2023_07_25",
+      "split": "validation",
+      "issue_time": "2023-07-25T05:00:00+00:00",
+      "forecast_reference_time": "2023-07-24T18:00:00+00:00",
+      "availability_time": "2023-07-25T00:00:00+00:00",
+      "forecast_age_minutes": 660.0,
+      "lead_minutes": [
+        690,
+        720,
+        750,
+        780
+      ],
+      "valid_time": [
+        "2023-07-25T05:30:00+00:00",
+        "2023-07-25T06:00:00+00:00",
+        "2023-07-25T06:30:00+00:00",
+        "2023-07-25T07:00:00+00:00"
+      ],
+      "native_interval_start": [
+        "2023-07-24T18:00:00+00:00",
+        "2023-07-24T19:00:00+00:00",
+        "2023-07-24T20:00:00+00:00",
+        "2023-07-24T21:00:00+00:00",
+        "2023-07-24T22:00:00+00:00",
+        "2023-07-24T23:00:00+00:00",
+        "2023-07-25T00:00:00+00:00",
+        "2023-07-25T01:00:00+00:00",
+        "2023-07-25T02:00:00+00:00",
+        "2023-07-25T03:00:00+00:00",
+        "2023-07-25T04:00:00+00:00",
+        "2023-07-25T05:00:00+00:00",
+        "2023-07-25T06:00:00+00:00"
+      ],
+      "native_interval_end": [
+        "2023-07-24T19:00:00+00:00",
+        "2023-07-24T20:00:00+00:00",
+        "2023-07-24T21:00:00+00:00",
+        "2023-07-24T22:00:00+00:00",
+        "2023-07-24T23:00:00+00:00",
+        "2023-07-25T00:00:00+00:00",
+        "2023-07-25T01:00:00+00:00",
+        "2023-07-25T02:00:00+00:00",
+        "2023-07-25T03:00:00+00:00",
+        "2023-07-25T04:00:00+00:00",
+        "2023-07-25T05:00:00+00:00",
+        "2023-07-25T06:00:00+00:00",
+        "2023-07-25T07:00:00+00:00"
+      ],
+      "native_cadence_minutes": 60,
+      "output_cadence_minutes": 30,
+      "temporal_disaggregation_method": "uniform_within_native_interval",
+      "source_uri": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/",
+      "source_version": "GFS 0.25deg GRIB2",
+      "variable_metadata": {
+        "product": "prate_mean",
+        "units": "mm/h",
+        "internal_crs": "EPSG:32643",
+        "api_crs": "EPSG:4326",
+        "grid_shape": [
+          4,
+          256,
+          256
+        ]
+      },
+      "valid_mask_summary": {
+        "valid_cells": 262144,
+        "total_cells": 262144,
+        "valid_fraction": 1.0
+      },
+      "artifact_path": "mumbai_monsoon_2023_07_25/20230725T0500Z",
+      "array_sha256": "b36c4e0e07dd5ddb80c633b943e709567dd67e2b8a6bebc3776163ac75e9512f"
+    },
+    {
+      "event_id": "mumbai_monsoon_2023_07_25",
+      "split": "validation",
+      "issue_time": "2023-07-25T05:30:00+00:00",
+      "forecast_reference_time": "2023-07-24T18:00:00+00:00",
+      "availability_time": "2023-07-25T00:00:00+00:00",
+      "forecast_age_minutes": 690.0,
+      "lead_minutes": [
+        720,
+        750,
+        780,
+        810
+      ],
+      "valid_time": [
+        "2023-07-25T06:00:00+00:00",
+        "2023-07-25T06:30:00+00:00",
+        "2023-07-25T07:00:00+00:00",
+        "2023-07-25T07:30:00+00:00"
+      ],
+      "native_interval_start": [
+        "2023-07-24T18:00:00+00:00",
+        "2023-07-24T19:00:00+00:00",
+        "2023-07-24T20:00:00+00:00",
+        "2023-07-24T21:00:00+00:00",
+        "2023-07-24T22:00:00+00:00",
+        "2023-07-24T23:00:00+00:00",
+        "2023-07-25T00:00:00+00:00",
+        "2023-07-25T01:00:00+00:00",
+        "2023-07-25T02:00:00+00:00",
+        "2023-07-25T03:00:00+00:00",
+        "2023-07-25T04:00:00+00:00",
+        "2023-07-25T05:00:00+00:00",
+        "2023-07-25T06:00:00+00:00",
+        "2023-07-25T07:00:00+00:00"
+      ],
+      "native_interval_end": [
+        "2023-07-24T19:00:00+00:00",
+        "2023-07-24T20:00:00+00:00",
+        "2023-07-24T21:00:00+00:00",
+        "2023-07-24T22:00:00+00:00",
+        "2023-07-24T23:00:00+00:00",
+        "2023-07-25T00:00:00+00:00",
+        "2023-07-25T01:00:00+00:00",
+        "2023-07-25T02:00:00+00:00",
+        "2023-07-25T03:00:00+00:00",
+        "2023-07-25T04:00:00+00:00",
+        "2023-07-25T05:00:00+00:00",
+        "2023-07-25T06:00:00+00:00",
+        "2023-07-25T07:00:00+00:00",
+        "2023-07-25T08:00:00+00:00"
+      ],
+      "native_cadence_minutes": 60,
+      "output_cadence_minutes": 30,
+      "temporal_disaggregation_method": "uniform_within_native_interval",
+      "source_uri": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/",
+      "source_version": "GFS 0.25deg GRIB2",
+      "variable_metadata": {
+        "product": "prate_mean",
+        "units": "mm/h",
+        "internal_crs": "EPSG:32643",
+        "api_crs": "EPSG:4326",
+        "grid_shape": [
+          4,
+          256,
+          256
+        ]
+      },
+      "valid_mask_summary": {
+        "valid_cells": 262144,
+        "total_cells": 262144,
+        "valid_fraction": 1.0
+      },
+      "artifact_path": "mumbai_monsoon_2023_07_25/20230725T0530Z",
+      "array_sha256": "9281c11854938507bcf3c2bfc234acf3b94b2fcd3f62596323ea061e43dafa47"
+    },
+    {
+      "event_id": "mumbai_monsoon_2023_07_25",
+      "split": "validation",
+      "issue_time": "2023-07-25T06:00:00+00:00",
+      "forecast_reference_time": "2023-07-25T00:00:00+00:00",
+      "availability_time": "2023-07-25T06:00:00+00:00",
+      "forecast_age_minutes": 360.0,
+      "lead_minutes": [
+        390,
+        420,
+        450,
+        480
+      ],
+      "valid_time": [
+        "2023-07-25T06:30:00+00:00",
+        "2023-07-25T07:00:00+00:00",
+        "2023-07-25T07:30:00+00:00",
+        "2023-07-25T08:00:00+00:00"
+      ],
+      "native_interval_start": [
+        "2023-07-25T00:00:00+00:00",
+        "2023-07-25T01:00:00+00:00",
+        "2023-07-25T02:00:00+00:00",
+        "2023-07-25T03:00:00+00:00",
+        "2023-07-25T04:00:00+00:00",
+        "2023-07-25T05:00:00+00:00",
+        "2023-07-25T06:00:00+00:00",
+        "2023-07-25T07:00:00+00:00"
+      ],
+      "native_interval_end": [
+        "2023-07-25T01:00:00+00:00",
+        "2023-07-25T02:00:00+00:00",
+        "2023-07-25T03:00:00+00:00",
+        "2023-07-25T04:00:00+00:00",
+        "2023-07-25T05:00:00+00:00",
+        "2023-07-25T06:00:00+00:00",
+        "2023-07-25T07:00:00+00:00",
+        "2023-07-25T08:00:00+00:00"
+      ],
+      "native_cadence_minutes": 60,
+      "output_cadence_minutes": 30,
+      "temporal_disaggregation_method": "uniform_within_native_interval",
+      "source_uri": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/",
+      "source_version": "GFS 0.25deg GRIB2",
+      "variable_metadata": {
+        "product": "prate_mean",
+        "units": "mm/h",
+        "internal_crs": "EPSG:32643",
+        "api_crs": "EPSG:4326",
+        "grid_shape": [
+          4,
+          256,
+          256
+        ]
+      },
+      "valid_mask_summary": {
+        "valid_cells": 262144,
+        "total_cells": 262144,
+        "valid_fraction": 1.0
+      },
+      "artifact_path": "mumbai_monsoon_2023_07_25/20230725T0600Z",
+      "array_sha256": "7bd4d766d72711a664353548b7a327b5c6b9afa710fe21ac09705802ca7d6680"
+    },
+    {
+      "event_id": "mumbai_monsoon_2023_07_25",
+      "split": "validation",
+      "issue_time": "2023-07-25T06:30:00+00:00",
+      "forecast_reference_time": "2023-07-25T00:00:00+00:00",
+      "availability_time": "2023-07-25T06:00:00+00:00",
+      "forecast_age_minutes": 390.0,
+      "lead_minutes": [
+        420,
+        450,
+        480,
+        510
+      ],
+      "valid_time": [
+        "2023-07-25T07:00:00+00:00",
+        "2023-07-25T07:30:00+00:00",
+        "2023-07-25T08:00:00+00:00",
+        "2023-07-25T08:30:00+00:00"
+      ],
+      "native_interval_start": [
+        "2023-07-25T00:00:00+00:00",
+        "2023-07-25T01:00:00+00:00",
+        "2023-07-25T02:00:00+00:00",
+        "2023-07-25T03:00:00+00:00",
+        "2023-07-25T04:00:00+00:00",
+        "2023-07-25T05:00:00+00:00",
+        "2023-07-25T06:00:00+00:00",
+        "2023-07-25T07:00:00+00:00",
+        "2023-07-25T08:00:00+00:00"
+      ],
+      "native_interval_end": [
+        "2023-07-25T01:00:00+00:00",
+        "2023-07-25T02:00:00+00:00",
+        "2023-07-25T03:00:00+00:00",
+        "2023-07-25T04:00:00+00:00",
+        "2023-07-25T05:00:00+00:00",
+        "2023-07-25T06:00:00+00:00",
+        "2023-07-25T07:00:00+00:00",
+        "2023-07-25T08:00:00+00:00",
+        "2023-07-25T09:00:00+00:00"
+      ],
+      "native_cadence_minutes": 60,
+      "output_cadence_minutes": 30,
+      "temporal_disaggregation_method": "uniform_within_native_interval",
+      "source_uri": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/",
+      "source_version": "GFS 0.25deg GRIB2",
+      "variable_metadata": {
+        "product": "prate_mean",
+        "units": "mm/h",
+        "internal_crs": "EPSG:32643",
+        "api_crs": "EPSG:4326",
+        "grid_shape": [
+          4,
+          256,
+          256
+        ]
+      },
+      "valid_mask_summary": {
+        "valid_cells": 262144,
+        "total_cells": 262144,
+        "valid_fraction": 1.0
+      },
+      "artifact_path": "mumbai_monsoon_2023_07_25/20230725T0630Z",
+      "array_sha256": "c6aa58c2dad2b656e165d12ba4e8e0a31162f642837c947952628d5155b6f336"
+    },
+    {
+      "event_id": "mumbai_monsoon_2023_07_25",
+      "split": "validation",
+      "issue_time": "2023-07-25T07:00:00+00:00",
+      "forecast_reference_time": "2023-07-25T00:00:00+00:00",
+      "availability_time": "2023-07-25T06:00:00+00:00",
+      "forecast_age_minutes": 420.0,
+      "lead_minutes": [
+        450,
+        480,
+        510,
+        540
+      ],
+      "valid_time": [
+        "2023-07-25T07:30:00+00:00",
+        "2023-07-25T08:00:00+00:00",
+        "2023-07-25T08:30:00+00:00",
+        "2023-07-25T09:00:00+00:00"
+      ],
+      "native_interval_start": [
+        "2023-07-25T00:00:00+00:00",
+        "2023-07-25T01:00:00+00:00",
+        "2023-07-25T02:00:00+00:00",
+        "2023-07-25T03:00:00+00:00",
+        "2023-07-25T04:00:00+00:00",
+        "2023-07-25T05:00:00+00:00",
+        "2023-07-25T06:00:00+00:00",
+        "2023-07-25T07:00:00+00:00",
+        "2023-07-25T08:00:00+00:00"
+      ],
+      "native_interval_end": [
+        "2023-07-25T01:00:00+00:00",
+        "2023-07-25T02:00:00+00:00",
+        "2023-07-25T03:00:00+00:00",
+        "2023-07-25T04:00:00+00:00",
+        "2023-07-25T05:00:00+00:00",
+        "2023-07-25T06:00:00+00:00",
+        "2023-07-25T07:00:00+00:00",
+        "2023-07-25T08:00:00+00:00",
+        "2023-07-25T09:00:00+00:00"
+      ],
+      "native_cadence_minutes": 60,
+      "output_cadence_minutes": 30,
+      "temporal_disaggregation_method": "uniform_within_native_interval",
+      "source_uri": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/",
+      "source_version": "GFS 0.25deg GRIB2",
+      "variable_metadata": {
+        "product": "prate_mean",
+        "units": "mm/h",
+        "internal_crs": "EPSG:32643",
+        "api_crs": "EPSG:4326",
+        "grid_shape": [
+          4,
+          256,
+          256
+        ]
+      },
+      "valid_mask_summary": {
+        "valid_cells": 262144,
+        "total_cells": 262144,
+        "valid_fraction": 1.0
+      },
+      "artifact_path": "mumbai_monsoon_2023_07_25/20230725T0700Z",
+      "array_sha256": "582126faffc11fb08c910931a6c9e46a7d1d1bd6901c11274bd483526748981c"
+    },
+    {
+      "event_id": "mumbai_monsoon_2023_07_25",
+      "split": "validation",
+      "issue_time": "2023-07-25T07:30:00+00:00",
+      "forecast_reference_time": "2023-07-25T00:00:00+00:00",
+      "availability_time": "2023-07-25T06:00:00+00:00",
+      "forecast_age_minutes": 450.0,
+      "lead_minutes": [
+        480,
+        510,
+        540,
+        570
+      ],
+      "valid_time": [
+        "2023-07-25T08:00:00+00:00",
+        "2023-07-25T08:30:00+00:00",
+        "2023-07-25T09:00:00+00:00",
+        "2023-07-25T09:30:00+00:00"
+      ],
+      "native_interval_start": [
+        "2023-07-25T00:00:00+00:00",
+        "2023-07-25T01:00:00+00:00",
+        "2023-07-25T02:00:00+00:00",
+        "2023-07-25T03:00:00+00:00",
+        "2023-07-25T04:00:00+00:00",
+        "2023-07-25T05:00:00+00:00",
+        "2023-07-25T06:00:00+00:00",
+        "2023-07-25T07:00:00+00:00",
+        "2023-07-25T08:00:00+00:00",
+        "2023-07-25T09:00:00+00:00"
+      ],
+      "native_interval_end": [
+        "2023-07-25T01:00:00+00:00",
+        "2023-07-25T02:00:00+00:00",
+        "2023-07-25T03:00:00+00:00",
+        "2023-07-25T04:00:00+00:00",
+        "2023-07-25T05:00:00+00:00",
+        "2023-07-25T06:00:00+00:00",
+        "2023-07-25T07:00:00+00:00",
+        "2023-07-25T08:00:00+00:00",
+        "2023-07-25T09:00:00+00:00",
+        "2023-07-25T10:00:00+00:00"
+      ],
+      "native_cadence_minutes": 60,
+      "output_cadence_minutes": 30,
+      "temporal_disaggregation_method": "uniform_within_native_interval",
+      "source_uri": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/",
+      "source_version": "GFS 0.25deg GRIB2",
+      "variable_metadata": {
+        "product": "prate_mean",
+        "units": "mm/h",
+        "internal_crs": "EPSG:32643",
+        "api_crs": "EPSG:4326",
+        "grid_shape": [
+          4,
+          256,
+          256
+        ]
+      },
+      "valid_mask_summary": {
+        "valid_cells": 262144,
+        "total_cells": 262144,
+        "valid_fraction": 1.0
+      },
+      "artifact_path": "mumbai_monsoon_2023_07_25/20230725T0730Z",
+      "array_sha256": "60c6f5d8308436939beb3a26e7ae0eddb79f3e72772f615d60d96eff1f3f64ca"
+    },
+    {
+      "event_id": "mumbai_monsoon_2023_07_25",
+      "split": "validation",
+      "issue_time": "2023-07-25T08:00:00+00:00",
+      "forecast_reference_time": "2023-07-25T00:00:00+00:00",
+      "availability_time": "2023-07-25T06:00:00+00:00",
+      "forecast_age_minutes": 480.0,
+      "lead_minutes": [
+        510,
+        540,
+        570,
+        600
+      ],
+      "valid_time": [
+        "2023-07-25T08:30:00+00:00",
+        "2023-07-25T09:00:00+00:00",
+        "2023-07-25T09:30:00+00:00",
+        "2023-07-25T10:00:00+00:00"
+      ],
+      "native_interval_start": [
+        "2023-07-25T00:00:00+00:00",
+        "2023-07-25T01:00:00+00:00",
+        "2023-07-25T02:00:00+00:00",
+        "2023-07-25T03:00:00+00:00",
+        "2023-07-25T04:00:00+00:00",
+        "2023-07-25T05:00:00+00:00",
+        "2023-07-25T06:00:00+00:00",
+        "2023-07-25T07:00:00+00:00",
+        "2023-07-25T08:00:00+00:00",
+        "2023-07-25T09:00:00+00:00"
+      ],
+      "native_interval_end": [
+        "2023-07-25T01:00:00+00:00",
+        "2023-07-25T02:00:00+00:00",
+        "2023-07-25T03:00:00+00:00",
+        "2023-07-25T04:00:00+00:00",
+        "2023-07-25T05:00:00+00:00",
+        "2023-07-25T06:00:00+00:00",
+        "2023-07-25T07:00:00+00:00",
+        "2023-07-25T08:00:00+00:00",
+        "2023-07-25T09:00:00+00:00",
+        "2023-07-25T10:00:00+00:00"
+      ],
+      "native_cadence_minutes": 60,
+      "output_cadence_minutes": 30,
+      "temporal_disaggregation_method": "uniform_within_native_interval",
+      "source_uri": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/",
+      "source_version": "GFS 0.25deg GRIB2",
+      "variable_metadata": {
+        "product": "prate_mean",
+        "units": "mm/h",
+        "internal_crs": "EPSG:32643",
+        "api_crs": "EPSG:4326",
+        "grid_shape": [
+          4,
+          256,
+          256
+        ]
+      },
+      "valid_mask_summary": {
+        "valid_cells": 262144,
+        "total_cells": 262144,
+        "valid_fraction": 1.0
+      },
+      "artifact_path": "mumbai_monsoon_2023_07_25/20230725T0800Z",
+      "array_sha256": "453ec2edd3fa17d799bf3d9183097012af59018aa92b930eb88a4e3b93f15560"
+    },
+    {
+      "event_id": "mumbai_monsoon_2023_07_25",
+      "split": "validation",
+      "issue_time": "2023-07-25T08:30:00+00:00",
+      "forecast_reference_time": "2023-07-25T00:00:00+00:00",
+      "availability_time": "2023-07-25T06:00:00+00:00",
+      "forecast_age_minutes": 510.0,
+      "lead_minutes": [
+        540,
+        570,
+        600,
+        630
+      ],
+      "valid_time": [
+        "2023-07-25T09:00:00+00:00",
+        "2023-07-25T09:30:00+00:00",
+        "2023-07-25T10:00:00+00:00",
+        "2023-07-25T10:30:00+00:00"
+      ],
+      "native_interval_start": [
+        "2023-07-25T00:00:00+00:00",
+        "2023-07-25T01:00:00+00:00",
+        "2023-07-25T02:00:00+00:00",
+        "2023-07-25T03:00:00+00:00",
+        "2023-07-25T04:00:00+00:00",
+        "2023-07-25T05:00:00+00:00",
+        "2023-07-25T06:00:00+00:00",
+        "2023-07-25T07:00:00+00:00",
+        "2023-07-25T08:00:00+00:00",
+        "2023-07-25T09:00:00+00:00",
+        "2023-07-25T10:00:00+00:00"
+      ],
+      "native_interval_end": [
+        "2023-07-25T01:00:00+00:00",
+        "2023-07-25T02:00:00+00:00",
+        "2023-07-25T03:00:00+00:00",
+        "2023-07-25T04:00:00+00:00",
+        "2023-07-25T05:00:00+00:00",
+        "2023-07-25T06:00:00+00:00",
+        "2023-07-25T07:00:00+00:00",
+        "2023-07-25T08:00:00+00:00",
+        "2023-07-25T09:00:00+00:00",
+        "2023-07-25T10:00:00+00:00",
+        "2023-07-25T11:00:00+00:00"
+      ],
+      "native_cadence_minutes": 60,
+      "output_cadence_minutes": 30,
+      "temporal_disaggregation_method": "uniform_within_native_interval",
+      "source_uri": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/",
+      "source_version": "GFS 0.25deg GRIB2",
+      "variable_metadata": {
+        "product": "prate_mean",
+        "units": "mm/h",
+        "internal_crs": "EPSG:32643",
+        "api_crs": "EPSG:4326",
+        "grid_shape": [
+          4,
+          256,
+          256
+        ]
+      },
+      "valid_mask_summary": {
+        "valid_cells": 262144,
+        "total_cells": 262144,
+        "valid_fraction": 1.0
+      },
+      "artifact_path": "mumbai_monsoon_2023_07_25/20230725T0830Z",
+      "array_sha256": "a64dce5f190f50c59aecb6e6f55410be1aae9b36ace54b6667509f29c87c91d8"
+    },
+    {
+      "event_id": "mumbai_monsoon_2023_07_25",
+      "split": "validation",
+      "issue_time": "2023-07-25T09:00:00+00:00",
+      "forecast_reference_time": "2023-07-25T00:00:00+00:00",
+      "availability_time": "2023-07-25T06:00:00+00:00",
+      "forecast_age_minutes": 540.0,
+      "lead_minutes": [
+        570,
+        600,
+        630,
+        660
+      ],
+      "valid_time": [
+        "2023-07-25T09:30:00+00:00",
+        "2023-07-25T10:00:00+00:00",
+        "2023-07-25T10:30:00+00:00",
+        "2023-07-25T11:00:00+00:00"
+      ],
+      "native_interval_start": [
+        "2023-07-25T00:00:00+00:00",
+        "2023-07-25T01:00:00+00:00",
+        "2023-07-25T02:00:00+00:00",
+        "2023-07-25T03:00:00+00:00",
+        "2023-07-25T04:00:00+00:00",
+        "2023-07-25T05:00:00+00:00",
+        "2023-07-25T06:00:00+00:00",
+        "2023-07-25T07:00:00+00:00",
+        "2023-07-25T08:00:00+00:00",
+        "2023-07-25T09:00:00+00:00",
+        "2023-07-25T10:00:00+00:00"
+      ],
+      "native_interval_end": [
+        "2023-07-25T01:00:00+00:00",
+        "2023-07-25T02:00:00+00:00",
+        "2023-07-25T03:00:00+00:00",
+        "2023-07-25T04:00:00+00:00",
+        "2023-07-25T05:00:00+00:00",
+        "2023-07-25T06:00:00+00:00",
+        "2023-07-25T07:00:00+00:00",
+        "2023-07-25T08:00:00+00:00",
+        "2023-07-25T09:00:00+00:00",
+        "2023-07-25T10:00:00+00:00",
+        "2023-07-25T11:00:00+00:00"
+      ],
+      "native_cadence_minutes": 60,
+      "output_cadence_minutes": 30,
+      "temporal_disaggregation_method": "uniform_within_native_interval",
+      "source_uri": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/",
+      "source_version": "GFS 0.25deg GRIB2",
+      "variable_metadata": {
+        "product": "prate_mean",
+        "units": "mm/h",
+        "internal_crs": "EPSG:32643",
+        "api_crs": "EPSG:4326",
+        "grid_shape": [
+          4,
+          256,
+          256
+        ]
+      },
+      "valid_mask_summary": {
+        "valid_cells": 262144,
+        "total_cells": 262144,
+        "valid_fraction": 1.0
+      },
+      "artifact_path": "mumbai_monsoon_2023_07_25/20230725T0900Z",
+      "array_sha256": "464f03a4a1aa51e548a381c6f835788a4115e951e12aa8d80a3bedb9e5aa5331"
+    },
+    {
+      "event_id": "mumbai_monsoon_2023_07_25",
+      "split": "validation",
+      "issue_time": "2023-07-25T09:30:00+00:00",
+      "forecast_reference_time": "2023-07-25T00:00:00+00:00",
+      "availability_time": "2023-07-25T06:00:00+00:00",
+      "forecast_age_minutes": 570.0,
+      "lead_minutes": [
+        600,
+        630,
+        660,
+        690
+      ],
+      "valid_time": [
+        "2023-07-25T10:00:00+00:00",
+        "2023-07-25T10:30:00+00:00",
+        "2023-07-25T11:00:00+00:00",
+        "2023-07-25T11:30:00+00:00"
+      ],
+      "native_interval_start": [
+        "2023-07-25T00:00:00+00:00",
+        "2023-07-25T01:00:00+00:00",
+        "2023-07-25T02:00:00+00:00",
+        "2023-07-25T03:00:00+00:00",
+        "2023-07-25T04:00:00+00:00",
+        "2023-07-25T05:00:00+00:00",
+        "2023-07-25T06:00:00+00:00",
+        "2023-07-25T07:00:00+00:00",
+        "2023-07-25T08:00:00+00:00",
+        "2023-07-25T09:00:00+00:00",
+        "2023-07-25T10:00:00+00:00",
+        "2023-07-25T11:00:00+00:00"
+      ],
+      "native_interval_end": [
+        "2023-07-25T01:00:00+00:00",
+        "2023-07-25T02:00:00+00:00",
+        "2023-07-25T03:00:00+00:00",
+        "2023-07-25T04:00:00+00:00",
+        "2023-07-25T05:00:00+00:00",
+        "2023-07-25T06:00:00+00:00",
+        "2023-07-25T07:00:00+00:00",
+        "2023-07-25T08:00:00+00:00",
+        "2023-07-25T09:00:00+00:00",
+        "2023-07-25T10:00:00+00:00",
+        "2023-07-25T11:00:00+00:00",
+        "2023-07-25T12:00:00+00:00"
+      ],
+      "native_cadence_minutes": 60,
+      "output_cadence_minutes": 30,
+      "temporal_disaggregation_method": "uniform_within_native_interval",
+      "source_uri": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/",
+      "source_version": "GFS 0.25deg GRIB2",
+      "variable_metadata": {
+        "product": "prate_mean",
+        "units": "mm/h",
+        "internal_crs": "EPSG:32643",
+        "api_crs": "EPSG:4326",
+        "grid_shape": [
+          4,
+          256,
+          256
+        ]
+      },
+      "valid_mask_summary": {
+        "valid_cells": 262144,
+        "total_cells": 262144,
+        "valid_fraction": 1.0
+      },
+      "artifact_path": "mumbai_monsoon_2023_07_25/20230725T0930Z",
+      "array_sha256": "586e3145c673ed57ca220d11fac2926d637dd8bc5fd37d96b4842aa133d5c1ce"
+    }
+  ]
+}

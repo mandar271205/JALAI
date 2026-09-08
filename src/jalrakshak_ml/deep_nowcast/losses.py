@@ -118,3 +118,87 @@ class HeavyRainAwareLoss(nn.Module):
         mae = (pixel_weights * error.abs()).sum() / denominator
         mse = (pixel_weights * error.square()).sum() / denominator
         return mae + self.mse_weight * mse
+
+
+class MultiScalePiecewiseLoss(nn.Module):
+    """Multi-scale physical heavy-rain-aware loss evaluating native and pooled scales.
+
+    Combines intensity-weighted MAE + MSE at native grid (e.g. 128x128)
+    and coarse pooled representation (e.g. 64x64) to penalize both fine-scale
+    displacement and broader rain-structure errors.
+    """
+
+    def __init__(
+        self,
+        *,
+        thresholds_mm_h: list[float] | tuple[float, ...] = (1.0, 5.0, 10.0),
+        weights: list[float] | tuple[float, ...] = (1.0, 2.0, 6.0, 10.0),
+        mse_weight: float = 0.05,
+        coarse_scale_weight: float = 0.25,
+        pool_kernel: int = 2,
+    ):
+        super().__init__()
+        self.base_loss = HeavyRainAwareLoss(
+            thresholds_mm_h=thresholds_mm_h,
+            weights=weights,
+            mse_weight=mse_weight,
+        )
+        self.coarse_scale_weight = float(coarse_scale_weight)
+        self.pool_kernel = int(pool_kernel)
+        self.pool = nn.AvgPool2d(kernel_size=self.pool_kernel, stride=self.pool_kernel)
+
+    def forward(
+        self,
+        prediction_physical: torch.Tensor,
+        target_physical: torch.Tensor,
+        target_mask: torch.Tensor,
+    ) -> torch.Tensor:
+        native_loss = self.base_loss(prediction_physical, target_physical, target_mask)
+        if self.coarse_scale_weight <= 0.0:
+            return native_loss
+
+        # Reshape to [B * horizon, C, H, W] for 2D pooling
+        orig_shape = prediction_physical.shape
+        b, t, c, h, w = orig_shape
+        pred_flat = prediction_physical.reshape(b * t, c, h, w)
+        tgt_flat = target_physical.reshape(b * t, c, h, w)
+        mask_flat = target_mask.reshape(b * t, c, h, w).to(dtype=pred_flat.dtype)
+
+        pred_coarse = self.pool(pred_flat).reshape(b, t, c, h // self.pool_kernel, w // self.pool_kernel)
+        tgt_coarse = self.pool(tgt_flat).reshape(b, t, c, h // self.pool_kernel, w // self.pool_kernel)
+        mask_coarse = (
+            self.pool(mask_flat) >= 0.75
+        ).reshape(b, t, c, h // self.pool_kernel, w // self.pool_kernel)
+
+        coarse_loss = self.base_loss(pred_coarse, tgt_coarse, mask_coarse)
+        return native_loss + self.coarse_scale_weight * coarse_loss
+
+    def compute_components(
+        self,
+        prediction_physical: torch.Tensor,
+        target_physical: torch.Tensor,
+        target_mask: torch.Tensor,
+    ) -> dict[str, float]:
+        with torch.no_grad():
+            native_loss = self.base_loss(prediction_physical, target_physical, target_mask)
+            orig_shape = prediction_physical.shape
+            b, t, c, h, w = orig_shape
+            pred_flat = prediction_physical.reshape(b * t, c, h, w)
+            tgt_flat = target_physical.reshape(b * t, c, h, w)
+            mask_flat = target_mask.reshape(b * t, c, h, w).to(dtype=pred_flat.dtype)
+
+            pred_coarse = self.pool(pred_flat).reshape(b, t, c, h // self.pool_kernel, w // self.pool_kernel)
+            tgt_coarse = self.pool(tgt_flat).reshape(b, t, c, h // self.pool_kernel, w // self.pool_kernel)
+            mask_coarse = (
+                self.pool(mask_flat) >= 0.75
+            ).reshape(b, t, c, h // self.pool_kernel, w // self.pool_kernel)
+
+            coarse_loss = self.base_loss(pred_coarse, tgt_coarse, mask_coarse)
+            total = native_loss + self.coarse_scale_weight * coarse_loss
+            return {
+                "native_loss": float(native_loss.item()),
+                "coarse_loss": float(coarse_loss.item()),
+                "total_loss": float(total.item()),
+            }
+
+

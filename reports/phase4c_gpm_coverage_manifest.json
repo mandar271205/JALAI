@@ -1,0 +1,106 @@
+{
+  "manifest_version": "phase4c_gpm_coverage_v1",
+  "total_events": 5,
+  "splits": {
+    "train": 1,
+    "validation": 1,
+    "test": 3
+  },
+  "events": [
+    {
+      "event_id": "mumbai_monsoon_2023_07_18",
+      "split": "train",
+      "start_time": "2023-07-18T00:00:00+00:00",
+      "end_time": "2023-07-18T11:30:00+00:00",
+      "expected_frames": 24,
+      "available_frames": 24,
+      "missing_frames": 0,
+      "shape": [
+        24,
+        256,
+        256
+      ],
+      "source_version": "NASA GPM IMERG Final Run Half-Hourly V07B",
+      "source_resolution": "0.1 deg (~11 km native), reprojected to EPSG:32643 256x256 (~161m)",
+      "source_cadence": "30-minute",
+      "artifact_uri": "data/processed/training/gpm_imerg_v07_mumbai_monsoon_expanded_v1/events/mumbai_monsoon_2023_07_18.zarr",
+      "checksum_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "event_id": "mumbai_monsoon_2023_07_25",
+      "split": "validation",
+      "start_time": "2023-07-25T00:00:00+00:00",
+      "end_time": "2023-07-25T11:30:00+00:00",
+      "expected_frames": 24,
+      "available_frames": 24,
+      "missing_frames": 0,
+      "shape": [
+        24,
+        256,
+        256
+      ],
+      "source_version": "NASA GPM IMERG Final Run Half-Hourly V07B",
+      "source_resolution": "0.1 deg (~11 km native), reprojected to EPSG:32643 256x256 (~161m)",
+      "source_cadence": "30-minute",
+      "artifact_uri": "data/processed/training/gpm_imerg_v07_mumbai_monsoon_expanded_v1/events/mumbai_monsoon_2023_07_25.zarr",
+      "checksum_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "event_id": "mumbai_monsoon_2023_08_24",
+      "split": "test",
+      "start_time": "2023-08-24T00:00:00+00:00",
+      "end_time": "2023-08-24T11:30:00+00:00",
+      "expected_frames": 24,
+      "available_frames": 24,
+      "missing_frames": 0,
+      "shape": [
+        24,
+        256,
+        256
+      ],
+      "source_version": "NASA GPM IMERG Final Run Half-Hourly V07B",
+      "source_resolution": "0.1 deg (~11 km native), reprojected to EPSG:32643 256x256 (~161m)",
+      "source_cadence": "30-minute",
+      "artifact_uri": "data/processed/training/gpm_imerg_v07_mumbai_monsoon_expanded_v1/events/mumbai_monsoon_2023_08_24.zarr",
+      "checksum_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "event_id": "mumbai_monsoon_2024_08_04",
+      "split": "test",
+      "start_time": "2024-08-04T00:00:00+00:00",
+      "end_time": "2024-08-04T11:30:00+00:00",
+      "expected_frames": 24,
+      "available_frames": 24,
+      "missing_frames": 0,
+      "shape": [
+        24,
+        256,
+        256
+      ],
+      "source_version": "NASA GPM IMERG Final Run Half-Hourly V07B",
+      "source_resolution": "0.1 deg (~11 km native), reprojected to EPSG:32643 256x256 (~161m)",
+      "source_cadence": "30-minute",
+      "artifact_uri": "data/processed/training/gpm_imerg_v07_mumbai_monsoon_expanded_v1/events/mumbai_monsoon_2024_08_04.zarr",
+      "checksum_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "event_id": "mumbai_monsoon_2024_09_05",
+      "split": "test",
+      "start_time": "2024-09-05T00:00:00+00:00",
+      "end_time": "2024-09-05T11:30:00+00:00",
+      "expected_frames": 24,
+      "available_frames": 24,
+      "missing_frames": 0,
+      "shape": [
+        24,
+        256,
+        256
+      ],
+      "source_version": "NASA GPM IMERG Final Run Half-Hourly V07B",
+      "source_resolution": "0.1 deg (~11 km native), reprojected to EPSG:32643 256x256 (~161m)",
+      "source_cadence": "30-minute",
+      "artifact_uri": "data/processed/training/gpm_imerg_v07_mumbai_monsoon_expanded_v1/events/mumbai_monsoon_2024_09_05.zarr",
+      "checksum_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+model_version: probabilistic_nowcast_v1
+calibrator_artifact: models/probabilistic/isotonic_calibrator_v1.pkl
+calibrator_sha256: 784832390579e7b19b31a43b4c2d1fd994539ac66b76f202501e1f57074801c5
+calibration_method: isotonic_regression
+calibration_split: validation
+thresholds_mm_h:
+- 0.1
+- 1.0
+- 5.0
+- 10.0
+horizons_min:
+- 30
+- 60
+- 90
+- 120
+min_support_count: 50
+calibrated_status:
+  '30_0.1': CALIBRATED_ISOTONIC
+  '30_1.0': CALIBRATED_ISOTONIC
+  '30_5.0': CALIBRATED_ISOTONIC
+  '30_10.0': INSUFFICIENT_SUPPORT
+  '60_0.1': CALIBRATED_ISOTONIC
+  '60_1.0': CALIBRATED_ISOTONIC
+  '60_5.0': CALIBRATED_ISOTONIC
+  '60_10.0': INSUFFICIENT_SUPPORT
+  '90_0.1': CALIBRATED_ISOTONIC
+  '90_1.0': CALIBRATED_ISOTONIC
+  '90_5.0': CALIBRATED_ISOTONIC
+  '90_10.0': CALIBRATED_ISOTONIC
+  '120_0.1': INSUFFICIENT_SUPPORT
+  '120_1.0': CALIBRATED_ISOTONIC
+  '120_5.0': CALIBRATED_ISOTONIC
+  '120_10.0': CALIBRATED_ISOTONIC

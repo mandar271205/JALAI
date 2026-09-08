@@ -1,0 +1,15 @@
+{
+  "data_version": "gfs_mumbai_locked_test_replay_v1",
+  "benchmark_sha256": "6fa2fe0a1ed68850e92010bbf55144a2af263243d1decad8110ae44fa2943a8b",
+  "verified_samples": 51,
+  "verified_output_cells": 13369344,
+  "minimum_mm_h": 0.020362775772809982,
+  "maximum_mm_h": 14.152029991149902,
+  "hashes_grid_schedule_asof_and_temporal_mass_checks": "PASSED",
+  "availability_is_assumed_not_observed": true,
+  "source_message_count": 78,
+  "source_message_bytes": 49895365,
+  "scoped_tests_passed": 40,
+  "scoped_test_warnings": 12,
+  "fusion_implementation_started": false
+}

@@ -12,6 +12,7 @@ data/interim/
 data/processed/training/
 data/processed/cubes/
 data/processed/demo/
+data/processed/gfs_replay/
 *.zarr/
 *.zarr
 *.hdf5
@@ -23,6 +24,8 @@ test_dem_output.tif
 test_gfs.grib2
 cache/
 tmp.py
+tmp/
+out.log
 
 # Large ML artifacts
 *.ckpt

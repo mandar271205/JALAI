@@ -1,0 +1,141 @@
+{
+  "report_version": "phase4d_multisource_status_v1",
+  "generated_at": "2026-09-08T21:55:00Z",
+  "domain": "Mumbai Metropolitan Region (MMR)",
+  "canonical_grid": {
+    "crs": "EPSG:32643",
+    "api_crs": "EPSG:4326",
+    "width": 256,
+    "height": 256,
+    "bbox_wgs84": [72.75, 18.85, 73.05, 19.30]
+  },
+  "operational_state_locked": {
+    "OPERATIONAL_NOWCASTER": "PySTEPS",
+    "OPERATIONAL_FUSION_PROVIDER": "NONE",
+    "FUSION_RESEARCH_STATUS": "PySTEPS remains best deterministic overall; learned fusion did not beat PySTEPS overall; fusion useful at longer lead times."
+  },
+  "source_status_classification": {
+    "AVAILABLE NOW": [
+      {
+        "source_id": "noaa_gfs_0p25",
+        "source_name": "NOAA GFS (0.25 Degree NWP)",
+        "provider": "NOAA NCEP",
+        "native_resolution": "0.25 deg (~28 km)",
+        "native_cadence_minutes": 60,
+        "operational_latency_minutes": 360,
+        "eligibility_mode": "REALTIME_ELIGIBLE",
+        "supported_variables": [
+          "precipitation_rate (prate)",
+          "accumulated_precipitation (tp)",
+          "10m_u_wind (10u)",
+          "10m_v_wind (10v)",
+          "derived_10m_wind_speed",
+          "derived_10m_wind_direction",
+          "2m_temperature (2t)",
+          "2m_relative_humidity (2r)",
+          "surface_pressure (sp)",
+          "surface_cape (cape)",
+          "precipitable_water (pwat)"
+        ],
+        "access_mode": "AWS S3 Open Data (s3://noaa-gfs-bdp-pds/)",
+        "auth_required": false
+      }
+    ],
+    "ARCHIVE-READY": [
+      {
+        "source_id": "nasa_gpm_imerg_v07",
+        "source_name": "NASA GPM IMERG V07 (Final Run)",
+        "provider": "NASA / JAXA",
+        "native_resolution": "0.1 deg (~11 km)",
+        "native_cadence_minutes": 30,
+        "operational_latency_minutes": 150000,
+        "eligibility_mode": "GROUND_TRUTH_ONLY",
+        "supported_variables": ["precipitation_rate", "precipitation_uncalibrated", "quality_index"],
+        "access_mode": "Local processed training corpus (120 frames across 5 events) / Earthdata HTTPS",
+        "auth_required": true,
+        "access_notes": "Final run uses monthly rain gauge calibration with ~3.5 months latency. Strictly GROUND_TRUTH_ONLY."
+      },
+      {
+        "source_id": "copernicus_dem_glo30",
+        "source_name": "Copernicus DEM (GLO-30)",
+        "provider": "ESA / Copernicus",
+        "native_resolution": "30 m",
+        "native_cadence_minutes": 0,
+        "operational_latency_minutes": 0,
+        "eligibility_mode": "STATIC_CONTEXT",
+        "supported_variables": ["elevation", "slope", "flow_accumulation", "low_lying_index"],
+        "access_mode": "Local processed static arrays in data/processed/static/",
+        "auth_required": false
+      },
+      {
+        "source_id": "osm_infrastructure",
+        "source_name": "OpenStreetMap Infrastructure Layers",
+        "provider": "OSM Contributors",
+        "native_resolution": "Vector geometry",
+        "native_cadence_minutes": 0,
+        "operational_latency_minutes": 0,
+        "eligibility_mode": "STATIC_CONTEXT",
+        "supported_variables": ["roads", "railways", "waterways", "critical_assets"],
+        "access_mode": "Local processed GeoJSON in data/processed/static/",
+        "auth_required": false
+      }
+    ],
+    "ADAPTER READY": [
+      {
+        "source_id": "imd_dwr_mumbai",
+        "source_name": "IMD Doppler Weather Radar (Mumbai Colaba / Veravali)",
+        "adapter_class": "jalrakshak_ml.weather.adapters.imd_radar.IMDRadarAdapter",
+        "supported_products": ["reflectivity_dbz", "rainfall_rate_mm_h", "radial_velocity_ms", "quality_mask"],
+        "zr_conversion_methods": ["marshall_palmer", "tropical_monsoon", "deep_convection"],
+        "current_status": "AUTH_REQUIRED / LIVE_ACCESS_UNVERIFIED"
+      },
+      {
+        "source_id": "mosdac_insat_3d_3dr",
+        "source_name": "ISRO MOSDAC INSAT-3D / INSAT-3DR",
+        "adapter_class": "jalrakshak_ml.weather.adapters.mosdac_insat.MOSDACAdapter",
+        "supported_products": ["tir1_brightness_temp", "tir2_brightness_temp", "water_vapor_brightness_temp", "cloud_top_temp", "satellite_qpe_hem", "satellite_qpe_imsra"],
+        "current_status": "AUTH_REQUIRED / LIVE_ACCESS_UNVERIFIED"
+      }
+    ],
+    "AUTH REQUIRED": [
+      {
+        "source_id": "imd_dwr_mumbai",
+        "provider": "IMD",
+        "requirement": "Formal institutional MoU with India Meteorological Department. Direct radar feeds are restricted."
+      },
+      {
+        "source_id": "mosdac_insat_3d_3dr",
+        "provider": "ISRO_MOSDAC",
+        "requirement": "User registration and API authorization token at https://www.mosdac.gov.in/."
+      },
+      {
+        "source_id": "nasa_gpm_imerg_nrt",
+        "provider": "NASA GES DISC",
+        "requirement": "Earthdata Login credentials in ~/.netrc for near-real-time early/late run downloads."
+      }
+    ],
+    "UNAVAILABLE": [
+      {
+        "source_id": "imd_dwr_raw_volume_scans",
+        "reason": "No raw .iris / .h5 radar volume scans present in local repository. Zero synthetic radar grids will be fabricated."
+      },
+      {
+        "source_id": "insat3d_raw_l1b_granules",
+        "reason": "No raw HDF5/NetCDF INSAT satellite granules present in local repository. Zero synthetic satellite imagery will be fabricated."
+      }
+    ]
+  },
+  "degradation_and_fallback_policy": {
+    "hierarchy": [
+      "Level 1 (Full): Radar primary nowcast observation + Satellite cloud context + GFS NWP synoptic guidance.",
+      "Level 2 (Radar Unavailable): Satellite (INSAT/GPM) primary observation + GFS NWP guidance.",
+      "Level 3 (Radar & Satellite Unavailable): GPM historical baseline or persistence observation + GFS NWP guidance.",
+      "Level 4 (Degraded Mode): Single available observation or NWP-only mode with missing-channel mask set."
+    ],
+    "invariants": [
+      "Fallback sources are never relabeled (e.g. GPM is never labeled as radar).",
+      "Availability time must strictly precede or equal simulated issue time.",
+      "Quality score in [0, 1] is decoupled from forecast confidence in [0, 1]."
+    ]
+  }
+}

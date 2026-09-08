@@ -1,0 +1,96 @@
+data:
+  version: "gpm_imerg_v07_mumbai_monsoon_expanded_v1"
+  source_version: "IMERG_V07"
+  temporal_step_minutes: 30
+  pilot_config: "configs/pilot/mumbai.yaml"
+  raw_dir: "data/raw/weather/gpm"
+  output_root: "data/processed/training"
+
+acquisition:
+  max_frames: 120
+  max_download_gb: 0.80
+  max_total_raw_gb: 1.50
+  estimated_granule_mb: 8.0
+  download_workers: 4
+
+events:
+  - id: "mumbai_monsoon_2023_07_18"
+    start: "2023-07-18T00:00:00+00:00"
+    end: "2023-07-18T12:00:00+00:00"
+    split: "train"
+  - id: "mumbai_monsoon_2023_07_25"
+    start: "2023-07-25T00:00:00+00:00"
+    end: "2023-07-25T12:00:00+00:00"
+    split: "validation"
+  - id: "mumbai_monsoon_2023_08_24"
+    start: "2023-08-24T00:00:00+00:00"
+    end: "2023-08-24T12:00:00+00:00"
+    split: "test"
+  - id: "mumbai_monsoon_2024_08_04"
+    start: "2024-08-04T00:00:00+00:00"
+    end: "2024-08-04T12:00:00+00:00"
+    split: "test"
+  - id: "mumbai_monsoon_2024_09_05"
+    start: "2024-09-05T00:00:00+00:00"
+    end: "2024-09-05T12:00:00+00:00"
+    split: "test"
+
+dataset:
+  history_length: 4
+  prediction_horizon: 4
+  input_channels: ["rainfall"]
+  crop_size: [128, 128]
+  crop_origin: null
+  normalization: "log1p_percentile_scale"
+  normalization_percentile: 99.5
+
+model:
+  version: "convlstm_mumbai_heavyrain_v2"
+  forecast_mode: "persistence_residual_physical"
+  hidden_channels: [16, 16]
+  num_layers: 2
+  kernel_size: 3
+  head_channels: 16
+
+training:
+  seed: 26071
+  device: "auto"
+  batch_size: 4
+  num_workers: 0
+  epochs: 40
+  learning_rate: 0.001
+  weight_decay: 0.0001
+  gradient_clip_norm: 1.0
+  early_stopping_patience: 8
+  scheduler:
+    name: "reduce_on_plateau"
+    patience: 2
+    factor: 0.5
+  sampling:
+    enabled: true
+    thresholds_mm_h: [1.0, 5.0, 10.0]
+    weights: [1.0, 2.0, 4.0, 6.0]
+    replacement: true
+    num_samples: null
+  loss:
+    name: "physical_piecewise_weighted_mae_plus_mse"
+    thresholds_mm_h: [1.0, 5.0, 10.0]
+    weights: [1.0, 2.0, 6.0, 10.0]
+    mse_weight: 0.05
+  validation_score:
+    name: "mae_heavyrain_skill"
+    heavy_threshold_mm_h: 5.0
+    weights:
+      mae: 1.0
+      csi: 2.0
+      pod: 1.0
+      far: 0.5
+
+evaluation:
+  thresholds_mm_h: [0.1, 1.0, 5.0]
+  horizons_minutes: [30, 60, 90, 120]
+
+artifacts:
+  model_dir: "models/nowcast"
+  evaluation_report: "reports/phase4_fusion_evaluation.json"
+  figure_dir: "reports/phase4_figures"

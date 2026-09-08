@@ -1,0 +1,302 @@
+version: "multisource_channels_v1"
+created_at: "2026-09-08T22:20:00Z"
+description: "Input channel inventory and semantics manifest for Phase 4E deep nowcasting tournament"
+
+channels:
+  rainfall_gpm:
+    name: "rainfall_gpm"
+    source: "NASA GPM IMERG Final Run V07"
+    variable: "precipitationCal"
+    units: "mm/h"
+    physical_range: [0.0, 300.0]
+    native_resolution: "0.1 deg (~10 km)"
+    native_cadence_minutes: 30
+    canonical_resolution: "0.002 deg (~200 m, 128x128 crop or 256x256 MMR)"
+    availability_semantics: "as_of_issue_time_historical_window"
+    temporal_mode: "sequential_history"
+    history_length_steps: 4
+    normalization:
+      kind: "log1p_percentile_scale"
+      fitted_split: "train"
+      train_scale_parameter: 1.8344
+    missing_data_behavior: "fail_closed_for_observation"
+    REAL_DATA: true
+    operational_status: "ACTIVE_OPERATIONAL"
+
+  gfs_precipitation:
+    name: "gfs_precipitation"
+    source: "NOAA GFS 0.25-deg Operational Numerical Weather Prediction"
+    variable: "prate"
+    units: "mm/h"
+    physical_range: [0.0, 250.0]
+    native_resolution: "0.25 deg (~25 km)"
+    native_cadence_minutes: 60
+    canonical_resolution: "0.002 deg (~200 m, 128x128 crop or 256x256 MMR)"
+    availability_semantics: "latest_prior_cycle_as_of_issue_time"
+    temporal_mode: "forecast_horizons_plus_30_to_120"
+    normalization:
+      kind: "log1p_percentile_scale"
+      fitted_split: "train"
+      train_scale_parameter: 1.8344
+    missing_data_behavior: "zero_fill_with_missing_channel_mask"
+    REAL_DATA: true
+    operational_status: "ACTIVE_REPLAY"
+
+  gfs_u10:
+    name: "gfs_u10"
+    source: "NOAA GFS 0.25-deg"
+    variable: "10u"
+    units: "m/s"
+    physical_range: [-120.0, 120.0]
+    native_resolution: "0.25 deg (~25 km)"
+    native_cadence_minutes: 60
+    canonical_resolution: "0.002 deg (~200 m)"
+    availability_semantics: "latest_prior_cycle_as_of_issue_time"
+    temporal_mode: "issue_time_context"
+    normalization:
+      kind: "standard_zscore"
+      fitted_split: "train"
+      train_mean: 4.85
+      train_std: 3.92
+    missing_data_behavior: "zero_fill_with_missing_channel_mask"
+    REAL_DATA: true
+    operational_status: "ACTIVE_REPLAY_ANCILLARY"
+
+  gfs_v10:
+    name: "gfs_v10"
+    source: "NOAA GFS 0.25-deg"
+    variable: "10v"
+    units: "m/s"
+    physical_range: [-120.0, 120.0]
+    native_resolution: "0.25 deg (~25 km)"
+    native_cadence_minutes: 60
+    canonical_resolution: "0.002 deg (~200 m)"
+    availability_semantics: "latest_prior_cycle_as_of_issue_time"
+    temporal_mode: "issue_time_context"
+    normalization:
+      kind: "standard_zscore"
+      fitted_split: "train"
+      train_mean: 2.15
+      train_std: 3.80
+    missing_data_behavior: "zero_fill_with_missing_channel_mask"
+    REAL_DATA: true
+    operational_status: "ACTIVE_REPLAY_ANCILLARY"
+
+  gfs_wind_speed:
+    name: "gfs_wind_speed"
+    source: "NOAA GFS 0.25-deg"
+    variable: "sqrt(u10^2 + v10^2)"
+    units: "m/s"
+    physical_range: [0.0, 120.0]
+    native_resolution: "0.25 deg (~25 km)"
+    native_cadence_minutes: 60
+    canonical_resolution: "0.002 deg (~200 m)"
+    availability_semantics: "latest_prior_cycle_as_of_issue_time"
+    temporal_mode: "issue_time_context"
+    normalization:
+      kind: "standard_zscore"
+      fitted_split: "train"
+      train_mean: 5.60
+      train_std: 3.50
+    missing_data_behavior: "zero_fill_with_missing_channel_mask"
+    REAL_DATA: true
+    operational_status: "ACTIVE_REPLAY_ANCILLARY"
+
+  gfs_t2m:
+    name: "gfs_t2m"
+    source: "NOAA GFS 0.25-deg"
+    variable: "2t"
+    units: "K"
+    physical_range: [180.0, 345.0]
+    native_resolution: "0.25 deg (~25 km)"
+    native_cadence_minutes: 60
+    canonical_resolution: "0.002 deg (~200 m)"
+    availability_semantics: "latest_prior_cycle_as_of_issue_time"
+    temporal_mode: "issue_time_context"
+    normalization:
+      kind: "standard_zscore"
+      fitted_split: "train"
+      train_mean: 298.5
+      train_std: 2.80
+    missing_data_behavior: "zero_fill_with_missing_channel_mask"
+    REAL_DATA: true
+    operational_status: "ACTIVE_REPLAY_ANCILLARY"
+
+  gfs_rh2m:
+    name: "gfs_rh2m"
+    source: "NOAA GFS 0.25-deg"
+    variable: "2r"
+    units: "%"
+    physical_range: [0.0, 100.0]
+    native_resolution: "0.25 deg (~25 km)"
+    native_cadence_minutes: 60
+    canonical_resolution: "0.002 deg (~200 m)"
+    availability_semantics: "latest_prior_cycle_as_of_issue_time"
+    temporal_mode: "issue_time_context"
+    normalization:
+      kind: "standard_zscore"
+      fitted_split: "train"
+      train_mean: 86.4
+      train_std: 9.1
+    missing_data_behavior: "zero_fill_with_missing_channel_mask"
+    REAL_DATA: true
+    operational_status: "ACTIVE_REPLAY_ANCILLARY"
+
+  gfs_sp:
+    name: "gfs_sp"
+    source: "NOAA GFS 0.25-deg"
+    variable: "sp"
+    units: "Pa"
+    physical_range: [50000.0, 110000.0]
+    native_resolution: "0.25 deg (~25 km)"
+    native_cadence_minutes: 60
+    canonical_resolution: "0.002 deg (~200 m)"
+    availability_semantics: "latest_prior_cycle_as_of_issue_time"
+    temporal_mode: "issue_time_context"
+    normalization:
+      kind: "standard_zscore"
+      fitted_split: "train"
+      train_mean: 100400.0
+      train_std: 650.0
+    missing_data_behavior: "zero_fill_with_missing_channel_mask"
+    REAL_DATA: true
+    operational_status: "ACTIVE_REPLAY_ANCILLARY"
+
+  gfs_cape:
+    name: "gfs_cape"
+    source: "NOAA GFS 0.25-deg"
+    variable: "cape"
+    units: "J/kg"
+    physical_range: [0.0, 8000.0]
+    native_resolution: "0.25 deg (~25 km)"
+    native_cadence_minutes: 60
+    canonical_resolution: "0.002 deg (~200 m)"
+    availability_semantics: "latest_prior_cycle_as_of_issue_time"
+    temporal_mode: "issue_time_context"
+    normalization:
+      kind: "standard_zscore"
+      fitted_split: "train"
+      train_mean: 920.0
+      train_std: 540.0
+    missing_data_behavior: "zero_fill_with_missing_channel_mask"
+    REAL_DATA: true
+    operational_status: "ACTIVE_REPLAY_ANCILLARY"
+
+  gfs_pwat:
+    name: "gfs_pwat"
+    source: "NOAA GFS 0.25-deg"
+    variable: "pwat"
+    units: "kg/m^2"
+    physical_range: [0.0, 150.0]
+    native_resolution: "0.25 deg (~25 km)"
+    native_cadence_minutes: 60
+    canonical_resolution: "0.002 deg (~200 m)"
+    availability_semantics: "latest_prior_cycle_as_of_issue_time"
+    temporal_mode: "issue_time_context"
+    normalization:
+      kind: "standard_zscore"
+      fitted_split: "train"
+      train_mean: 58.0
+      train_std: 8.5
+    missing_data_behavior: "zero_fill_with_missing_channel_mask"
+    REAL_DATA: true
+    operational_status: "ACTIVE_REPLAY_ANCILLARY"
+
+  static_elevation:
+    name: "static_elevation"
+    source: "SRTM / CartoDEM"
+    variable: "elevation"
+    units: "m"
+    physical_range: [-5.0, 1500.0]
+    native_resolution: "30 m"
+    native_cadence_minutes: 0
+    canonical_resolution: "0.002 deg (~200 m)"
+    availability_semantics: "static_precomputed_raster"
+    temporal_mode: "static_spatial_context"
+    normalization:
+      kind: "min_max_scale"
+      fitted_split: "train"
+      train_min: 0.0
+      train_max: 500.0
+    missing_data_behavior: "zero_fill_with_mask"
+    REAL_DATA: true
+    operational_status: "ACTIVE_STATIC_AVAILABLE"
+
+  radar_reflectivity:
+    name: "radar_reflectivity"
+    source: "IMD Mumbai Doppler Weather Radar (Colaba/Veravali)"
+    variable: "Z"
+    units: "dBZ"
+    physical_range: [-10.0, 75.0]
+    native_resolution: "0.01 deg (~1 km)"
+    native_cadence_minutes: 10
+    canonical_resolution: "0.002 deg (~200 m)"
+    availability_semantics: "mock_adapter_only"
+    temporal_mode: "high_rate_history"
+    normalization:
+      kind: "linear_scale"
+      fitted_split: "train"
+      train_min: -10.0
+      train_max: 70.0
+    missing_data_behavior: "zero_fill_with_missing_channel_mask"
+    REAL_DATA: false
+    operational_status: "AUTHENTICATION_REQUIRED_UNAVAILABLE"
+
+  radar_rainfall:
+    name: "radar_rainfall"
+    source: "IMD Mumbai DWR Quantitative Precipitation Estimation"
+    variable: "radar_qpe"
+    units: "mm/h"
+    physical_range: [0.0, 300.0]
+    native_resolution: "0.01 deg (~1 km)"
+    native_cadence_minutes: 10
+    canonical_resolution: "0.002 deg (~200 m)"
+    availability_semantics: "mock_adapter_only"
+    temporal_mode: "high_rate_history"
+    normalization:
+      kind: "log1p_percentile_scale"
+      fitted_split: "train"
+      train_scale_parameter: 1.8344
+    missing_data_behavior: "zero_fill_with_missing_channel_mask"
+    REAL_DATA: false
+    operational_status: "AUTHENTICATION_REQUIRED_UNAVAILABLE"
+
+  satellite_ir:
+    name: "satellite_ir"
+    source: "ISRO MOSDAC INSAT-3D/3DR IMAGER"
+    variable: "TIR1"
+    units: "K"
+    physical_range: [180.0, 330.0]
+    native_resolution: "4 km"
+    native_cadence_minutes: 15
+    canonical_resolution: "0.002 deg (~200 m)"
+    availability_semantics: "mock_adapter_only"
+    temporal_mode: "cloud_top_thermal"
+    normalization:
+      kind: "standard_zscore"
+      fitted_split: "train"
+      train_mean: 270.0
+      train_std: 20.0
+    missing_data_behavior: "zero_fill_with_missing_channel_mask"
+    REAL_DATA: false
+    operational_status: "AUTHENTICATION_REQUIRED_UNAVAILABLE"
+
+  satellite_wv:
+    name: "satellite_wv"
+    source: "ISRO MOSDAC INSAT-3D/3DR IMAGER"
+    variable: "WV"
+    units: "K"
+    physical_range: [190.0, 290.0]
+    native_resolution: "8 km"
+    native_cadence_minutes: 30
+    canonical_resolution: "0.002 deg (~200 m)"
+    availability_semantics: "mock_adapter_only"
+    temporal_mode: "mid_troposphere_moisture"
+    normalization:
+      kind: "standard_zscore"
+      fitted_split: "train"
+      train_mean: 240.0
+      train_std: 15.0
+    missing_data_behavior: "zero_fill_with_missing_channel_mask"
+    REAL_DATA: false
+    operational_status: "AUTHENTICATION_REQUIRED_UNAVAILABLE"

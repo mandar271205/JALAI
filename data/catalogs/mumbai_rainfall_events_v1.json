@@ -1,0 +1,143 @@
+{
+  "catalog_version": "mumbai_rainfall_events_v1",
+  "created_at": "2026-09-08T21:45:00Z",
+  "region": "Mumbai Metropolitan Region (MMR)",
+  "bounds_wgs84": [72.70, 18.85, 73.10, 19.35],
+  "classification_taxonomy": {
+    "VERIFIED_EXTREME": "24-hour rainfall exceeding 204.4 mm (IMD Extremely Heavy Rainfall) or localized flash flooding confirmed by official ground station/IMD data.",
+    "VERIFIED_HEAVY": "24-hour rainfall between 64.5 mm and 204.4 mm (IMD Heavy to Very Heavy) verified by rain gauges.",
+    "MONSOON_EVENT": "Active monsoonal precipitation episode observed via satellite/radar without external station extreme verification.",
+    "CANDIDATE": "Candidate event identified from satellite/model coverage windows.",
+    "UNVERIFIED": "Event record pending external station archive verification."
+  },
+  "research_splits_locked": {
+    "train": ["mumbai_monsoon_2023_07_18"],
+    "validation": ["mumbai_monsoon_2023_07_25"],
+    "test": [
+      "mumbai_monsoon_2023_08_24",
+      "mumbai_monsoon_2024_08_04",
+      "mumbai_monsoon_2024_09_05"
+    ]
+  },
+  "events": [
+    {
+      "event_id": "mumbai_monsoon_2023_07_18",
+      "start_time": "2023-07-18T00:00:00Z",
+      "end_time": "2023-07-18T12:00:00Z",
+      "region": "Mumbai Metropolitan Region",
+      "event_type": "monsoon_convective_surge",
+      "verification_status": "MONSOON_EVENT",
+      "research_split": "train",
+      "evidence": {
+        "source": "NASA GPM IMERG V07 & NOAA GFS 0.25",
+        "citation_reference": "IMD Daily Weather Report July 2023 / GPM IMERG V07 Granules",
+        "observed_rainfall_statistic": "GPM peak localized rate ~18.4 mm/h across MMR domain",
+        "station_satellite_radar_evidence": "GPM IMERG calibrated 30-min precipitation grid series",
+        "threshold_definition": "Monsoon surge > 5 mm/h sustained over > 20% of MMR grid",
+        "notes": "Used as the primary training event for ConvLSTM V2 and LearnedGateMLP. Not verified as extreme gauge event."
+      }
+    },
+    {
+      "event_id": "mumbai_monsoon_2023_07_25",
+      "start_time": "2023-07-25T00:00:00Z",
+      "end_time": "2023-07-25T12:00:00Z",
+      "region": "Mumbai Metropolitan Region",
+      "event_type": "monsoon_offshore_trough",
+      "verification_status": "MONSOON_EVENT",
+      "research_split": "validation",
+      "evidence": {
+        "source": "NASA GPM IMERG V07 & NOAA GFS 0.25",
+        "citation_reference": "IMD Regional Special Tropical Weather Outlook July 2023",
+        "observed_rainfall_statistic": "GPM peak localized rate ~22.1 mm/h across MMR domain",
+        "station_satellite_radar_evidence": "GPM IMERG calibrated 30-min precipitation grid series",
+        "threshold_definition": "Monsoon trough event > 10 mm/h peak",
+        "notes": "Used exclusively for validation, early stopping, and probability calibration (Isotonic Regression). Never used for training."
+      }
+    },
+    {
+      "event_id": "mumbai_monsoon_2023_08_24",
+      "start_time": "2023-08-24T00:00:00Z",
+      "end_time": "2023-08-24T12:00:00Z",
+      "region": "Mumbai Metropolitan Region",
+      "event_type": "monsoon_depression_pulse",
+      "verification_status": "MONSOON_EVENT",
+      "research_split": "test",
+      "evidence": {
+        "source": "NASA GPM IMERG V07 & NOAA GFS 0.25",
+        "citation_reference": "IMD All India Weather Summary August 2023",
+        "observed_rainfall_statistic": "GPM peak localized rate ~16.8 mm/h",
+        "station_satellite_radar_evidence": "GPM IMERG calibrated 30-min precipitation grid series",
+        "threshold_definition": "Held-out test event sample 1-17",
+        "notes": "Locked held-out test event. Strictly prohibited from training, validation, or hyperparameter selection."
+      }
+    },
+    {
+      "event_id": "mumbai_monsoon_2024_08_04",
+      "start_time": "2024-08-04T00:00:00Z",
+      "end_time": "2024-08-04T12:00:00Z",
+      "region": "Mumbai Metropolitan Region",
+      "event_type": "monsoon_active_spell",
+      "verification_status": "MONSOON_EVENT",
+      "research_split": "test",
+      "evidence": {
+        "source": "NASA GPM IMERG V07 & NOAA GFS 0.25",
+        "citation_reference": "IMD Press Release August 2024 Monsoon Activity",
+        "observed_rainfall_statistic": "GPM peak localized rate ~19.3 mm/h",
+        "station_satellite_radar_evidence": "GPM IMERG calibrated 30-min precipitation grid series",
+        "threshold_definition": "Held-out test event sample 18-34",
+        "notes": "Locked held-out test event. Prohibited from any training or tuning."
+      }
+    },
+    {
+      "event_id": "mumbai_monsoon_2024_09_05",
+      "start_time": "2024-09-05T00:00:00Z",
+      "end_time": "2024-09-05T12:00:00Z",
+      "region": "Mumbai Metropolitan Region",
+      "event_type": "late_monsoon_surge",
+      "verification_status": "MONSOON_EVENT",
+      "research_split": "test",
+      "evidence": {
+        "source": "NASA GPM IMERG V07 & NOAA GFS 0.25",
+        "citation_reference": "IMD Daily Weather Bulletin September 2024",
+        "observed_rainfall_statistic": "GPM peak localized rate ~24.5 mm/h",
+        "station_satellite_radar_evidence": "GPM IMERG calibrated 30-min precipitation grid series",
+        "threshold_definition": "Held-out test event sample 35-51",
+        "notes": "Locked held-out test event. Prohibited from any training or tuning."
+      }
+    },
+    {
+      "event_id": "mumbai_cloudburst_2005_07_26",
+      "start_time": "2005-07-26T08:30:00Z",
+      "end_time": "2005-07-27T08:30:00Z",
+      "region": "Mumbai Metropolitan Region (Santacruz / MMR)",
+      "event_type": "historical_benchmark_extreme",
+      "verification_status": "VERIFIED_EXTREME",
+      "research_split": "benchmark_only",
+      "evidence": {
+        "source": "IMD Colaba & Santacruz Observatories",
+        "citation_reference": "IMD Official Monograph (2005); Jenamani et al. (2006) Current Science",
+        "observed_rainfall_statistic": "944.2 mm / 24h at Santacruz (record highest 24h rain)",
+        "station_satellite_radar_evidence": "IMD Santacruz rain gauge, INSAT-1D/Kalpana-1 infrared imagery",
+        "threshold_definition": "> 204.4 mm / 24h (IMD Extremely Heavy Rainfall threshold)",
+        "notes": "Historical benchmark reference event for extreme flood scenario modeling. Not in current GPM 2023-2024 pipeline."
+      }
+    },
+    {
+      "event_id": "mumbai_monsoon_2017_08_29",
+      "start_time": "2017-08-29T00:00:00Z",
+      "end_time": "2017-08-30T00:00:00Z",
+      "region": "Mumbai Metropolitan Region",
+      "event_type": "historical_benchmark_extreme",
+      "verification_status": "VERIFIED_EXTREME",
+      "research_split": "benchmark_only",
+      "evidence": {
+        "source": "IMD Mumbai Santacruz & MCGM Automatic Weather Stations",
+        "citation_reference": "IMD Special Report on 29 August 2017 Extreme Rainfall over Mumbai",
+        "observed_rainfall_statistic": "331.4 mm / 24h at Santacruz, > 400 mm in central suburbs",
+        "station_satellite_radar_evidence": "IMD Colaba DWR radar scans, MCGM 60 AWS network",
+        "threshold_definition": "> 204.4 mm / 24h (IMD Extremely Heavy Rainfall)",
+        "notes": "Historical benchmark reference event for intense urban waterlogging."
+      }
+    }
+  ]
+}

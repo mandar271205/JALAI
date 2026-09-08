@@ -1,0 +1,28 @@
+data_version: gfs_mumbai_non_test_replay_v1
+output_root: data/processed/gfs_replay
+cache_dir: data/raw/weather/gfs_replay_prate_v1
+pilot_config: configs/pilot/mumbai.yaml
+benchmark_manifest: data/processed/benchmarks/mumbai_non_test_schedule_34_v1.json
+precipitation_product: prate_mean
+latency_hours: 6
+native_cadence_minutes: 60
+output_cadence_minutes: 30
+horizons_minutes: [30, 60, 90, 120]
+temporal_disaggregation_method: uniform_within_native_interval
+purpose: non_test_replay
+history_length: 4
+prediction_horizon: 4
+temporal_step_minutes: 30
+expected_samples_per_event: 17
+expected_total_samples: 34
+definitions_provenance: authentic_expanded_gpm_v1_windows
+preferred_dataset_dir: data/processed/training/gpm_imerg_v07_mumbai_monsoon_expanded_v1
+events:
+  - event_id: mumbai_monsoon_2023_07_18
+    split: train
+    start: '2023-07-18T00:00:00+00:00'
+    end: '2023-07-18T12:00:00+00:00'
+  - event_id: mumbai_monsoon_2023_07_25
+    split: validation
+    start: '2023-07-25T00:00:00+00:00'
+    end: '2023-07-25T12:00:00+00:00'
