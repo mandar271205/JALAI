@@ -143,6 +143,63 @@ def interval_amount(values: np.ndarray, metadata: dict) -> np.ndarray:
     raise ValueError("Wrong precipitation variable or statistical semantics")
 
 
+def prate_mean_to_rate(values: np.ndarray, metadata: dict) -> np.ndarray:
+    """Convert a GFS PRATE interval-mean field (kg m⁻² s⁻¹) directly to mm/h.
+
+    PRATE semantics (GFS shortName="prate", stepType="avg"):
+      - The value is an INTERVAL MEAN of the instantaneous precipitation rate
+        averaged over [startStep, endStep] hours since cycle time.
+      - Unit: kg m⁻² s⁻¹  (equivalently mm/s at surface density).
+      - Conversion to mm/h: rate_mm_h = prate_kg_m2_s × 3600.
+
+    This function MUST NOT use reconstruct_hourly() or any differencing logic.
+    PRATE is NOT a cumulative accumulation; there is nothing to difference.
+    The interval duration does NOT change the per-hour rate; it is already
+    expressed as a rate. The interval bounds are validated here only for
+    provenance and sanity checking.
+
+    Returns:
+        rate_mm_h: np.ndarray, same spatial shape as input, dtype float64, ≥ 0.
+
+    Raises:
+        ValueError: if metadata does not describe an exact PRATE avg field,
+                    or if the interval is zero/negative, or values are non-finite/negative.
+    """
+    start = float(metadata["startStep"])
+    end = float(metadata["endStep"])
+    if metadata.get("stepUnits") != "h":
+        raise ValueError(
+            f"PRATE metadata stepUnits must be 'h', got {metadata.get('stepUnits')!r}"
+        )
+    if not (0 <= start < end):
+        raise ValueError(
+            f"PRATE interval must have 0 <= startStep < endStep, got [{start}, {end}]"
+        )
+    if metadata.get("shortName") != "prate":
+        raise ValueError(
+            f"prate_mean_to_rate() requires shortName='prate', got {metadata.get('shortName')!r}"
+        )
+    if metadata.get("stepType") != "avg":
+        raise ValueError(
+            f"prate_mean_to_rate() requires stepType='avg' (interval mean), "
+            f"got {metadata.get('stepType')!r}"
+        )
+    if metadata.get("typeOfLevel") != "surface" or metadata.get("level") != 0:
+        raise ValueError(
+            "prate_mean_to_rate() requires typeOfLevel='surface', level=0 "
+            f"(GFS surface PRATE); got typeOfLevel={metadata.get('typeOfLevel')!r}, "
+            f"level={metadata.get('level')}"
+        )
+    units = metadata.get("units", "").replace(" ", "")
+    if units not in ("kgm**-2s**-1", "kgm^-2s^-1", "kg/m^2/s", "kgm-2s-1"):
+        raise ValueError(f"Unsupported PRATE units: {units!r}")
+    arr = finite_rain(values)
+    # PRATE is already a rate in kg m⁻² s⁻¹ = mm s⁻¹ at surface density.
+    # Multiply by 3600 to convert to mm/h. No differencing. No duration scaling.
+    rate_mm_h = arr * 3600.0
+    return finite_rain(rate_mm_h)
+
+
 @dataclass
 class HourlyInterval:
     start: datetime

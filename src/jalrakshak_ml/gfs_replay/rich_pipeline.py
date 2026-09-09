@@ -48,7 +48,8 @@ from jalrakshak_ml.deep_nowcast.splits import (
 from jalrakshak_ml.gfs_replay.core import (
     Selection,
     finite_rain,
-    reconstruct_hourly,
+    prate_mean_to_rate,
+    reconstruct_hourly,  # kept for APCP backward compatibility
     select_gfs_forecast_as_of,
     utc,
 )
@@ -589,45 +590,57 @@ def build_rich_issue_from_cache(
     for channel in ("gfs_wind_speed", "gfs_wind_direction_sin", "gfs_wind_direction_cos"):
         source_provenance[channel] = raw_fields["u10"] + raw_fields["v10"]
 
+    # -----------------------------------------------------------------------
+    # PRECIPITATION PATH: PRATE mean-rate conversion (Phase 4E fix)
+    #
+    # GFS shortName="prate", stepType="avg" is an INTERVAL MEAN RATE in
+    # kg m⁻² s⁻¹, NOT a cumulative accumulation.  reconstruct_hourly() is
+    # strictly for cumulative APCP fields and MUST NOT be used here.
+    #
+    # Correct conversion: rate_mm_h = prate_kg_m2_s × 3600
+    # No differencing, no previous-field required.
+    # Provenance tag: TEMPORALLY_ALIGNED_FROM_NATIVE_PRATE_INTERVAL
+    # -----------------------------------------------------------------------
     rainfall, precip_metadata, precip_sources = [], {}, []
     for target in targets:
         end_lead = math.ceil((target - selection.cycle_time).total_seconds() / 3600)
         current_path = (
             granule_directory(cache_root, selection.cycle_time, end_lead) / "prate_mean.grib2"
         )
-        current = read_field(
+        # Read the single PRATE field whose native interval covers this target slot.
+        current_values, current_lat, current_lon, current_meta = read_field(
             current_path,
             selector("prate_mean", selection.cycle_time, end_lead),
             (72.70, 18.80, 73.10, 19.35),
         )
-        fields = [(current[0], current[3])]
-        if float(current[3]["startStep"]) < end_lead - 1:
-            previous_path = (
-                granule_directory(cache_root, selection.cycle_time, end_lead - 1)
-                / "prate_mean.grib2"
-            )
-            previous = read_field(
-                previous_path,
-                selector("prate_mean", selection.cycle_time, end_lead - 1),
-                (72.70, 18.80, 73.10, 19.35),
-            )
-            fields.insert(0, (previous[0], previous[3]))
-            source_paths = [previous_path, current_path]
-        else:
-            source_paths = [current_path]
-        hourly = reconstruct_hourly(fields)[-1]
-        rate, spatial = reproject_rate(hourly.rate, current[1], current[2], target_grid)
-        rainfall.append(rate.astype(np.float32))
-        precip_metadata[end_lead] = current[3]
+        # Convert kg m⁻² s⁻¹ → mm/h using the dedicated PRATE path.
+        # This validates the field identity (shortName, stepType, units, level)
+        # and raises ValueError for any non-physical value.
+        rate_mm_h = prate_mean_to_rate(current_values, current_meta)
+        rate_spatial, spatial = reproject_rate(
+            rate_mm_h, current_lat, current_lon, target_grid
+        )
+        rainfall.append(rate_spatial.astype(np.float32))
+        precip_metadata[end_lead] = current_meta
         precip_sources.append(
             [
                 {
-                    "source_path": str(path),
-                    "sha256": sha256_file(path),
+                    "source_path": str(current_path),
+                    "sha256": sha256_file(current_path),
                     "parser_state": "PASSED",
                     "placeholder": False,
+                    "conversion_method": "TEMPORALLY_ALIGNED_FROM_NATIVE_PRATE_INTERVAL",
+                    "conversion_formula": "rate_mm_h = prate_kg_m2_s * 3600",
+                    "prate_start_step_h": float(current_meta["startStep"]),
+                    "prate_end_step_h": float(current_meta["endStep"]),
+                    "prate_interval_duration_h": (
+                        float(current_meta["endStep"]) - float(current_meta["startStep"])
+                    ),
+                    "scientific_note": (
+                        "PRATE is an interval-mean rate; no accumulation differencing applied. "
+                        "Duration does not enter the mm/h conversion."
+                    ),
                 }
-                for path in source_paths
             ]
         )
     precipitation_alignment = align_prate_horizons(issue, selection.cycle_time, precip_metadata)
