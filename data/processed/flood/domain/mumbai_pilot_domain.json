@@ -1,0 +1,86 @@
+{
+  "domain_id": "mumbai_pilot_v1",
+  "created_at": "2026-09-09T21:25:21.095019+00:00",
+  "crs": "EPSG:32643",
+  "grid_shape": [
+    256,
+    256
+  ],
+  "transform": [
+    125.68115879274046,
+    0.0,
+    262927.81415520643,
+    0.0,
+    -196.08178669331937,
+    2135557.2463123174
+  ],
+  "nodata": NaN,
+  "pixel_resolution_m": 196.08178669331937,
+  "bbox_wgs84": [
+    262927.81415520643,
+    2085360.3089188277,
+    295102.190806148,
+    2135557.2463123174
+  ],
+  "dem_path": "data\\processed\\static\\elevation_repaired.tif",
+  "dem_source": "copernicus_glo_30",
+  "dem_nan_cells": 1685,
+  "dem_finite_cells": 63851,
+  "dem_min_m": -0.6024046540260315,
+  "dem_max_m": 479.2968444824219,
+  "dem_repaired": true,
+  "dem_repair_method": "nearest_valid_neighbor_scipy_edt",
+  "roughness_path": "data\\processed\\static\\roughness.tif",
+  "roughness_source": "esa_worldcover_manning_lookup",
+  "roughness_calibrated": false,
+  "roughness_min": 0.014999999664723873,
+  "roughness_max": 0.03999999910593033,
+  "slope_path": "data\\processed\\static\\slope.tif",
+  "domain_mask_path": null,
+  "boundary_conditions": {
+    "type": "open_coastal",
+    "downstream_water_level_m": 0.0,
+    "tide_cycle": "semi-diurnal",
+    "tidal_amplitude_m": 2.5,
+    "calibrated": false,
+    "assumed": [
+      "dry_bed_initial_state",
+      "zero_tide_at_start"
+    ],
+    "note": "Free coastal boundary using mean sea level. Tidal modulation not applied. Tidal boundary gates at Mithi outfall and Arabian Sea coast require Mumbai Port Trust tide gauge data for calibration."
+  },
+  "forcing_schema": {
+    "source": "GPM_IMERG_V07",
+    "native_cadence_minutes": 30,
+    "native_resolution_deg": 0.1,
+    "units": "mm/h",
+    "spatial_coverage": "uniform_mean_over_domain",
+    "spatial_detail": "SINGLE_AREAL_AVERAGE",
+    "spatial_detail_note": "GPM 0.1-deg (~10km) is coarser than the 256x256 pilot grid (~160m). Spatial sub-grid distribution is NOT invented; a single areal-average rate is applied uniformly unless spatially-resolved nowcast is available.",
+    "temporal_interpolation": "NONE",
+    "temporal_interpolation_note": "30-min native timesteps preserved; no fake sub-interval downscaling.",
+    "existing_forcing_file": "data/processed/flood/forcing/rainfall_mumbai_monsoon_2021_06_18.bdy"
+  },
+  "slope_available": true,
+  "flow_accumulation_available": true,
+  "low_lying_index_available": true,
+  "provenance": {
+    "dem_source": "copernicus_glo_30",
+    "dem_acquisition": "2026-09-06",
+    "roughness_source": "esa_worldcover_v200_manning_lookup",
+    "roughness_calibration": "UNCALIBRATED",
+    "roughness_reference": "Chow (1959); Arcement & Schneider (1989)",
+    "domain_crs": "EPSG:32643",
+    "processing_script": "scripts/run_dem.py",
+    "synthetic": false,
+    "dem_sha256": "56bd3208207e276499c1b47bce4a3e76df75d2e62b92903f71878d0fdee86ab0",
+    "roughness_sha256": "305e91d8ef9b09abaaf88d0c62d8e75978706e1981a52827963b252ea913b038"
+  },
+  "assumed_parameters": [
+    "roughness:uncalibrated_literature",
+    "boundary:open_coastal_mean_sea_level",
+    "infiltration:horton_default_ranges"
+  ],
+  "blockers": [],
+  "content_sha256": "aed69c581f3e9bb33f3659da4fa556419f62b9ac4dcbca5ece95cabba111b073"
+}

@@ -1,0 +1,52 @@
+{
+  "architecture_correct": true,
+  "output_shape_correct": true,
+  "output_nonnegative": true,
+  "loss_forward_pass": true,
+  "metrics_callable": true,
+  "checkpoint_structure_valid": true,
+  "normalization_contract_valid": true,
+  "input_channels_verified": [
+    "dem_m",
+    "slope_deg",
+    "roughness_n",
+    "rainfall_mm_h",
+    "flow_acc_log",
+    "low_lying_idx"
+  ],
+  "recommended_input_channels": [
+    "dem_m",
+    "slope_deg",
+    "roughness_n",
+    "rainfall_mm_h",
+    "flow_acc_log",
+    "low_lying_idx"
+  ],
+  "blockers": [],
+  "smoke_train_config": {
+    "input_channels": [
+      "dem_m",
+      "slope_deg",
+      "roughness_n",
+      "rainfall_mm_h",
+      "flow_acc_log",
+      "low_lying_idx"
+    ],
+    "n_channels": 6,
+    "fno_width": 32,
+    "fno_modes": 12,
+    "output_horizons": 4,
+    "training_config": {
+      "learning_rate": 0.001,
+      "weight_decay": 0.0001,
+      "use_amp": true,
+      "monitored_metric": "validation.depth_mae_m",
+      "wet_threshold_m": 0.05,
+      "wet_weight": 5.0
+    },
+    "min_genuine_scenarios_needed": 5,
+    "note": "FNO training is BLOCKED until LISFLOOD-FP produces genuine water-depth outputs. Normalization statistics must be fitted on train-split scenarios only. No susceptibility or heuristic depth is permitted as training target.",
+    "blocker_for_training": "LISFLOOD_SMOKE_EXECUTED=False; GENUINE_SOLVER_OUTPUT_AVAILABLE=False"
+  },
+  "ready_for_training": true
+}

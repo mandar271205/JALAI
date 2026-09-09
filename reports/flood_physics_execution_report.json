@@ -1,0 +1,123 @@
+{
+  "script": "run_flood_physics_path.py",
+  "created_at": "2026-09-09T21:25:18.666060+00:00",
+  "sections": {
+    "domain": {
+      "status": "OK",
+      "domain_id": "mumbai_pilot_v1",
+      "crs": "EPSG:32643",
+      "grid_shape": [
+        256,
+        256
+      ],
+      "resolution_m": 196.08178669331937,
+      "dem_nan_cells": 1685,
+      "dem_repaired": true,
+      "dem_repair_method": "nearest_valid_neighbor_scipy_edt",
+      "roughness_calibrated": false,
+      "blockers": []
+    },
+    "forcing": {
+      "status": "OK",
+      "forcing_id": "swmm_forcing_MUMBAI_mumbai_monsoon_2021_06_18",
+      "solver_target": "SWMM",
+      "is_observation": true,
+      "units": "mm/h",
+      "native_cadence_minutes": 30,
+      "native_source_resolution": "0.1 deg (~10km)",
+      "working_grid_shape": [
+        1,
+        1
+      ],
+      "start_time": "2021-06-18T00:00:00",
+      "end_time": "2021-06-19T00:00:00",
+      "timesteps_count": 48,
+      "mean_rate_mm_h": 28.5,
+      "max_rate_mm_h": 33.45000076293945,
+      "source_hash": "a71453298d4f605090602f53a764270e9d159fc1a798f2f7e1d919a7bab50f2a",
+      "forcing_file": "data\\processed\\flood\\forcing\\rainfall_mumbai_monsoon_2021_06_18.dat"
+    },
+    "par_file": {
+      "status": "WRITTEN",
+      "par_path": "data\\processed\\flood\\physics_outputs\\par\\mumbai_smoke_v1.par",
+      "bci_path": "data\\processed\\flood\\physics_outputs\\par\\mumbai_smoke_v1.bci",
+      "sim_time_hours": 1.0,
+      "grid_shape": [
+        256,
+        256
+      ],
+      "resolution_m": 196.08178669331937,
+      "assumed_parameters": [
+        "roughness:uncalibrated_literature",
+        "initial_wd:dry_bed",
+        "boundary:open_coastal_mean_sea_level",
+        "infiltration:not_modelled_in_lisflood"
+      ]
+    },
+    "solver_execution": {
+      "status": "DRY_RUN_SKIPPED"
+    },
+    "fno_readiness": {
+      "architecture_correct": true,
+      "output_shape_correct": true,
+      "output_nonnegative": true,
+      "loss_forward_pass": true,
+      "metrics_callable": true,
+      "checkpoint_structure_valid": true,
+      "normalization_contract_valid": true,
+      "input_channels_verified": [
+        "dem_m",
+        "slope_deg",
+        "roughness_n",
+        "rainfall_mm_h",
+        "flow_acc_log",
+        "low_lying_idx"
+      ],
+      "recommended_input_channels": [
+        "dem_m",
+        "slope_deg",
+        "roughness_n",
+        "rainfall_mm_h",
+        "flow_acc_log",
+        "low_lying_idx"
+      ],
+      "blockers": [],
+      "smoke_train_config": {
+        "input_channels": [
+          "dem_m",
+          "slope_deg",
+          "roughness_n",
+          "rainfall_mm_h",
+          "flow_acc_log",
+          "low_lying_idx"
+        ],
+        "n_channels": 6,
+        "fno_width": 32,
+        "fno_modes": 12,
+        "output_horizons": 4,
+        "training_config": {
+          "learning_rate": 0.001,
+          "weight_decay": 0.0001,
+          "use_amp": true,
+          "monitored_metric": "validation.depth_mae_m",
+          "wet_threshold_m": 0.05,
+          "wet_weight": 5.0
+        },
+        "min_genuine_scenarios_needed": 5,
+        "note": "FNO training is BLOCKED until LISFLOOD-FP produces genuine water-depth outputs. Normalization statistics must be fitted on train-split scenarios only. No susceptibility or heuristic depth is permitted as training target.",
+        "blocker_for_training": "LISFLOOD_SMOKE_EXECUTED=False; GENUINE_SOLVER_OUTPUT_AVAILABLE=False"
+      },
+      "ready_for_training": true
+    }
+  },
+  "summary": {
+    "domain_prepared": true,
+    "forcing_validated": true,
+    "par_file_written": true,
+    "solver_execution_status": "UNKNOWN",
+    "solver_physically_simulated": false,
+    "fno_ready_for_training": true,
+    "genuine_depth_available": false,
+    "fabricated_depth": false
+  }
+}

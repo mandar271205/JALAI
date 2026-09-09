@@ -72,6 +72,16 @@ class ScientificClaimGates:
     VULNERABILITY_PROXY_DATA_AVAILABLE: bool = True
     PHYSICS_SCENARIO_CATALOG_READY: bool = True
 
+    # Phase 9 Flood-Physics Execution Readiness (Workstream H)
+    PHYSICS_DOMAIN_READY: bool = True          # DEM + roughness + grid verified
+    RAINFALL_FORCING_READY: bool = True         # .bdy forcing file exists
+    LISFLOOD_EXECUTABLE: bool = False           # solver binary on PATH
+    LISFLOOD_SMOKE_EXECUTED: bool = False       # at least one tiny genuine run
+    GENUINE_SOLVER_OUTPUT_AVAILABLE: bool = False  # validated depth NetCDF/raster exists
+    PHYSICS_DATASET_READY: bool = False         # frozen manifest with ≥1 genuine result
+    FNO_READY_FOR_SMOKE: bool = True            # architecture + loss + metrics all verified
+    FNO_ACTUALLY_TRAINED: bool = False          # genuine training loop completed
+
     def __post_init__(self) -> None:
         self.validate_scientific_integrity()
 
@@ -111,6 +121,16 @@ class ScientificClaimGates:
             raise ValueError("Empirical flood validation extent is not present in local repository")
         if self.REAL_VULNERABILITY_DATA_AVAILABLE:
             raise ValueError("Socioeconomic vulnerability data is proxy only; cannot claim real census survey")
+
+        # Phase 9 physics-execution integrity
+        if self.LISFLOOD_SMOKE_EXECUTED and not self.LISFLOOD_EXECUTABLE:
+            raise ValueError("Cannot claim smoke execution without solver binary on PATH")
+        if self.GENUINE_SOLVER_OUTPUT_AVAILABLE and not self.LISFLOOD_SMOKE_EXECUTED:
+            raise ValueError("Genuine solver output requires at least one executed smoke run")
+        if self.PHYSICS_DATASET_READY and not self.GENUINE_SOLVER_OUTPUT_AVAILABLE:
+            raise ValueError("Physics dataset requires genuine solver output")
+        if self.FNO_ACTUALLY_TRAINED and not self.PHYSICS_DATASET_READY:
+            raise ValueError("FNO training requires a frozen genuine physics dataset")
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
