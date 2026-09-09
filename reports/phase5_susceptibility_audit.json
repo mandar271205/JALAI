@@ -1,0 +1,244 @@
+{
+  "status": "PASS",
+  "output_tif": "data\\processed\\flood\\susceptibility_v1.tif",
+  "shape": [
+    256,
+    256
+  ],
+  "crs": "EPSG:32643",
+  "valid_cells": 63021,
+  "total_cells": 65536,
+  "categorical_distribution": {
+    "VERY_LOW": 2002,
+    "LOW": 13780,
+    "MODERATE": 30346,
+    "HIGH": 16634,
+    "VERY_HIGH": 259
+  },
+  "weights": {
+    "elevation": 0.3,
+    "slope": 0.25,
+    "low_lying_index": 0.25,
+    "distance_to_water": 0.2
+  },
+  "metadata": {
+    "method_version": "relative_susceptibility_v1",
+    "quantity": "relative_flood_susceptibility",
+    "units": "dimensionless",
+    "feature_list": [
+      "elevation",
+      "slope",
+      "low_lying_index",
+      "distance_to_water"
+    ],
+    "weights": {
+      "elevation": 0.3,
+      "slope": 0.25,
+      "low_lying_index": 0.25,
+      "distance_to_water": 0.2
+    },
+    "crs": "EPSG:32643",
+    "transform": [
+      125.68115879274046,
+      0.0,
+      262927.81415520643,
+      0.0,
+      -196.08178669331937,
+      2135557.2463123174
+    ],
+    "resolution": [
+      125.68115879274046,
+      196.08178669331937
+    ],
+    "provenance": {
+      "elevation": {
+        "source": "copernicus_glo_30",
+        "sha256": "56bd3208207e276499c1b47bce4a3e76df75d2e62b92903f71878d0fdee86ab0",
+        "source_resolution": [
+          125.68115879274046,
+          196.08178669331937
+        ],
+        "working_grid_resolution": [
+          125.68115879274046,
+          196.08178669331937
+        ],
+        "units": "dimensionless",
+        "preprocessing_method": "rank_percentile",
+        "timestamp_or_static": "static"
+      },
+      "slope": {
+        "source": "derived_copernicus_slope",
+        "sha256": "bff27b1d865b7576f9c5dbe19dbb3693035f937aa16e2f9e40a8c7467039c91c",
+        "source_resolution": [
+          125.68115879274046,
+          196.08178669331937
+        ],
+        "working_grid_resolution": [
+          125.68115879274046,
+          196.08178669331937
+        ],
+        "units": "dimensionless",
+        "preprocessing_method": "rank_percentile",
+        "timestamp_or_static": "static"
+      },
+      "low_lying_index": {
+        "source": "derived_topographic_depression",
+        "sha256": "9dea713eaaf222034f41568e2777e9ced04573e66f5c74b915dbb75e8d61e3a7",
+        "source_resolution": [
+          125.68115879274046,
+          196.08178669331937
+        ],
+        "working_grid_resolution": [
+          125.68115879274046,
+          196.08178669331937
+        ],
+        "units": "dimensionless",
+        "preprocessing_method": "rank_percentile",
+        "timestamp_or_static": "static"
+      },
+      "distance_to_water": {
+        "source": "osm_derived_water_distance",
+        "sha256": "d41f6122eb49a78a37af5af1c9a17e501ac301f4a2e13d0727c186ce7776b21e",
+        "source_resolution": [
+          125.68115879274046,
+          196.08178669331937
+        ],
+        "working_grid_resolution": [
+          125.68115879274046,
+          196.08178669331937
+        ],
+        "units": "dimensionless",
+        "preprocessing_method": "rank_percentile",
+        "timestamp_or_static": "static"
+      }
+    },
+    "calibrated_depth": false,
+    "limitations": [
+      "Relative screening layer only",
+      "Not water depth, inundation probability, or hydraulic calibration",
+      "Assumes static topography without drainage capacity"
+    ],
+    "artifact_type": "cloud_optimized_geotiff",
+    "path": "data\\processed\\flood\\susceptibility_v1.tif",
+    "dtype": "float32",
+    "nodata": "NaN",
+    "stac_item": {
+      "type": "Feature",
+      "stac_version": "1.0.0",
+      "id": "mumbai_susceptibility_v1",
+      "properties": {
+        "title": "Mumbai Relative Flood Susceptibility",
+        "description": "Deterministic multi-criteria topographic susceptibility (relative screening only, not depth)",
+        "proj:epsg": 32643,
+        "proj:shape": [
+          256,
+          256
+        ],
+        "proj:transform": [
+          125.68115879274046,
+          0.0,
+          262927.81415520643,
+          0.0,
+          -196.08178669331937,
+          2135557.2463123174
+        ],
+        "susceptibility:quantity": "relative_flood_susceptibility",
+        "susceptibility:units": "dimensionless",
+        "susceptibility:calibrated_depth": false,
+        "susceptibility:features": [
+          "elevation",
+          "slope",
+          "low_lying_index",
+          "distance_to_water"
+        ],
+        "susceptibility:weights": {
+          "elevation": 0.3,
+          "slope": 0.25,
+          "low_lying_index": 0.25,
+          "distance_to_water": 0.2
+        },
+        "susceptibility:source_provenance": {
+          "elevation": {
+            "source": "copernicus_glo_30",
+            "sha256": "56bd3208207e276499c1b47bce4a3e76df75d2e62b92903f71878d0fdee86ab0",
+            "source_resolution": [
+              125.68115879274046,
+              196.08178669331937
+            ],
+            "working_grid_resolution": [
+              125.68115879274046,
+              196.08178669331937
+            ],
+            "units": "dimensionless",
+            "preprocessing_method": "rank_percentile",
+            "timestamp_or_static": "static"
+          },
+          "slope": {
+            "source": "derived_copernicus_slope",
+            "sha256": "bff27b1d865b7576f9c5dbe19dbb3693035f937aa16e2f9e40a8c7467039c91c",
+            "source_resolution": [
+              125.68115879274046,
+              196.08178669331937
+            ],
+            "working_grid_resolution": [
+              125.68115879274046,
+              196.08178669331937
+            ],
+            "units": "dimensionless",
+            "preprocessing_method": "rank_percentile",
+            "timestamp_or_static": "static"
+          },
+          "low_lying_index": {
+            "source": "derived_topographic_depression",
+            "sha256": "9dea713eaaf222034f41568e2777e9ced04573e66f5c74b915dbb75e8d61e3a7",
+            "source_resolution": [
+              125.68115879274046,
+              196.08178669331937
+            ],
+            "working_grid_resolution": [
+              125.68115879274046,
+              196.08178669331937
+            ],
+            "units": "dimensionless",
+            "preprocessing_method": "rank_percentile",
+            "timestamp_or_static": "static"
+          },
+          "distance_to_water": {
+            "source": "osm_derived_water_distance",
+            "sha256": "d41f6122eb49a78a37af5af1c9a17e501ac301f4a2e13d0727c186ce7776b21e",
+            "source_resolution": [
+              125.68115879274046,
+              196.08178669331937
+            ],
+            "working_grid_resolution": [
+              125.68115879274046,
+              196.08178669331937
+            ],
+            "units": "dimensionless",
+            "preprocessing_method": "rank_percentile",
+            "timestamp_or_static": "static"
+          }
+        }
+      },
+      "assets": {
+        "raster": {
+          "type": "image/tiff; application=geotiff; profile=cloud-optimized",
+          "roles": [
+            "data",
+            "susceptibility"
+          ]
+        },
+        "audit": {
+          "type": "application/json",
+          "roles": [
+            "metadata",
+            "audit"
+          ]
+        }
+      }
+    },
+    "metadata_sha256": "3b52105c05d55d819474175999d65a9f0afda761faa89df9ed24c9ee840d8879"
+  },
+  "susceptibility_is_not_depth": true,
+  "calibrated_depth": false
+}

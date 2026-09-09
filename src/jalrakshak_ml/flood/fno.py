@@ -1,4 +1,8 @@
-"""Fourier Neural Operator scaffold for genuine physics-reference flood depth."""
+"""Fourier Neural Operator surrogate for genuine physics-reference flood depth.
+
+Outputs are strictly declared as water depth in metres; non-negative by construction.
+Never trained or validated on heuristic or synthetic data.
+"""
 
 from __future__ import annotations
 
@@ -38,10 +42,11 @@ class SpectralConv2d(nn.Module):
 
 
 class FloodFNO(nn.Module):
-    """Compact surrogate that predicts four physics-depth horizons in metres."""
+    """Compact Fourier Neural Operator surrogate predicting physics-depth horizons in metres."""
 
     model_version = "flood_fno_v1"
     surrogate_model = True
+    output_type = "water_depth_m"
 
     def __init__(
         self,
@@ -71,9 +76,41 @@ class FloodFNO(nn.Module):
         values = self.lift(inputs)
         for spectral, local in zip(self.spectral, self.local, strict=True):
             values = F.gelu(spectral(values) + local(values))
-        # Differentiable nonnegative depth. No upper clipping is imposed.
+        # Nonnegative depth via Softplus. No arbitrary upper clipping.
         depth = F.softplus(self.project(values), beta=5.0)
         return depth[:, :, None]
+
+
+class SparseFloodLoss(nn.Module):
+    """Loss tailored for sparse flood inundation fields.
+
+    Balances errors between predominantly dry cells and sparse inundated cells.
+    """
+
+    def __init__(self, wet_threshold: float = 0.05, wet_weight: float = 5.0) -> None:
+        super().__init__()
+        self.wet_threshold = wet_threshold
+        self.wet_weight = wet_weight
+
+    def forward(
+        self,
+        prediction: torch.Tensor,
+        target: torch.Tensor,
+        valid_mask: torch.Tensor,
+    ) -> torch.Tensor:
+        valid = valid_mask.bool() & torch.isfinite(target)
+        if not torch.any(valid):
+            raise ValueError("No valid cells for sparse flood loss")
+
+        pred_v = prediction[valid]
+        target_v = target[valid]
+
+        l1_diff = F.smooth_l1_loss(pred_v, target_v, reduction="none")
+        is_wet = target_v >= self.wet_threshold
+        weights = torch.ones_like(l1_diff)
+        weights[is_wet] = self.wet_weight
+
+        return (l1_diff * weights).mean()
 
 
 @dataclass(frozen=True)
@@ -137,10 +174,12 @@ class FNOTrainingConfig:
     weight_decay: float = 1e-4
     use_amp: bool = True
     monitored_metric: str = "validation.depth_mae_m"
+    wet_threshold_m: float = 0.05
+    wet_weight: float = 5.0
 
 
 class FNOTrainingRunner:
-    """Training-step/checkpoint interface gated by genuine physics-reference provenance."""
+    """Training-step and checkpoint interface gated by genuine physics-reference provenance."""
 
     def __init__(
         self,
@@ -157,6 +196,10 @@ class FNOTrainingRunner:
         )
         self.config = config
         self.git_commit = git_commit
+        self.loss_fn = SparseFloodLoss(
+            wet_threshold=config.wet_threshold_m,
+            wet_weight=config.wet_weight,
+        )
 
     def training_step(
         self,
@@ -171,7 +214,7 @@ class FNOTrainingRunner:
         valid = valid_mask.bool() & torch.isfinite(reference_depth_m)
         if not torch.any(valid) or (reference_depth_m[valid] < 0).any():
             raise ValueError("FNO physics target must contain valid nonnegative depth in metres")
-        return torch.nn.functional.smooth_l1_loss(prediction[valid], reference_depth_m[valid])
+        return self.loss_fn(prediction, reference_depth_m, valid_mask)
 
     def checkpoint_payload(
         self,
@@ -189,6 +232,7 @@ class FNOTrainingRunner:
             "epoch": epoch,
             "validation_metrics": validation_metrics,
             "model_version": model.model_version,
+            "output_type": model.output_type,
             "model_config": {
                 "input_channels": model.input_channels,
                 "output_horizons": model.output_horizons,
@@ -226,9 +270,9 @@ def require_physics_reference_dataset(manifest_path: str | Path) -> dict[str, An
     ):
         raise PermissionError("FNO training requires a frozen genuine physics-reference corpus")
     scenario_ids = [record.get("scenario_id") for record in records]
-    if len(scenario_ids) != len(set(scenario_ids)) or set(
+    if len(scenario_ids) != len(set(scenario_ids)) or {
         record.get("split") for record in records
-    ) - {
+    } - {
         "train",
         "validation",
         "test",
@@ -249,6 +293,7 @@ def evaluate_fno(
     reference_depth_m: np.ndarray,
     valid_mask: np.ndarray,
     *,
+    threshold: float = 0.05,
     runtime_seconds: float | None = None,
     reference_runtime_seconds: float | None = None,
 ) -> dict[str, Any]:
@@ -263,17 +308,41 @@ def evaluate_fno(
     predicted, reference = predicted_depth_m[valid], reference_depth_m[valid]
     if not predicted.size:
         raise ValueError("FNO evaluation has no valid cells")
-    threshold = 0.05
-    intersection = np.count_nonzero((predicted >= threshold) & (reference >= threshold))
-    union = np.count_nonzero((predicted >= threshold) | (reference >= threshold))
+
+    pred_wet = predicted >= threshold
+    ref_wet = reference >= threshold
+
+    tp = int(np.count_nonzero(pred_wet & ref_wet))
+    fp = int(np.count_nonzero(pred_wet & ~ref_wet))
+    fn = int(np.count_nonzero(~pred_wet & ref_wet))
+    union = tp + fp + fn
+
+    precision = float(tp / (tp + fp)) if (tp + fp) > 0 else 0.0
+    recall = float(tp / (tp + fn)) if (tp + fn) > 0 else 0.0
+    iou = float(tp / union) if union > 0 else None
+    csi = iou
+
+    # Wet-cell metrics
+    wet_mask = ref_wet
+    if np.any(wet_mask):
+        wet_mae = float(np.mean(np.abs(predicted[wet_mask] - reference[wet_mask])))
+        wet_bias = float(np.mean(predicted[wet_mask] - reference[wet_mask]))
+    else:
+        wet_mae = None
+        wet_bias = None
+
     report: dict[str, Any] = {
         "depth_mae_m": float(np.mean(np.abs(predicted - reference))),
         "depth_rmse_m": float(np.sqrt(np.mean((predicted - reference) ** 2))),
-        "inundation_iou": float(intersection / union) if union else None,
-        "inundation_csi": float(intersection / union) if union else None,
+        "wet_cell_mae_m": wet_mae,
+        "wet_cell_bias_m": wet_bias,
+        "inundation_iou": iou,
+        "inundation_csi": csi,
+        "precision": precision,
+        "recall": recall,
         "peak_depth_error_m": float(predicted.max() - reference.max()),
         "spatial_extent_error_cells": int(
-            np.count_nonzero(predicted >= threshold) - np.count_nonzero(reference >= threshold)
+            np.count_nonzero(pred_wet) - np.count_nonzero(ref_wet)
         ),
         "surrogate_model": True,
         "physics_reference": True,

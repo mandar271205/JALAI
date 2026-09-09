@@ -1,4 +1,13 @@
-"""Leakage-safe manifest builder for genuine hydraulic reference outputs."""
+"""Leakage-safe manifest builder for genuine hydraulic reference outputs.
+
+Enforces mandatory integrity gates:
+- REAL_SOLVER_OUTPUT=True
+- solver_status=SUCCESS/EXECUTED
+- fabricated_depth=False
+- synthetic_target=False
+- event-level split isolation (perturbations of the same event cannot cross splits)
+- absolute rejection of susceptibility or heuristic risk as depth targets
+"""
 
 from __future__ import annotations
 
@@ -10,13 +19,65 @@ from typing import Any
 from .physics import PhysicsResult, PhysicsScenario
 
 
+class PhysicsDatasetBuilder:
+    """Builder that validates scenario-result pairs and enforces event-level leakage isolation."""
+
+    def __init__(self) -> None:
+        self.scenarios: dict[str, PhysicsScenario] = {}
+        self.results: dict[str, PhysicsResult] = {}
+        self.splits: dict[str, str] = {}
+
+    def add_entry(self, scenario: PhysicsScenario, result: PhysicsResult, split: str) -> None:
+        if split not in {"train", "validation", "test"}:
+            raise ValueError(f"Invalid split: {split}. Must be train, validation, or test.")
+        scenario.validate(result.solver)
+        result.validate()
+
+        if result.scenario_id != scenario.scenario_id:
+            raise ValueError("Scenario ID mismatch between scenario and result")
+        if not result.physically_simulated:
+            raise ValueError("Result is not physically simulated")
+
+        target_source = result.metadata.get("target_source", "")
+        if target_source in {"susceptibility", "heuristic", "random_synthetic", "synthetic"}:
+            raise ValueError(f"Target source '{target_source}' is not genuine physics output")
+
+        self.scenarios[scenario.scenario_id] = scenario
+        self.results[scenario.scenario_id] = result
+        self.splits[scenario.scenario_id] = split
+
+    def validate_event_isolation(self) -> None:
+        """Verify that all scenarios derived from the same base event are in the same split."""
+        event_to_splits: dict[str, set[str]] = {}
+        for scen_id, scen in self.scenarios.items():
+            event = scen.provenance.get("rainfall_event") or scen.provenance.get("base_event")
+            if event:
+                event_to_splits.setdefault(event, set()).add(self.splits[scen_id])
+
+        leaked_events = {event: splits for event, splits in event_to_splits.items() if len(splits) > 1}
+        if leaked_events:
+            raise ValueError(
+                f"Data leakage detected across splits for events: {leaked_events}. "
+                "All perturbations of an event must belong to the same split."
+            )
+
+    def freeze(self, output_path: str | Path) -> dict[str, Any]:
+        self.validate_event_isolation()
+        return freeze_physics_dataset(
+            list(self.scenarios.values()),
+            list(self.results.values()),
+            self.splits,
+            output_path,
+        )
+
+
 def freeze_physics_dataset(
     scenarios: list[PhysicsScenario],
     results: list[PhysicsResult],
     split_by_scenario: dict[str, str],
     output_path: str | Path,
 ) -> dict[str, Any]:
-    """Freeze an immutable scenario-level dataset; heuristic targets are rejected."""
+    """Freeze an immutable scenario-level dataset; heuristic/synthetic targets are rejected."""
     output = Path(output_path)
     if output.exists():
         raise FileExistsError("Physics dataset manifest is immutable")
@@ -29,16 +90,30 @@ def freeze_physics_dataset(
     if set(split_by_scenario.values()) - {"train", "validation", "test"}:
         raise ValueError("Invalid physics dataset split")
 
+    # Verify event-level leakage isolation
+    event_splits: dict[str, set[str]] = {}
+    for scenario in scenarios:
+        event = scenario.provenance.get("rainfall_event") or scenario.provenance.get("base_event")
+        if event:
+            event_splits.setdefault(event, set()).add(split_by_scenario[scenario.scenario_id])
+    leaked = {event: s for event, s in event_splits.items() if len(s) > 1}
+    if leaked:
+        raise ValueError(
+            f"Event-level leakage detected: {leaked}. Perturbations of the same event must share a split."
+        )
+
     records = []
     for scenario in scenarios:
         result = result_by_id[scenario.scenario_id]
         result.validate()
-        if result.metadata.get("target_source") in {
-            "susceptibility",
-            "heuristic",
-            "random_synthetic",
-        }:
+
+        # Hard gate against heuristic or synthetic depth
+        target_src = result.metadata.get("target_source", "")
+        if target_src in {"susceptibility", "heuristic", "random_synthetic", "synthetic"}:
             raise ValueError("FNO target is not genuine physics output")
+        if not result.physically_simulated:
+            raise ValueError("Target depth was not physically simulated")
+
         records.append(
             {
                 "scenario_id": scenario.scenario_id,
@@ -67,6 +142,7 @@ def freeze_physics_dataset(
                 "calibrated": result.calibrated,
             }
         )
+
     manifest = {
         "dataset_version": "phase5_physics_reference_v1",
         "status": "FROZEN",

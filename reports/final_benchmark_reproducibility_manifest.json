@@ -1,0 +1,121 @@
+{
+  "benchmark_version": "final_benchmark_v1",
+  "timestamp": "2026-09-09T13:45:24.229337+00:00",
+  "git_commit": "a7aa17dff8dd6b3dd565157dba14bead48e80c4f",
+  "config_hashes": {
+    "phase5_foundation_v1.yaml": "a2d06725726d28f409b89a87be002966ed1edfb4c671cff7876159e6792ce00c",
+    "phase4e_final_v1.yaml": "79dae9ddfed299f129a1373bf5c6737ef94088bd72df2385633a3d3685790b73",
+    "convlstm_v3.yaml": "1de0e66ed6201aeadd98226d4b4eba2bac0763491256fb365f47e9f5298caea9",
+    "unet_convgru_v1.yaml": "04cb8b4a9cdec1463ce5210f0347089f492098adfb1f2cf47200261f97c0ddf3",
+    "st_attention_nowcaster_v1.yaml": "c52bb9f9ccdb991f900e725cbc8275ec4dc8ee137b56e9f5c9bca1f76e0c23b5"
+  },
+  "data_hashes": {
+    "elevation.tif": "56bd3208207e276499c1b47bce4a3e76df75d2e62b92903f71878d0fdee86ab0",
+    "slope.tif": "bff27b1d865b7576f9c5dbe19dbb3693035f937aa16e2f9e40a8c7467039c91c",
+    "low_lying_index.tif": "9dea713eaaf222034f41568e2777e9ced04573e66f5c74b915dbb75e8d61e3a7",
+    "distance_to_water.tif": "d41f6122eb49a78a37af5af1c9a17e501ac301f4a2e13d0727c186ce7776b21e"
+  },
+  "model_hashes": {},
+  "solver_versions": {
+    "SWMM": "uninstalled_checked",
+    "LISFLOOD-FP": "uninstalled_checked"
+  },
+  "rainfall_models_evaluated": [
+    "Persistence",
+    "PySTEPS",
+    "ConvLSTM_V2",
+    "ConvLSTM_V3",
+    "UNet_ConvGRU",
+    "ST_Attention"
+  ],
+  "flood_models_evaluated": [
+    "RelativeSusceptibilityEngine"
+  ],
+  "risk_models_evaluated": [
+    "HazardOnly",
+    "Hazard_Exposure",
+    "Hazard_Exposure_Vulnerability",
+    "UncertaintyAware_HEV"
+  ],
+  "metrics_by_model": {
+    "rainfall": "Colab tournament validation pending",
+    "flood_susceptibility": {
+      "valid_cells": 63021,
+      "status": "PASS"
+    },
+    "fno": "unvalidated_pending_real_solver",
+    "risk": {
+      "status": "PASS",
+      "methodology": "probabilistic_hev_v1"
+    }
+  },
+  "train_events": [
+    "2021-06-18",
+    "2021-07-16",
+    "2021-08-08",
+    "2021-09-07",
+    "2022-06-22",
+    "2022-07-05",
+    "2022-07-14",
+    "2022-08-09",
+    "2023-06-28",
+    "2023-07-18",
+    "2023-08-08",
+    "2023-09-07"
+  ],
+  "validation_events": [
+    "2023-07-25",
+    "2024-07-08",
+    "2024-07-21"
+  ],
+  "locked_test_events": [
+    "2023-08-24",
+    "2024-08-04",
+    "2024-09-05"
+  ],
+  "locked_test_accessed": false,
+  "hardware_environment": {
+    "platform": "Windows-10-10.0.26200-SP0",
+    "machine": "AMD64",
+    "processor": "Intel64 Family 6 Model 186 Stepping 2, GenuineIntel",
+    "python_version": "3.11.16",
+    "os_name": "Windows"
+  },
+  "random_seeds": {
+    "numpy": 42,
+    "torch": 42,
+    "python": 42
+  },
+  "claim_gates": {
+    "PHASE_5_IMPLEMENTATION_HARDENED": true,
+    "FLOOD_SUSCEPTIBILITY_EXECUTABLE": true,
+    "SUSCEPTIBILITY_IS_NOT_DEPTH": true,
+    "PHYSICS_ORCHESTRATION_READY": true,
+    "SWMM_INPUTS_AVAILABLE": false,
+    "LISFLOOD_FP_INPUTS_AVAILABLE": false,
+    "REAL_PHYSICS_SIMULATION_EXECUTED": false,
+    "PHYSICS_DATASET_BUILDER_HARDENED": true,
+    "GENUINE_FNO_TARGETS_AVAILABLE": false,
+    "FNO_ARCHITECTURE_READY": true,
+    "FNO_TRAINING_STARTED": false,
+    "FNO_VALIDATED": false,
+    "EXPOSURE_ENGINE_EXECUTABLE": true,
+    "REAL_EXPOSURE_DATA_AVAILABLE": false,
+    "VULNERABILITY_ENGINE_EXECUTABLE": true,
+    "REAL_VULNERABILITY_DATA_AVAILABLE": false,
+    "HEV_RISK_ENGINE_EXECUTABLE": true,
+    "PROBABILISTIC_RISK_READY": true,
+    "UNCERTAINTY_PROPAGATION_READY": true,
+    "EXPLAINABILITY_ENGINE_READY": true,
+    "CITIZEN_VERIFICATION_FOUNDATION_READY": true,
+    "CITIZEN_REAL_ML_AVAILABLE": false,
+    "FINAL_BENCHMARK_HARNESS_READY": true,
+    "LOCKED_TEST_TOUCHED": false,
+    "PHASE_4E_TRAINING_STARTED": false,
+    "FABRICATED_DEPTH_USED": false,
+    "FAKE_PHYSICS_TRUTH_USED": false,
+    "GIT_PUSHED": false,
+    "REMOTE_MODIFIED": false
+  },
+  "manifest_sha256": "76a5ff52d28844c1de01fce07c962e366d7525594cc6f41caeb5773a33636e87"
+}

@@ -1,7 +1,11 @@
-"""Reproducible contracts and fail-closed adapters for future hydraulic solvers."""
+"""Reproducible contracts, execution gates, and fail-closed adapters for hydraulic solvers.
+
+Never fabricates hydraulic outputs, drainage networks, or flood depths.
+"""
 
 from __future__ import annotations
 
+import enum
 import hashlib
 import json
 import shutil
@@ -17,6 +21,20 @@ from typing import Any
 import numpy as np
 
 INSUFFICIENT_PHYSICAL_INPUTS = "INSUFFICIENT_PHYSICAL_INPUTS"
+
+
+class ExecutionStatus(str, enum.Enum):
+    READY = "READY"
+    EXECUTED = "EXECUTED"
+    FAILED = "FAILED"
+    BLOCKED_MISSING_INPUT = "BLOCKED_MISSING_INPUT"
+    BLOCKED_MISSING_SOLVER = "BLOCKED_MISSING_SOLVER"
+
+
+class PhysicsRunMode(str, enum.Enum):
+    DRY_RUN = "DRY_RUN"
+    VALIDATION_ONLY = "VALIDATION_ONLY"
+    EXECUTE = "EXECUTE"
 
 
 @dataclass(frozen=True)
@@ -45,15 +63,17 @@ class PhysicsScenario:
         if len(self.grid_shape) != 2 or min(self.grid_shape) < 1:
             raise ValueError("Scenario grid shape is invalid")
         try:
-            start = datetime.fromisoformat(self.start_time.replace("Z", "+00:00"))
-            end = datetime.fromisoformat(self.end_time.replace("Z", "+00:00"))
+            start = datetime.fromisoformat(self.start_time)
+            end = datetime.fromisoformat(self.end_time)
         except ValueError as error:
             raise ValueError("Scenario start/end timestamps must be ISO-8601") from error
         if end <= start:
             raise ValueError("Scenario end time must be after start time")
         required = [self.rainfall_forcing_path, self.dem_path, self.roughness_path]
         if solver == "SWMM":
-            required.append(self.drainage_network_path or "")
+            if not self.drainage_network_path:
+                raise FileNotFoundError(f"{INSUFFICIENT_PHYSICAL_INPUTS}: SWMM drainage network path missing")
+            required.append(self.drainage_network_path)
         missing = [path for path in required if not path or not Path(path).is_file()]
         if missing:
             raise FileNotFoundError(f"{INSUFFICIENT_PHYSICAL_INPUTS}: {missing}")
@@ -67,6 +87,23 @@ class PhysicsScenario:
     def stable_hash(self) -> str:
         payload = json.dumps(asdict(self), sort_keys=True, separators=(",", ":"))
         return hashlib.sha256(payload.encode()).hexdigest()
+
+    def check_execution_readiness(
+        self, solver: str, executable_name: str | None = None
+    ) -> tuple[ExecutionStatus, str]:
+        """Check status without raising, returning explicit status and reason."""
+        try:
+            self.validate(solver)
+        except (FileNotFoundError, ValueError) as err:
+            return ExecutionStatus.BLOCKED_MISSING_INPUT, str(err)
+
+        exe = executable_name or ("swmm5" if solver == "SWMM" else "lisflood")
+        if not shutil.which(exe):
+            return (
+                ExecutionStatus.BLOCKED_MISSING_SOLVER,
+                f"{solver} binary '{exe}' is not installed on PATH",
+            )
+        return ExecutionStatus.READY, "All physical inputs and solver binary verified"
 
 
 @dataclass(frozen=True)
@@ -151,8 +188,50 @@ class SolverAdapter:
             raise FileNotFoundError(f"{self.solver_name} executable unavailable: {self.executable}")
         return located
 
-    def run(self, scenario: PhysicsScenario, output_root: str | Path, *, timeout: int = 3600):
+    def validate_only(self, scenario: PhysicsScenario) -> dict[str, Any]:
+        """Perform non-modifying input and environment validation."""
+        status, reason = scenario.check_execution_readiness(self.solver_name, self.executable)
+        return {
+            "scenario_id": scenario.scenario_id,
+            "solver": self.solver_name,
+            "status": status.value,
+            "reason": reason,
+            "scenario_hash": scenario.stable_hash(),
+        }
+
+    def dry_run(self, scenario: PhysicsScenario, output_root: str | Path) -> dict[str, Any]:
+        """Verify command construction and inputs without executing the solver."""
+        scenario.validate(self.solver_name)
+        exe = self.executable_path()
+        output_root = Path(output_root)
+        dummy_work = Path("/tmp/jalai_dryrun")
+        command = self.build_command(exe, scenario, dummy_work, output_root)
+        return {
+            "scenario_id": scenario.scenario_id,
+            "solver": self.solver_name,
+            "dry_run": True,
+            "command": command,
+            "executable": exe,
+            "scenario_hash": scenario.stable_hash(),
+            "status": ExecutionStatus.READY.value,
+        }
+
+    def run(
+        self,
+        scenario: PhysicsScenario,
+        output_root: str | Path,
+        *,
+        timeout: int = 3600,
+        mode: PhysicsRunMode = PhysicsRunMode.EXECUTE,
+    ) -> PhysicsResult:
         """Execute in an isolated work directory; genuine parsing is subclass-specific."""
+        if mode == PhysicsRunMode.VALIDATION_ONLY:
+            report = self.validate_only(scenario)
+            raise RuntimeError(f"Validation-only mode requested: {report}")
+        if mode == PhysicsRunMode.DRY_RUN:
+            report = self.dry_run(scenario, output_root)
+            raise RuntimeError(f"Dry-run mode requested: {report}")
+
         scenario.validate(self.solver_name)
         executable = self.executable_path()
         output_root = Path(output_root)
