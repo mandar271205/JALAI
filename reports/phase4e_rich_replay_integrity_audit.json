@@ -1,0 +1,12 @@
+{
+  "audit_version": "phase4e_rich_replay_integrity_v1",
+  "execution_state": "NOT_RUN",
+  "expected_events": 15,
+  "expected_train_events": 12,
+  "expected_validation_events": 3,
+  "expected_test_events": 0,
+  "expected_issues": 255,
+  "complete_issues": 0,
+  "locked_test_accessed": false,
+  "audit_passed": false
+}

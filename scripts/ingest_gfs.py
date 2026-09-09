@@ -80,4 +80,3 @@ if __name__ == "__main__":
     start = datetime(2023, 7, 25, tzinfo=timezone.utc)
     end = datetime(2023, 7, 25, 2, tzinfo=timezone.utc)
     ingest_gfs(start, end)
-

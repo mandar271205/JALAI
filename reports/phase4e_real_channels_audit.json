@@ -1,0 +1,11 @@
+{
+  "audit_version": "phase4e_real_channels_v1",
+  "execution_state": "NOT_RUN",
+  "conceptual_input_count": 13,
+  "CHANNEL_BINDING_IMPLEMENTED": true,
+  "REAL_CHANNEL_POPULATED": false,
+  "radar_real_channel_populated": false,
+  "insat_real_channel_populated": false,
+  "synthetic_substitution_used": false,
+  "audit_passed": false
+}

@@ -153,4 +153,3 @@ def reproject_field(
         },
     }
     return output, metadata
-

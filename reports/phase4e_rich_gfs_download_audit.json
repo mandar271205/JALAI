@@ -1,0 +1,12 @@
+{
+  "audit_version": "phase4e_rich_gfs_download_audit_v1",
+  "execution_state": "NOT_RUN",
+  "expected_pairs": 225,
+  "complete_pairs": 0,
+  "incomplete_pairs": 0,
+  "missing_pairs": 225,
+  "failed_pairs": 0,
+  "total_measured_bytes": 0,
+  "full_225_download_started": false,
+  "audit_passed": false
+}

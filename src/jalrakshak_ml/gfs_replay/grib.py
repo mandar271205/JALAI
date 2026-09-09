@@ -180,14 +180,18 @@ def fetch_field(cycle, lead, cache_dir, product="prate_mean", *, allow_download=
     return path, requested, {"source_uri": uri, "source_message_sha256": digest}
 
 
-RICH_VARIABLE_IDX_PATTERNS: dict[str, tuple[str, str, str]] = {
+RICH_VARIABLE_IDX_PATTERNS: dict[str, tuple[str, str | tuple[str, ...], str]] = {
     "u10": ("UGRD", "10 m above ground", "instant"),
     "v10": ("VGRD", "10 m above ground", "instant"),
     "t2m": ("TMP", "2 m above ground", "instant"),
     "rh2m": ("RH", "2 m above ground", "instant"),
     "sp": ("PRES", "surface", "instant"),
     "cape": ("CAPE", "surface", "instant"),
-    "pwat": ("PWAT", "entire atmosphere (considered as a single layer)", "instant"),
+    "pwat": (
+        "PWAT",
+        ("entire atmosphere", "entire atmosphere (considered as a single layer)"),
+        "instant",
+    ),
     "prate_mean": ("PRATE", "surface", "interval_avg"),
     "apcp_interval": ("APCP", "surface", "interval_accum"),
 }
@@ -245,7 +249,8 @@ def rich_index_ranges(
             if (
                 len(parts) >= 6
                 and parts[3] == expected_var
-                and parts[4] == expected_level
+                and parts[4]
+                in ((expected_level,) if isinstance(expected_level, str) else expected_level)
                 and parts[5] == expected_step
             ):
                 begin = int(parts[1])
@@ -254,14 +259,26 @@ def rich_index_ranges(
         all_var_matches[raw_var] = (var, expected_var, expected_level, expected_step, matches)
 
     # 1. Check for ambiguous / duplicate matches first
-    for raw_var, (var, expected_var, expected_level, expected_step, matches) in all_var_matches.items():
+    for raw_var, (
+        var,
+        expected_var,
+        expected_level,
+        expected_step,
+        matches,
+    ) in all_var_matches.items():
         if len(matches) > 1:
             raise ValueError(
                 f"Ambiguous GRIB field in .idx: {raw_var!r} matched {len(matches)} times at lead {lead}"
             )
 
     # 2. Check for missing matches second
-    for raw_var, (var, expected_var, expected_level, expected_step, matches) in all_var_matches.items():
+    for raw_var, (
+        var,
+        expected_var,
+        expected_level,
+        expected_step,
+        matches,
+    ) in all_var_matches.items():
         if len(matches) == 0:
             raise ValueError(
                 f"Missing required GRIB messages in .idx: exact GRIB field missing for {raw_var!r} at lead {lead}: "
@@ -269,7 +286,13 @@ def rich_index_ranges(
             )
 
     # 3. Check boundaries and size limits, then construct ranges
-    for raw_var, (var, expected_var, expected_level, expected_step, matches) in all_var_matches.items():
+    for raw_var, (
+        var,
+        expected_var,
+        expected_level,
+        expected_step,
+        matches,
+    ) in all_var_matches.items():
         begin, end = matches[0]
         if end == -1:
             raise ValueError(f"Index lacks next-message boundary for {raw_var}")
@@ -291,7 +314,14 @@ def fetch_rich_gfs_lead(
     lead: int | None = None,
     cache_dir: str | Path | None = None,
     variable_keys: Sequence[str] = (
-        "u10", "v10", "t2m", "rh2m", "sp", "cape", "pwat", "prate_mean"
+        "u10",
+        "v10",
+        "t2m",
+        "rh2m",
+        "sp",
+        "cape",
+        "pwat",
+        "prate_mean",
     ),
     *,
     cycle_dt: str | datetime | None = None,
@@ -380,7 +410,7 @@ def fetch_rich_gfs_lead(
 
     cache.mkdir(parents=True, exist_ok=True)
     for var, (begin, end) in ranges.items():
-        p = cache / f"{cycle_dt:%Y%m%dT%H}_{var}_f{lead:03d}.grib2"
+        p = cache / f"{cycle_dt_val:%Y%m%dT%H}_{var}_f{lead:03d}.grib2"
         if p.exists():
             digest = hashlib.sha256(p.read_bytes()).hexdigest()
             results[var] = {
@@ -401,7 +431,9 @@ def fetch_rich_gfs_lead(
         ) as resp:
             resp.raise_for_status()
             expected = rf"bytes {begin}-{end}/\d+"
-            if resp.status_code != 206 or not re.fullmatch(expected, resp.headers.get("Content-Range", "")):
+            if resp.status_code != 206 or not re.fullmatch(
+                expected, resp.headers.get("Content-Range", "")
+            ):
                 raise ValueError("Server ignored or altered bounded byte-range request")
             data = resp.raw.read(size + 1)
 
@@ -425,4 +457,3 @@ def fetch_rich_gfs_lead(
         }
 
     return results
-

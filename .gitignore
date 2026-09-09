@@ -26,6 +26,7 @@ cache/
 tmp.py
 tmp/
 out.log
+*.part
 
 # Large ML artifacts
 *.ckpt

@@ -1,0 +1,85 @@
+{
+  "models": [
+    "Persistence",
+    "PySTEPS",
+    "ConvLSTM V2",
+    "ConvLSTM V3",
+    "U-Net + ConvGRU",
+    "ST Attention"
+  ],
+  "deep_training_seeds": [
+    26071,
+    26072,
+    26073
+  ],
+  "inputs": {
+    "obs_history": [
+      4,
+      1,
+      128,
+      128
+    ],
+    "nwp_future": [
+      4,
+      11,
+      128,
+      128
+    ],
+    "static_features": [
+      1,
+      128,
+      128
+    ]
+  },
+  "runtime_features": [
+    "AMP",
+    "Drive checkpointing",
+    "resume",
+    "early stopping",
+    "best checkpoint",
+    "OOM-safe batch fallback",
+    "runtime logging",
+    "peak GPU memory",
+    "parameter count",
+    "artifact hashes"
+  ],
+  "validation_metrics": [
+    "MAE",
+    "RMSE",
+    "Bias",
+    "CSI@0.1",
+    "CSI@1",
+    "CSI@5",
+    "CSI@10_if_supported",
+    "POD",
+    "FAR",
+    "F1"
+  ],
+  "confidence_intervals": "block_or_event_bootstrap_only",
+  "ablations": {
+    "A": [
+      "GPM"
+    ],
+    "B": [
+      "GPM",
+      "GFS precipitation"
+    ],
+    "C": [
+      "GPM",
+      "full rich GFS"
+    ],
+    "D": [
+      "GPM",
+      "full rich GFS",
+      "elevation"
+    ]
+  },
+  "source_dropout": [
+    "missing GFS precip",
+    "missing ancillary GFS",
+    "missing terrain"
+  ],
+  "split": "validation_only",
+  "locked_test_access": false,
+  "execution_state": "NOT_STARTED"
+}

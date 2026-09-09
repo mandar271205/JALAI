@@ -216,6 +216,10 @@ def train_single_model(
 
 
 def run_tournament() -> dict[str, Any]:
+    raise RuntimeError(
+        "Legacy tournament disabled: it mixed validation selection with automatic locked-test access. "
+        "Use the gated Phase 4E validation-only runner after prerequisite audits pass."
+    )
     log.info("Starting Phase 4E Deep Nowcasting Model Tournament...")
     version_dir = Path("data/processed/training/gpm_imerg_v07_mumbai_monsoon_expanded_v1")
 

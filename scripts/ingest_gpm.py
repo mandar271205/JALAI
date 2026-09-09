@@ -75,4 +75,3 @@ if __name__ == "__main__":
     start = datetime.fromisoformat(args.start).replace(tzinfo=timezone.utc)
     end = datetime.fromisoformat(args.end).replace(tzinfo=timezone.utc)
     ingest_gpm(start, end)
-

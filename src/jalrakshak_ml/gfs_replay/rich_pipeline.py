@@ -22,6 +22,7 @@ CRITICAL NON-LEAKAGE RULE:
 This module operates ONLY on the 15 train and validation events.
 Locked test events are strictly prohibited from this pipeline.
 """
+
 from __future__ import annotations
 
 import hashlib
@@ -39,7 +40,6 @@ from typing import Any
 import numpy as np
 
 from jalrakshak_ml.deep_nowcast.splits import (
-    LOCKED_TEST_EVENTS_AUTHORITATIVE,
     TRAIN_EVENTS_AUTHORITATIVE,
     VALIDATION_EVENTS_AUTHORITATIVE,
     build_event_sequences,
@@ -47,15 +47,23 @@ from jalrakshak_ml.deep_nowcast.splits import (
 )
 from jalrakshak_ml.gfs_replay.core import (
     Selection,
-    allocate_half_hours,
     finite_rain,
+    reconstruct_hourly,
     select_gfs_forecast_as_of,
     utc,
 )
-from jalrakshak_ml.gfs_replay.spatial import canonicalize_grid, reproject_rate
+from jalrakshak_ml.gfs_replay.grib import read_field, selector
+from jalrakshak_ml.gfs_replay.rich_download import (
+    AVAILABILITY_BASIS,
+    granule_directory,
+    parse_prate_interval,
+    sha256_file,
+)
+from jalrakshak_ml.gfs_replay.spatial import reproject_field, reproject_rate
 from jalrakshak_ml.weather.adapters.gfs_rich import (
     GFS_VARIABLE_SPECS,
     derive_wind_speed_and_direction,
+    read_exact_gfs_field,
 )
 
 log = logging.getLogger(__name__)
@@ -129,27 +137,39 @@ def resolve_rich_gfs_output_dir(override: Path | str | None = None) -> Path:
 def check_colab_drive_persistence(output_dir: Path | str) -> list[str]:
     """Emit warnings/guards when running in Google Colab without Google Drive persistence."""
     import warnings as py_warnings
+
     warnings_list = []
     out_str = str(output_dir).replace("\\", "/")
-    is_colab = (
-        "google.colab" in sys.modules
-        or Path("/content").exists()
-        or out_str.startswith("/content")
-        or "/content" in out_str
-    )
+    is_colab = "google.colab" in sys.modules and Path("/content").is_dir()
+    colab_style_path = out_str.startswith("/content/")
 
-    if is_colab:
-        if "/content/drive" not in out_str:
-            warning_msg = (
-                f"COLAB EPHEMERAL STORAGE WARNING: Resolved output path {out_str} is located in ephemeral "
-                f"container storage (/content/...). Data will be lost upon runtime disconnect! "
-                f"Recommended Colab persistent destination: "
-                f"/content/drive/MyDrive/JALAI_DATA/processed/gfs_replay/{RICH_GFS_REPLAY_VERSION}"
-            )
-            log.warning(warning_msg)
-            py_warnings.warn(warning_msg, UserWarning, stacklevel=2)
-            warnings_list.append(warning_msg)
+    if (is_colab or colab_style_path) and "/content/drive" not in out_str:
+        warning_msg = (
+            f"COLAB EPHEMERAL STORAGE WARNING: Resolved output path {out_str} is located in ephemeral "
+            f"container storage (/content/...). Data will be lost upon runtime disconnect! "
+            f"Recommended Colab persistent destination: "
+            f"/content/drive/MyDrive/JALAI_DATA/processed/gfs_replay/{RICH_GFS_REPLAY_VERSION}"
+        )
+        log.warning(warning_msg)
+        py_warnings.warn(warning_msg, UserWarning, stacklevel=2)
+        warnings_list.append(warning_msg)
     return warnings_list
+
+
+def persistence_environment(output_dir: Path | str) -> dict[str, bool]:
+    """Distinguish local persistence from a genuine mounted Colab Drive."""
+    output = Path(output_dir)
+    is_colab = "google.colab" in sys.modules and Path("/content").is_dir()
+    drive_root = Path("/content/drive/MyDrive")
+    try:
+        under_drive = output.resolve().is_relative_to(drive_root.resolve())
+    except (OSError, RuntimeError):
+        under_drive = False
+    return {
+        "NETWORK_SMOKE_VERIFIED": False,
+        "LOCAL_PERSISTENCE_VERIFIED": False,
+        "COLAB_DRIVE_PERSISTENCE_VERIFIED": bool(is_colab and drive_root.is_dir() and under_drive),
+    }
 
 
 @dataclass(slots=True)
@@ -159,9 +179,12 @@ class RichIssuePayload:
     event_id: str
     issue_time: datetime
     selection: Selection
-    rainfall_rate: np.ndarray          # shape (4, H, W)
+    rainfall_rate: np.ndarray  # shape (4, H, W)
     meteorology_fields: dict[str, np.ndarray]  # key -> shape (4, H, W)
     spatial_metadata: dict[str, Any]
+    source_provenance: dict[str, Any] | None = None
+    temporal_metadata: dict[str, Any] | None = None
+    availability_masks: dict[str, np.ndarray] | None = None
 
     def validate(self) -> None:
         if is_locked_test_event(self.event_id):
@@ -181,6 +204,10 @@ class RichIssuePayload:
                 )
             if not np.all(np.isfinite(arr)):
                 raise ValueError(f"Array {key} contains non-finite values (NaN/Inf)")
+        if self.source_provenance is not None:
+            for key in ("gfs_precipitation", *METEOROLOGY_ARRAY_KEYS):
+                if key not in self.source_provenance:
+                    raise ValueError(f"Missing source provenance for {key}")
 
 
 def save_rich_issue(
@@ -244,7 +271,9 @@ def save_rich_issue(
         "issue_time": issue_time.isoformat(),
         "cycle_time": selection.cycle_time.isoformat(),
         "availability_time": selection.availability_time.isoformat(),
-        "availability_basis": selection.availability_basis,
+        "availability_basis": AVAILABILITY_BASIS
+        if selection.availability_basis.startswith("assumed")
+        else selection.availability_basis,
         "forecast_age_hours": (issue_time - selection.cycle_time).total_seconds() / 3600.0,
         "source_forecast_hours": list(selection.forecast_hours),
         "temporal_alignment_policy": "step_forward_nearest_causal",
@@ -277,6 +306,12 @@ def save_rich_issue(
         "rainfall_sha256": rain_hash,
         "meteorology_sha256": meteo_hash,
         "spatial": payload.spatial_metadata,
+        "source_provenance": payload.source_provenance,
+        "temporal_metadata": payload.temporal_metadata,
+        "availability_masks": {
+            key: np.asarray(value, dtype=bool).tolist()
+            for key, value in (payload.availability_masks or {}).items()
+        },
         "generated_at": datetime.now(UTC).isoformat(),
     }
 
@@ -320,7 +355,6 @@ def select_rich_gfs_leads_for_issue(
 
     Deduplicates at (cycle_time, forecast_lead) and returns sorted tuple of minimal integer forecast leads.
     """
-    issue_dt = utc(issue_time)
     cycle_dt = utc(cycle_time)
     leads: set[int] = set()
 
@@ -354,20 +388,32 @@ class AlignmentRecord(dict):
         source_valid_time: datetime,
         age_minutes: int,
         alignment_method: str = "step_forward_nearest_causal",
+        availability_time: datetime | None = None,
+        availability_basis: str = AVAILABILITY_BASIS,
     ):
-        super().__init__({
-            "horizon_minutes": horizon_minutes,
-            "conditioning_valid_time": target_valid_time.isoformat(),
-            "target_valid_time": target_valid_time.isoformat(),
-            "native_gfs_cycle": native_gfs_cycle.isoformat(),
-            "native_gfs_lead": selected_lead_hour,
-            "selected_lead_hour": selected_lead_hour,
-            "native_gfs_valid_time": source_valid_time.isoformat(),
-            "source_valid_time": source_valid_time.isoformat(),
-            "temporal_offset_minutes": age_minutes,
-            "age_minutes": age_minutes,
-            "alignment_method": alignment_method,
-        })
+        available = availability_time or native_gfs_cycle + timedelta(hours=6)
+        super().__init__(
+            {
+                "horizon_minutes": horizon_minutes,
+                "conditioning_valid_time": target_valid_time.isoformat(),
+                "target_valid_time": target_valid_time.isoformat(),
+                "native_gfs_cycle": native_gfs_cycle.isoformat(),
+                "native_gfs_lead": selected_lead_hour,
+                "selected_lead_hour": selected_lead_hour,
+                "native_gfs_valid_time": source_valid_time.isoformat(),
+                "source_valid_time": source_valid_time.isoformat(),
+                "temporal_offset_minutes": age_minutes,
+                "age_minutes": age_minutes,
+                "aligned_target_time": target_valid_time.isoformat(),
+                "source_native_valid_time": source_valid_time.isoformat(),
+                "source_age_minutes": age_minutes,
+                "cycle_time": native_gfs_cycle.isoformat(),
+                "lead_hour": selected_lead_hour,
+                "availability_time": available.isoformat(),
+                "availability_basis": availability_basis,
+                "alignment_method": alignment_method,
+            }
+        )
         self.horizon_minutes = horizon_minutes
         self.target_valid_time = target_valid_time
         self.source_valid_time = source_valid_time
@@ -412,17 +458,200 @@ def align_instantaneous_horizons(
             )
 
         offset_mins = int((target_dt - native_valid_dt).total_seconds() // 60)
-        alignments.append(AlignmentRecord(
-            horizon_minutes=h_mins,
-            target_valid_time=target_dt,
-            native_gfs_cycle=cycle_dt,
-            selected_lead_hour=native_lead,
-            source_valid_time=native_valid_dt,
-            age_minutes=offset_mins,
-            alignment_method="step_forward_nearest_causal",
-        ))
+        alignments.append(
+            AlignmentRecord(
+                horizon_minutes=h_mins,
+                target_valid_time=target_dt,
+                native_gfs_cycle=cycle_dt,
+                selected_lead_hour=native_lead,
+                source_valid_time=native_valid_dt,
+                age_minutes=offset_mins,
+                alignment_method="step_forward_nearest_causal",
+            )
+        )
 
     return alignments
+
+
+def align_prate_horizons(
+    issue_time: datetime | str,
+    cycle_time: datetime | str,
+    metadata_by_end_step: dict[int, dict[str, Any]],
+    horizons_minutes: tuple[int, ...] = (30, 60, 90, 120),
+) -> list[dict[str, Any]]:
+    """Map half-hour slots to native hourly PRATE intervals, preserving provenance."""
+    issue, cycle = utc(issue_time), utc(cycle_time)
+    output = []
+    for horizon in horizons_minutes:
+        aligned = issue + timedelta(minutes=horizon)
+        lead = math.ceil((aligned - cycle).total_seconds() / 3600)
+        if lead not in metadata_by_end_step:
+            raise ValueError(f"Missing native PRATE interval ending at lead {lead}")
+        native = parse_prate_interval(metadata_by_end_step[lead])
+        slot_start = aligned - timedelta(minutes=30)
+        source_start = cycle + timedelta(hours=lead - 1)
+        source_end = cycle + timedelta(hours=lead)
+        if not source_start <= slot_start < aligned <= source_end:
+            raise ValueError("Half-hour slot is not covered by native PRATE interval")
+        output.append(
+            {
+                "horizon_minutes": horizon,
+                "aligned_target_time": aligned.isoformat(),
+                "source_native_valid_time": native["native_valid_time"],
+                "source_interval_start": native["source_interval_start"],
+                "source_interval_end": native["source_interval_end"],
+                "reconstructed_native_interval_start": source_start.isoformat(),
+                "reconstructed_native_interval_end": source_end.isoformat(),
+                "raw_prate_statistical_interval": native,
+                "source_age_minutes": int((aligned - source_end).total_seconds() / 60),
+                "cycle_time": cycle.isoformat(),
+                "lead_hour": lead,
+                "availability_time": (cycle + timedelta(hours=6)).isoformat(),
+                "availability_basis": AVAILABILITY_BASIS,
+                "native_cadence_minutes": 60,
+                "output_cadence_minutes": 30,
+                "temporal_disaggregation_method": "uniform_within_native_interval",
+                "independent_native_observation": False,
+            }
+        )
+    return output
+
+
+def build_rich_issue_from_cache(
+    event_id: str,
+    issue_time: datetime | str,
+    target_times: Sequence[datetime | str],
+    cache_root: str | Path,
+    target_grid: dict[str, Any],
+) -> RichIssuePayload:
+    """Build one rich issue strictly from a complete raw cache; performs no downloads."""
+    if is_locked_test_event(event_id):
+        raise PermissionError(f"Locked-test event is forbidden: {event_id}")
+    issue = utc(issue_time)
+    selection = select_gfs_forecast_as_of(issue, 120, latency_hours=6)
+    targets = [utc(value) for value in target_times]
+    if targets != [issue + timedelta(minutes=value) for value in (30, 60, 90, 120)]:
+        raise ValueError("Target times must be the four locked half-hour horizons")
+    instant_alignment = align_instantaneous_horizons(issue, selection.cycle_time)
+    raw_fields = {key: [] for key in RICH_VARIABLE_KEYS}
+    source_provenance: dict[str, Any] = {}
+    meteorology = {key: [] for key in METEOROLOGY_ARRAY_KEYS}
+    for alignment in instant_alignment:
+        lead = alignment.selected_lead_hour
+        directory = granule_directory(cache_root, selection.cycle_time, lead)
+        projected = {}
+        for variable in RICH_VARIABLE_KEYS:
+            path = directory / f"{variable}.grib2"
+            values, lat, lon, metadata = read_exact_gfs_field(path, variable)
+            values, spatial = reproject_field(
+                values,
+                lat,
+                lon,
+                target_grid,
+                variable_name=variable,
+                physical_range=GFS_VARIABLE_SPECS[variable]["physical_range"],
+            )
+            projected[variable] = values.astype(np.float32)
+            raw_fields[variable].append(
+                {
+                    "source_path": str(path),
+                    "sha256": sha256_file(path),
+                    "parser_state": "PASSED",
+                    "placeholder": False,
+                    "grib_metadata": metadata,
+                    **dict(alignment),
+                }
+            )
+        speed, direction_sin, direction_cos = derive_cyclic_wind_direction(
+            projected["u10"], projected["v10"]
+        )
+        meteorology["gfs_u10"].append(projected["u10"])
+        meteorology["gfs_v10"].append(projected["v10"])
+        meteorology["gfs_wind_speed"].append(speed)
+        meteorology["gfs_wind_direction_sin"].append(direction_sin)
+        meteorology["gfs_wind_direction_cos"].append(direction_cos)
+        meteorology["gfs_t2m"].append(projected["t2m"])
+        meteorology["gfs_rh2m"].append(projected["rh2m"])
+        meteorology["gfs_surface_pressure"].append(projected["sp"])
+        meteorology["gfs_cape"].append(projected["cape"])
+        meteorology["gfs_pwat"].append(projected["pwat"])
+    channel_to_raw = {
+        "gfs_u10": "u10",
+        "gfs_v10": "v10",
+        "gfs_t2m": "t2m",
+        "gfs_rh2m": "rh2m",
+        "gfs_surface_pressure": "sp",
+        "gfs_cape": "cape",
+        "gfs_pwat": "pwat",
+    }
+    for channel, variable in channel_to_raw.items():
+        source_provenance[channel] = raw_fields[variable]
+    for channel in ("gfs_wind_speed", "gfs_wind_direction_sin", "gfs_wind_direction_cos"):
+        source_provenance[channel] = raw_fields["u10"] + raw_fields["v10"]
+
+    rainfall, precip_metadata, precip_sources = [], {}, []
+    for target in targets:
+        end_lead = math.ceil((target - selection.cycle_time).total_seconds() / 3600)
+        current_path = (
+            granule_directory(cache_root, selection.cycle_time, end_lead) / "prate_mean.grib2"
+        )
+        current = read_field(
+            current_path,
+            selector("prate_mean", selection.cycle_time, end_lead),
+            (72.70, 18.80, 73.10, 19.35),
+        )
+        fields = [(current[0], current[3])]
+        if float(current[3]["startStep"]) < end_lead - 1:
+            previous_path = (
+                granule_directory(cache_root, selection.cycle_time, end_lead - 1)
+                / "prate_mean.grib2"
+            )
+            previous = read_field(
+                previous_path,
+                selector("prate_mean", selection.cycle_time, end_lead - 1),
+                (72.70, 18.80, 73.10, 19.35),
+            )
+            fields.insert(0, (previous[0], previous[3]))
+            source_paths = [previous_path, current_path]
+        else:
+            source_paths = [current_path]
+        hourly = reconstruct_hourly(fields)[-1]
+        rate, spatial = reproject_rate(hourly.rate, current[1], current[2], target_grid)
+        rainfall.append(rate.astype(np.float32))
+        precip_metadata[end_lead] = current[3]
+        precip_sources.append(
+            [
+                {
+                    "source_path": str(path),
+                    "sha256": sha256_file(path),
+                    "parser_state": "PASSED",
+                    "placeholder": False,
+                }
+                for path in source_paths
+            ]
+        )
+    precipitation_alignment = align_prate_horizons(issue, selection.cycle_time, precip_metadata)
+    source_provenance["gfs_precipitation"] = [
+        {**source, **alignment}
+        for sources, alignment in zip(precip_sources, precipitation_alignment, strict=True)
+        for source in sources
+    ]
+    arrays = {key: np.stack(value) for key, value in meteorology.items()}
+    masks = {key: np.ones(4, dtype=bool) for key in ("gfs_precipitation", *METEOROLOGY_ARRAY_KEYS)}
+    return RichIssuePayload(
+        event_id=event_id,
+        issue_time=issue,
+        selection=selection,
+        rainfall_rate=np.stack(rainfall),
+        meteorology_fields=arrays,
+        spatial_metadata=spatial,
+        source_provenance=source_provenance,
+        temporal_metadata={
+            "instantaneous": [dict(value) for value in instant_alignment],
+            "precipitation": precipitation_alignment,
+        },
+        availability_masks=masks,
+    )
 
 
 def plan_rich_replay_for_events(
@@ -454,7 +683,9 @@ def plan_rich_replay_for_events(
     for ev in events:
         event_id = ev["event_id"]
         if is_locked_test_event(event_id):
-            raise PermissionError(f"Locked test event {event_id} cannot be planned in non-test replay.")
+            raise PermissionError(
+                f"Locked test event {event_id} cannot be planned in non-test replay."
+            )
 
         # Derive sequences using shared authoritative sequence index builder
         seqs = build_event_sequences(
@@ -475,23 +706,29 @@ def plan_rich_replay_for_events(
             cycle_str = sel.cycle_time.strftime("%Y%m%d_%H%M")
             plan["unique_cycles_required"].add(cycle_str)
 
-            minimal_leads = select_rich_gfs_leads_for_issue(issue_dt, sel.cycle_time, seq.target_times)
+            minimal_leads = select_rich_gfs_leads_for_issue(
+                issue_dt, sel.cycle_time, seq.target_times
+            )
             for ld in minimal_leads:
                 plan["_unique_cycle_leads_set"].add((sel.cycle_time.isoformat(), ld))
 
             alignment = align_instantaneous_horizons(issue_dt, sel.cycle_time)
 
-            event_plan.append({
-                "sequence_index": seq.start_index,
-                "issue_time": issue_time_str,
-                "target_times": list(seq.target_times),
-                "cycle_time": sel.cycle_time.isoformat(),
-                "cycle_availability_status": "ASSUMED",
-                "forecast_hours": list(minimal_leads),
-                "legacy_forecast_hours": list(sel.forecast_hours),
-                "forecast_age_hours": (issue_dt - sel.cycle_time).total_seconds() / 3600.0,
-                "temporal_alignment": alignment,
-            })
+            event_plan.append(
+                {
+                    "sequence_index": seq.start_index,
+                    "issue_time": issue_time_str,
+                    "target_times": list(seq.target_times),
+                    "cycle_time": sel.cycle_time.isoformat(),
+                    "cycle_availability_status": "ASSUMED",
+                    "availability_time": sel.availability_time.isoformat(),
+                    "availability_basis": AVAILABILITY_BASIS,
+                    "forecast_hours": list(minimal_leads),
+                    "legacy_forecast_hours": list(sel.forecast_hours),
+                    "forecast_age_hours": (issue_dt - sel.cycle_time).total_seconds() / 3600.0,
+                    "temporal_alignment": alignment,
+                }
+            )
 
         split_name = ev.get("split") or ev.get("research_split", "train")
         plan["events"][event_id] = {

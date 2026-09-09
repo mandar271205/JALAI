@@ -12,7 +12,7 @@ spatial:
   crs: "EPSG:32643"
   api_crs: "EPSG:4326"
   shape: [256, 256]
-  bounds_wgs84: [72.70, 18.85, 73.10, 19.35]
+  bounds_wgs84: [72.75, 18.85, 73.05, 19.30]
   native_resolution: "0.25_deg (~28 km)"
   canonical_resolution: "256x256 (EPSG:32643)"
 
@@ -22,7 +22,7 @@ temporal:
   history_length: 4
   prediction_horizon: 4
   assumed_latency_hours: 6.0
-  availability_basis: "assumed_operational_cycle_latency_6h"
+  availability_basis: "assumed_cycle_plus_6h_required_bundle_not_observed_publication"
   alignment_policy: "step_forward_nearest_causal"
 
 output_dir: "data/processed/gfs_replay/gfs_mumbai_phase4e_rich_non_test_v1"
