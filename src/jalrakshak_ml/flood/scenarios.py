@@ -60,18 +60,11 @@ class PhysicalRainfallScenario:
         rain_file = out / f"{self.scenario_id}.rain"
         meta_file = out / f"{self.scenario_id}.json"
 
-        lines = [
-            f"# Physical rainfall scenario: {self.scenario_id}",
-            f"# Source: {self.source_type} (SYNTHETIC, NOT OBSERVED)",
-            f"# Profile: {self.profile_type}  Duration: {self.duration_hours:.1f}h",
-            f"{len(self.rates_mm_h)} hours",
-        ]
-        for i, rate in enumerate(self.rates_mm_h):
-            t_hours = (i * self.cadence_minutes) / 60.0
-            lines.append(f"{float(rate):.4f}\t{t_hours:.4f}")
-
-        rain_file.write_text("\n".join(lines) + "\n", encoding="utf-8")
-        meta_file.write_text(json.dumps(self.to_dict(), indent=2), encoding="utf-8")
+        from .forecast_to_forcing import write_interval_rain
+        if self.cadence_minutes != 30 or not np.isclose(len(self.rates_mm_h) / 2, self.duration_hours):
+            raise ValueError('Scenario intervals must cover duration at 30-minute cadence')
+        encoding = write_interval_rain(rain_file, np.asarray(self.rates_mm_h))
+        meta_file.write_text(json.dumps({**self.to_dict(), **encoding}, indent=2), encoding="utf-8")
         return rain_file, meta_file
 
 

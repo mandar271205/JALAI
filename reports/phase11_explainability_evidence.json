@@ -1,0 +1,52 @@
+{
+  "status": "EXPLAINED",
+  "risk_score": 0.42915529012680054,
+  "hazard_type": "susceptibility",
+  "factors": [
+    {
+      "factor": "hazard",
+      "value": 0.580750584602356,
+      "direction": "increases_risk",
+      "contribution": 0.1430517633756002,
+      "evidence_source": {
+        "path": "data\\processed\\flood\\susceptibility_v1.tif",
+        "sha256": "e827be30c33c0b984fd095f6ec6203b514d31657124fb6a0e9323ac067a1bf9d"
+      },
+      "confidence": null
+    },
+    {
+      "factor": "exposure",
+      "value": 0.8571428656578064,
+      "direction": "increases_risk",
+      "contribution": 0.1430517633756002,
+      "evidence_source": "phase11_exposure_v1",
+      "confidence": null
+    },
+    {
+      "factor": "vulnerability",
+      "value": 0.8621277213096619,
+      "direction": "increases_risk",
+      "contribution": 0.1430517633756002,
+      "evidence_source": "phase11_vulnerability_v1",
+      "confidence": null
+    }
+  ],
+  "contribution_method": "zero-baseline Shapley of three-way product; equal risk/3 allocation",
+  "components": {
+    "hazard": 0.580750584602356,
+    "exposure": 0.8571428656578064,
+    "vulnerability": 0.8621277213096619
+  },
+  "missing_evidence": {
+    "invalid_cells": 8128,
+    "osm_coverage_unknown": true
+  },
+  "recommendations": [
+    "prioritize monitoring"
+  ],
+  "causal_or_calibrated_damage_claim": false,
+  "cell": [
+    40,
+    80
+  ]
+}

@@ -1,0 +1,107 @@
+# fno smoke evaluation
+
+```json
+{
+  "scenario_count": 1,
+  "per_scenario": {
+    "scenario_06_short_intense": {
+      "mae_m": 0.2084365641303325,
+      "rmse_m": 0.21772879116778107,
+      "bias_m": 0.19542498882854353,
+      "valid_cells": 65536,
+      "thresholds": {
+        "0.01": {
+          "tp": 56283,
+          "fp": 9253,
+          "fn": 0,
+          "tn": 0,
+          "positive_support": 56283,
+          "status": "SUPPORTED",
+          "iou": 0.8588104248046875,
+          "csi": 0.8588104248046875,
+          "f1": 0.9240430474720692,
+          "precision": 0.8588104248046875,
+          "recall": 1.0
+        },
+        "0.05": {
+          "tp": 31769,
+          "fp": 33767,
+          "fn": 0,
+          "tn": 0,
+          "positive_support": 31769,
+          "status": "SUPPORTED",
+          "iou": 0.4847564697265625,
+          "csi": 0.4847564697265625,
+          "f1": 0.6529777503725399,
+          "precision": 0.4847564697265625,
+          "recall": 1.0
+        },
+        "0.1": {
+          "tp": 6213,
+          "fp": 59323,
+          "fn": 0,
+          "tn": 0,
+          "positive_support": 6213,
+          "status": "SUPPORTED",
+          "iou": 0.0948028564453125,
+          "csi": 0.0948028564453125,
+          "f1": 0.17318708274679787,
+          "precision": 0.0948028564453125,
+          "recall": 1.0
+        },
+        "0.3": {
+          "tp": 0,
+          "fp": 0,
+          "fn": 1429,
+          "tn": 64107,
+          "positive_support": 1429,
+          "status": "SUPPORTED",
+          "iou": 0.0,
+          "csi": 0.0,
+          "f1": 0.0,
+          "precision": null,
+          "recall": 0.0
+        }
+      }
+    }
+  },
+  "macro": {
+    "mae_m": 0.2084365641303325,
+    "rmse_m": 0.21772879116778107,
+    "bias_m": 0.19542498882854353
+  },
+  "paired_mae_difference_interval_95": null,
+  "bootstrap_status": "INSUFFICIENT_SUPPORT_OR_NO_PAIRED_BASELINE",
+  "independent_pixel_bootstrap": false,
+  "status": "SMOKE_ONLY_QUARANTINED_SPATIAL_SEMANTICS",
+  "target_semantics": "head_zero_vs_maximum_depth; no forecast-horizon skill claimed",
+  "checkpoint_sha256": "f1e0f1777355071aaa881f60580c8ffe85dca07e809ff73b04aa2f6debc04292",
+  "checkpoint_epoch": 2,
+  "checkpoint_git_commit": "26bbd15977f8d98e8b7d0062cbbc5a7958dcb4db",
+  "dataset_sha256": "eea161f79f4ba031327df24bff6d859e8a03cd4fe70aaab387ba8ba90cc79ff7",
+  "normalization_sha256": "a704c0bc593f33341667691a31252f848012057359942e1fb7742c7db190fd26",
+  "latency": {
+    "device": "cpu",
+    "threads": 2,
+    "batch_size": 1,
+    "batch_seconds": [
+      0.2692403999972157,
+      0.3902820000075735,
+      0.37588449999748264
+    ],
+    "per_sample_seconds": [
+      0.5270734999940032
+    ],
+    "gpu_latency": null,
+    "measured_speedup": null
+  },
+  "FNO_SCIENTIFICALLY_VALIDATED": false,
+  "FNO_CALIBRATED": false,
+  "FNO_OPERATIONAL": false,
+  "limitations": [
+    "One validation scenario supports descriptive smoke metrics only.",
+    "Legacy spatial/forcing defects invalidate Mumbai predictive skill claims.",
+    "Original Phase 10 latency constants were not measurements; replaced by timed CPU inference."
+  ]
+}
+```

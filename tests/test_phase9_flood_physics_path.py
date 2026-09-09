@@ -384,9 +384,14 @@ class TestLISFLOODExecution:
         dem = tmp_path / "dem.tif"
         roughness = tmp_path / "r.tif"
         bdy = tmp_path / "rain.bdy"
-        dem.write_bytes(b"fake")
+        import rasterio
+        from rasterio.transform import from_origin
+        with rasterio.open(dem, 'w', driver='GTiff', width=2, height=2, count=1,
+                           dtype='float32', crs='EPSG:32643',
+                           transform=from_origin(260000, 2100000, 100, 100)) as dst:
+            dst.write(np.zeros((2, 2), dtype='float32'), 1)
         roughness.write_bytes(b"fake")
-        bdy.write_text("rainfall_test\n1 hours\n0.00\t10.0\n")
+        bdy.write_text("rainfall_test\n2 hours\n0.00\t10.0\n1.00\t10.0\n")
 
         def mock_run(cmd, **kwargs):
             return subprocess.CompletedProcess(cmd, returncode=1, stdout="", stderr="solver crashed")

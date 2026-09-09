@@ -145,18 +145,8 @@ AUTHORITATIVE_GATES = ScientificClaimGates()
 
 
 def get_phase10_executed_gates() -> ScientificClaimGates:
-    """Return claim gates reflecting genuine Phase 10 execution evidence."""
-    return ScientificClaimGates(
-        LISFLOOD_FP_INPUTS_AVAILABLE=True,
-        REAL_PHYSICS_SIMULATION_EXECUTED=True,
-        GENUINE_FNO_TARGETS_AVAILABLE=True,
-        FNO_TRAINING_STARTED=True,
-        FNO_VALIDATED=True,
-        LISFLOOD_SOLVER_AVAILABLE=True,
-        LISFLOOD_EXECUTION_READY=True,
-        LISFLOOD_EXECUTABLE=True,
-        LISFLOOD_SMOKE_EXECUTED=True,
-        GENUINE_SOLVER_OUTPUT_AVAILABLE=True,
-        PHYSICS_DATASET_READY=True,
-        FNO_ACTUALLY_TRAINED=True,
+    """Deprecated: Phase 10 execution alone cannot attest dataset readiness/validation."""
+    raise PermissionError(
+        'Phase 10 automatic promotion disabled after forensic grid/forcing audit. '
+        'Run scripts/run_post_phase10_research_audit.py for evidence-derived current gates.'
     )

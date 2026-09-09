@@ -1,0 +1,66 @@
+# flood intelligence benchmark
+
+```json
+{
+  "version": "flood_intelligence_benchmark_v1",
+  "timings": {
+    "fno_evaluation_seconds": 2.2165253999992274,
+    "exposure_build_seconds": 0.21555269999953452,
+    "vulnerability_build_seconds": 0.23444580000068527,
+    "risk_engine_seconds": 0.10649730000295676,
+    "uncertainty_seconds": 0.22076700000616256,
+    "explainability_seconds": 4.67000063508749e-05
+  },
+  "solver_runtime_seconds": [
+    98.56097940000473,
+    37.684586500006844,
+    51.778474599996116,
+    54.151594700000715,
+    44.49938390000898,
+    57.68299390000175
+  ],
+  "solver_process_success_rate": 1.0,
+  "canonical_training_eligible_runs": 0,
+  "corrected_solver_runtime_seconds": [
+    49.45388089999324,
+    38.96530090000306,
+    40.65182289999211,
+    54.341454099994735,
+    61.51798340000096,
+    29.640824999994948
+  ],
+  "corrected_smoke_dataset_verified": true,
+  "depth_wet_support": {
+    "scenario_01_low_steady": 2021,
+    "scenario_02_mod_steady": 8268,
+    "scenario_03_high_steady": 32624,
+    "scenario_04_front_loaded": 8585,
+    "scenario_05_back_loaded": 0,
+    "scenario_06_short_intense": 31769
+  },
+  "fno_latency": {
+    "device": "cpu",
+    "threads": 2,
+    "batch_size": 1,
+    "batch_seconds": [
+      0.2692403999972157,
+      0.3902820000075735,
+      0.37588449999748264
+    ],
+    "per_sample_seconds": [
+      0.5270734999940032
+    ],
+    "gpu_latency": null,
+    "measured_speedup": null
+  },
+  "fno_macro_metrics": {
+    "mae_m": 0.2084365641303325,
+    "rmse_m": 0.21772879116778107,
+    "bias_m": 0.19542498882854353
+  },
+  "susceptibility_generation_runtime": null,
+  "rainfall_tournament_benchmarked": false,
+  "audit_wall_seconds": 20.573349099999177,
+  "timing_basis": "measured local CPU wall clock; solver historical per-run records"
+}
+```

@@ -82,6 +82,13 @@ def ensure_ascii_dem(
 ) -> Path:
     """Ensure the DEM is formatted as an ESRI ASCII raster grid (.asc) for LISFLOOD-FP."""
     p = Path(dem_path)
+    import rasterio
+    with rasterio.open(p) as source:
+        t = source.transform
+        if t.b != 0 or t.d != 0 or t.a <= 0 or t.e >= 0 or not np.isclose(t.a, -t.e):
+            raise ValueError('LISFLOOD ASCII requires a north-up square grid; explicitly reproject first')
+        if source.crs is None or not source.crs.is_projected:
+            raise ValueError('Projected metre CRS required')
     if p.suffix.lower() in (".asc", ".dem"):
         return p
 
@@ -113,10 +120,8 @@ def ensure_ascii_dem(
                 f.write(f"NODATA_value  {nodata:.1f}\n")
                 for row in arr_clean:
                     f.write(" ".join(f"{v:.2f}" for v in row) + "\n")
-    except Exception:
-        # Fallback for mock/corrupt test files so mock subprocess can proceed
-        with open(out_asc, "w", encoding="utf-8") as f:
-            f.write("ncols 2\nnrows 2\nxllcorner 0.0\nyllcorner 0.0\ncellsize 10.0\nNODATA_value -9999\n0.0 0.0\n0.0 0.0\n")
+    except Exception as exc:
+        raise ValueError('Cannot create solver DEM from invalid source') from exc
 
     return out_asc
 
@@ -125,49 +130,23 @@ def ensure_lisflood_rain(
     forcing_path: str | Path,
     output_dir: str | Path,
     target_name: str = "rainfall.rain",
+    *,
+    column_order: str | None = None,
 ) -> Path:
-    """Format a rainfall forcing file for LISFLOOD-FP (value time order)."""
+    """Format explicit .rain rate/time or repository .bdy time/rate contracts."""
+    from .forensic import read_rain
     in_file = Path(forcing_path)
     out_file = Path(output_dir) / target_name
     out_file.parent.mkdir(parents=True, exist_ok=True)
 
-    lines = [ln.strip() for ln in in_file.read_text(encoding="utf-8").splitlines() if ln.strip()]
-    data_lines = []
-    header_found = False
-    n_hours_str = "1 hours"
-
-    for ln in lines:
-        if ln.startswith("#"):
-            continue
-        parts = ln.split()
-        if len(parts) >= 2 and parts[1].lower() in ("hours", "seconds"):
-            header_found = True
-            n_hours_str = ln
-            continue
-        if len(parts) == 2:
-            try:
-                v1, v2 = float(parts[0]), float(parts[1])
-                data_lines.append((v1, v2))
-            except ValueError:
-                continue
-
-    # Determine whether v1 or v2 is time (time must strictly increase)
-    is_v1_time = True
-    for i in range(1, len(data_lines)):
-        if data_lines[i][0] <= data_lines[i - 1][0]:
-            is_v1_time = False
-            break
-
+    order = column_order or {'.rain': 'rate_time', '.bdy': 'time_rate'}.get(in_file.suffix)
+    rates, times, unit = read_rain(in_file, column_order=order)
+    times = times / (3600 if unit == 'hours' else 1)
     with open(out_file, "w", encoding="utf-8") as f:
         f.write("# LISFLOOD-FP rainfall input\n")
-        f.write(f"{len(data_lines)} hours\n")
-        for v1, v2 in data_lines:
-            if is_v1_time:
-                # v1 was time, v2 was rate -> write rate first, time second
-                f.write(f"{v2:.4f}\t{v1:.4f}\n")
-            else:
-                # v1 was rate, v2 was time -> write rate first, time second
-                f.write(f"{v1:.4f}\t{v2:.4f}\n")
+        f.write(f"{len(rates)} {unit}\n")
+        for rate, timestamp in zip(rates, times, strict=True):
+            f.write(f"{rate:.4f}\t{timestamp:.10f}\n")
 
     return out_file
 
@@ -286,6 +265,10 @@ class LISFLOODRunRecord:
     created_at: str = ""
     mean_wet_depth_m: float | None = None
     depth_raster_path: str | None = None
+    command: list[str] | None = None
+    work_directory: str | None = None
+    consumed_forcing_sha256: str | None = None
+    consumed_dem_sha256: str | None = None
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
@@ -362,6 +345,8 @@ def run_lisflood_smoke(
     roughness_path = Path(roughness_path)
     bdy_path = Path(bdy_path)
     output_dir = Path(output_dir)
+    if (output_dir / 'results').is_dir() and any((output_dir / 'results').iterdir()):
+        raise FileExistsError('Solver output version already contains results; choose a new run directory')
     output_dir.mkdir(parents=True, exist_ok=True)
 
     dem_sha = _sha256_file(dem_path)
@@ -442,6 +427,10 @@ def run_lisflood_smoke(
     # Prepare ESRI ASCII DEM and rainfall forcing
     asc_dem = ensure_ascii_dem(dem_path, work_dir, "mumbai_dem.asc")
     rain_forcing = ensure_lisflood_rain(bdy_path, work_dir, "mumbai_rain.rain")
+    from .forensic import read_rain
+    _, rain_times, _ = read_rain(rain_forcing)
+    if rain_times[0] != 0 or rain_times[-1] < sim_time_hours * 3600:
+        raise ValueError('Forcing must cover the complete simulation period from time zero')
 
     is_wsl = binary.startswith("wsl:")
     wsl_bin = binary[4:] if is_wsl else binary
@@ -482,8 +471,9 @@ def run_lisflood_smoke(
                 check=False,
             )
         else:
+            cmd = [wsl_bin, par_path.name]
             result = subprocess.run(
-                [wsl_bin, par_path.name],
+                cmd,
                 cwd=str(work_dir),
                 timeout=timeout_seconds,
                 capture_output=True,
@@ -532,13 +522,12 @@ def run_lisflood_smoke(
     max_asc = results_dir / f"{scenario_id}.max"
     if max_asc.is_file():
         try:
-            with open(max_asc, "r", encoding="utf-8") as f:
-                # Read 6 header lines
-                for _ in range(6):
-                    f.readline()
-                depth_arr = np.loadtxt(f, dtype=np.float32)
-
-            finite = depth_arr[(depth_arr >= 0.0) & (depth_arr < 100.0)]
+            from .forensic import read_ascii
+            depth_arr, output_transform, output_nodata = read_ascii(max_asc)
+            valid = depth_arr != output_nodata
+            if not valid.any() or not np.isfinite(depth_arr[valid]).all() or (depth_arr[valid] < 0).any():
+                raise ValueError('Invalid solver depth; no clipping or manufactured targets')
+            finite = depth_arr[valid]
             if finite.size:
                 max_depth = float(finite.max())
                 wet = finite[finite >= 0.05]
@@ -548,6 +537,10 @@ def run_lisflood_smoke(
             # Export genuine simulated water depth GeoTIFF with domain spatial metadata
             import rasterio
             with rasterio.open(dem_path) as dem_src:
+                if depth_arr.shape != dem_src.shape or not np.allclose(
+                    tuple(dem_src.transform)[:6], tuple(output_transform)[:6], atol=.02, rtol=0
+                ):
+                    raise ValueError('Solver output grid differs from DEM; explicit reprojection required')
                 meta = dem_src.meta.copy()
                 meta.update(dtype=rasterio.float32, count=1, nodata=-9999.0)
 
@@ -558,6 +551,8 @@ def run_lisflood_smoke(
             output_files.append(str(depth_tif))
             depth_tif_path = str(depth_tif)
         except Exception as err:
+            max_depth = None
+            inundated = None
             result.stderr += f"\n[Depth parse error: {err}]"
 
     # Extract version banner from stdout
@@ -591,6 +586,10 @@ def run_lisflood_smoke(
         physically_simulated=physically_simulated,
         smoke_run=True,
         created_at=created_at,
+        command=cmd,
+        work_directory=str(work_dir.resolve()),
+        consumed_forcing_sha256=_sha256_file(rain_forcing),
+        consumed_dem_sha256=_sha256_file(asc_dem),
     )
 
     run_record.write(output_dir / f"{scenario_id}_run_record.json")

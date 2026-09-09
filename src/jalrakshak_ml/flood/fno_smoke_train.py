@@ -62,6 +62,11 @@ def run_fno_smoke_training(
 ) -> dict[str, Any]:
     """Execute smoke training of FloodFNO on genuine solver depth targets."""
     ds_path = Path(dataset_dir)
+    reference = json.loads((ds_path / 'physics_reference_manifest.json').read_text())
+    if reference.get('target_semantics') != 'single_explicit_solver_time; no repeated maxima':
+        raise PermissionError('Legacy repeated-maximum targets quarantined by Phase 11 audit')
+    if output_horizons != 1:
+        raise ValueError('Verified single-time dataset requires output_horizons=1')
     physics_manifest_path = ds_path / "physics_reference_manifest.json"
     norm_path = ds_path / "fno_train_only_normalization.json"
     train_inputs_path = ds_path / "train_inputs.npy"

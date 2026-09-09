@@ -72,9 +72,11 @@ def test_scenario_forcing_generation(tmp_path):
     assert meta_p.is_file()
 
     content = rain_p.read_text(encoding="utf-8")
-    assert "2 hours" in content
-    assert "50.0000\t0.0000" in content
-    assert "20.0000\t0.5000" in content
+    assert "seconds" in content
+    from jalrakshak_ml.flood.forensic import read_rain
+    rates, times, _ = read_rain(rain_p)
+    assert times[0] == 0 and times[-1] == 3600
+    assert np.sum((rates[1:] + rates[:-1]) * np.diff(times) / 2) / 3600 == pytest.approx(35.0)
 
     meta = json.loads(meta_p.read_text(encoding="utf-8"))
     assert meta["scenario_id"] == "test_sc_01"
