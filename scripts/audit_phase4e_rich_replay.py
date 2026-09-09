@@ -20,7 +20,9 @@ def main():
     cfg = load_yaml(args.config)
     plan = plan_rich_replay_for_events(cfg["events"], cfg["temporal"]["assumed_latency_hours"])
     result = audit_replay(plan, args.replay_root)
-    Path(args.output).write_text(json.dumps(result, indent=2), encoding="utf-8")
+    out = Path(args.output)
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(json.dumps(result, indent=2), encoding="utf-8")
     print(json.dumps(result, indent=2))
 
 

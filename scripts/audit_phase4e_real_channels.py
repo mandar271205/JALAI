@@ -17,6 +17,7 @@ def main():
     parser.add_argument("--replay-root", required=True)
     parser.add_argument("--dataset-root", required=True)
     parser.add_argument("--elevation", required=True)
+    parser.add_argument("--raw-cache", default=None)
     parser.add_argument("--output", default="reports/phase4e_real_channels_audit.json")
     args = parser.parse_args()
     cfg = load_yaml(args.config)
@@ -26,8 +27,11 @@ def main():
         args.replay_root,
         dataset_root=args.dataset_root,
         elevation_path=args.elevation,
+        raw_cache_root=args.raw_cache,
     )
-    Path(args.output).write_text(json.dumps(result, indent=2), encoding="utf-8")
+    out = Path(args.output)
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(json.dumps(result, indent=2), encoding="utf-8")
     print(json.dumps(result, indent=2))
 
 
