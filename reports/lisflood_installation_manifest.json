@@ -1,0 +1,12 @@
+{
+  "operating_system": "Windows 10 (WSL2 Ubuntu)",
+  "environment": "wsl2",
+  "solver_source": "wsl_local",
+  "solver_version": "LISFLOOD-FP version 8.0.3 (double)",
+  "installation_method": "wsl_preinstalled",
+  "binary_path": "wsl:/usr/local/bin/lisflood",
+  "timestamp": "2026-09-09T21:52:59.607731+00:00",
+  "command_used": "wsl -d Ubuntu -- /usr/local/bin/lisflood",
+  "status": "SUCCESS",
+  "elapsed_seconds": 9.141
+}

@@ -13,6 +13,9 @@ data/processed/training/
 data/processed/cubes/
 data/processed/demo/
 data/processed/gfs_replay/
+data/processed/flood/physics_outputs/
+data/processed/flood/scenarios/
+data/processed/flood/dataset/
 *.zarr/
 *.zarr
 *.hdf5
