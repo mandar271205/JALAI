@@ -49,7 +49,6 @@ from jalrakshak_ml.gfs_replay.core import (
     Selection,
     finite_rain,
     prate_mean_to_rate,
-    reconstruct_hourly,  # kept for APCP backward compatibility
     select_gfs_forecast_as_of,
     utc,
 )

@@ -18,6 +18,7 @@ Tests:
 
 from __future__ import annotations
 
+import math
 from datetime import UTC, datetime, timedelta
 
 import numpy as np
@@ -27,6 +28,7 @@ from jalrakshak_ml.gfs_replay.core import (
     interval_amount,
     prate_mean_to_rate,
     reconstruct_hourly,
+    utc,
 )
 
 CYCLE = datetime(2023, 8, 24, 0, 0, 0, tzinfo=UTC)
@@ -292,3 +294,239 @@ class TestProvenanceTag:
             result, 4.0, rtol=1e-10,
             err_msg=f"Failed at end_lead={end_lead} (startStep={start})",
         )
+
+
+# ---------------------------------------------------------------------------
+# 10. valid_time consistency
+#     parse_prate_interval (rich_download.py) enforces: valid_time == cycle + endStep.
+#     prate_mean_to_rate() (core.py) does NOT re-validate valid_time — that is the
+#     parser's responsibility, already enforced before the field reaches conversion.
+#     These tests verify: (a) the parser rejects mismatched valid_time;
+#     (b) prate_mean_to_rate() is indifferent to valid_time (correct layering).
+# ---------------------------------------------------------------------------
+
+class TestValidTimeConsistency:
+    """valid_time == forecast_reference_time + endStep is enforced by parse_prate_interval."""
+
+    def test_parse_prate_interval_rejects_mismatched_valid_time(self):
+        """parse_prate_interval must raise if valid_time != cycle + endStep."""
+        from jalrakshak_ml.gfs_replay.rich_download import parse_prate_interval
+
+        bad_meta = {
+            "shortName": "prate",
+            "typeOfLevel": "surface",
+            "level": 0,
+            "stepType": "avg",
+            "startStep": 0,
+            "endStep": 2,
+            "units": "kg m**-2 s**-1",
+            "forecast_reference_time": CYCLE.isoformat(),
+            # valid_time deliberately mismatched: should be CYCLE + 2h = 02:00Z
+            "valid_time": (CYCLE + timedelta(hours=3)).isoformat(),  # wrong: +3h
+        }
+        with pytest.raises(ValueError, match="valid time differs from cycle plus end step"):
+            parse_prate_interval(bad_meta)
+
+    def test_parse_prate_interval_accepts_correct_valid_time(self):
+        """parse_prate_interval must accept valid_time == cycle + endStep."""
+        from jalrakshak_ml.gfs_replay.rich_download import parse_prate_interval
+
+        good_meta = {
+            "shortName": "prate",
+            "typeOfLevel": "surface",
+            "level": 0,
+            "stepType": "avg",
+            "startStep": 0,
+            "endStep": 2,
+            "units": "kg m**-2 s**-1",
+            "forecast_reference_time": CYCLE.isoformat(),
+            "valid_time": (CYCLE + timedelta(hours=2)).isoformat(),  # correct
+        }
+        result = parse_prate_interval(good_meta)
+        assert result["end_step"] == 2
+        assert result["native_valid_time"] == (CYCLE + timedelta(hours=2)).isoformat()
+        assert result["cycle_time"] == CYCLE.isoformat()
+
+    def test_prate_mean_to_rate_does_not_require_valid_time_key(self):
+        """prate_mean_to_rate() is a pure conversion function; it must not require
+        valid_time to be present in metadata — that field is the parser's concern.
+        This documents the correct layering of responsibilities."""
+        meta_without_valid_time = _prate_meta(start=0, end=2)
+        # _prate_meta does not include valid_time — if prate_mean_to_rate required it,
+        # the metadata fixture would need updating; verify it does not crash.
+        result = prate_mean_to_rate(np.array([[2.0 / 3600]]), meta_without_valid_time)
+        np.testing.assert_allclose(result, 2.0, rtol=1e-10)
+
+    @pytest.mark.parametrize("end_lead", [1, 2, 6, 7, 12])
+    def test_parse_prate_interval_valid_time_invariant_for_real_gfs_leads(self, end_lead):
+        """For every realistic GFS lead, the valid_time must equal cycle + endStep."""
+        from jalrakshak_ml.gfs_replay.rich_download import parse_prate_interval
+
+        start = ((end_lead - 1) // 6) * 6
+        meta = {
+            "shortName": "prate",
+            "typeOfLevel": "surface",
+            "level": 0,
+            "stepType": "avg",
+            "startStep": start,
+            "endStep": end_lead,
+            "units": "kg m**-2 s**-1",
+            "forecast_reference_time": CYCLE.isoformat(),
+            "valid_time": (CYCLE + timedelta(hours=end_lead)).isoformat(),
+        }
+        result = parse_prate_interval(meta)
+        assert result["end_step"] == end_lead
+        assert result["start_step"] == start
+        assert result["native_valid_time"] == (CYCLE + timedelta(hours=end_lead)).isoformat()
+
+
+# ---------------------------------------------------------------------------
+# 11. Temporal non-independence provenance
+#
+#     Each native GFS PRATE field covers a 1-hour interval.
+#     A 30-minute output slot is aligned to a native 1-hour PRATE interval.
+#     Two consecutive 30-minute slots (e.g. +30m and +60m) that share the same
+#     native PRATE interval carry NO new temporal information relative to each other.
+#
+#     align_prate_horizons() (rich_pipeline.py) must emit:
+#       - independent_native_observation: False
+#       - temporal_disaggregation_method: "uniform_within_native_interval"
+#       - source_interval_start / source_interval_end (native bounds)
+#       - cycle_time, lead_hour, availability_basis (full provenance chain)
+#
+#     Do NOT imply that 30-minute disaggregation creates new GFS information.
+# ---------------------------------------------------------------------------
+
+class TestTemporalNonIndependenceProvenance:
+    """align_prate_horizons() must correctly declare temporal non-independence."""
+
+    def _run_align(self, issue_offset_h: float = 7.5) -> list:
+        """Run align_prate_horizons for a standard 4-horizon issue."""
+        from jalrakshak_ml.gfs_replay.rich_pipeline import align_prate_horizons
+
+        issue = CYCLE + timedelta(hours=issue_offset_h)
+        # Build the metadata_by_end_step dict as the pipeline does
+        metadata_by_end_step = {}
+        for horizon in (30, 60, 90, 120):
+            aligned = issue + timedelta(minutes=horizon)
+            end_lead = math.ceil((aligned - CYCLE).total_seconds() / 3600)
+            start = ((end_lead - 1) // 6) * 6
+            metadata_by_end_step[end_lead] = {
+                "shortName": "prate",
+                "typeOfLevel": "surface",
+                "level": 0,
+                "stepType": "avg",
+                "startStep": start,
+                "endStep": end_lead,
+                "units": "kg m**-2 s**-1",
+                "forecast_reference_time": CYCLE.isoformat(),
+                "valid_time": (CYCLE + timedelta(hours=end_lead)).isoformat(),
+            }
+        return align_prate_horizons(issue, CYCLE, metadata_by_end_step)
+
+    def test_independent_native_observation_is_false_for_all_slots(self):
+        """Every output slot must declare independent_native_observation=False."""
+        records = self._run_align()
+        assert len(records) == 4
+        for rec in records:
+            assert rec["independent_native_observation"] is False, (
+                f"Slot {rec['horizon_minutes']}m must declare non-independence; "
+                "30-minute disaggregation does not create new GFS information."
+            )
+
+    def test_temporal_disaggregation_method_is_uniform(self):
+        """temporal_disaggregation_method must be 'uniform_within_native_interval'."""
+        records = self._run_align()
+        for rec in records:
+            assert rec["temporal_disaggregation_method"] == "uniform_within_native_interval", (
+                f"Slot {rec['horizon_minutes']}m: disaggregation method must be explicit."
+            )
+
+    def test_native_interval_bounds_present_in_all_slots(self):
+        """source_interval_start and source_interval_end must be present."""
+        records = self._run_align()
+        for rec in records:
+            assert "source_interval_start" in rec, \
+                f"Slot {rec['horizon_minutes']}m missing source_interval_start"
+            assert "source_interval_end" in rec, \
+                f"Slot {rec['horizon_minutes']}m missing source_interval_end"
+            # Interval start must precede end
+            start = datetime.fromisoformat(rec["source_interval_start"])
+            end = datetime.fromisoformat(rec["source_interval_end"])
+            assert start < end
+
+    def test_full_provenance_chain_present(self):
+        """Every record must carry: cycle_time, lead_hour, availability_basis."""
+        records = self._run_align()
+        for rec in records:
+            assert "cycle_time" in rec
+            assert "lead_hour" in rec
+            assert "availability_basis" in rec
+            assert utc(rec["cycle_time"]) == CYCLE
+
+    def test_two_slots_sharing_native_interval_have_identical_bounds(self):
+        """If two 30-min slots fall within the same 1-hour PRATE interval, they must
+        report the same source_interval_start/end — making non-independence explicit.
+
+        Issue at 07:30 UTC: +30m slot (08:00) and +60m slot (08:30) both fall in
+        the native 07:00–08:00 PRATE interval when the cycle is 00:00 UTC.
+
+        This test confirms that when two output slots share the same native lead,
+        their interval bounds are identical — explicitly marking that no additional
+        temporal information was introduced by the 30-minute disaggregation.
+        """
+        from jalrakshak_ml.gfs_replay.rich_pipeline import align_prate_horizons
+
+        # Issue 07:00 UTC: +30m → 07:30, +60m → 08:00
+        # Both slots: end_lead = ceil((7.5h)/1h) = 8, ceil((8h)/1h) = 8
+        # So the +30m slot at 07:30 maps to ceil((7.5)/1)=8 and
+        # +60m at 08:00 maps to ceil(8/1)=8 → same native interval [7h,8h]
+        issue = CYCLE + timedelta(hours=7, minutes=0)
+        # end leads: +30m → ceil(7.5)=8, +60m → ceil(8)=8, +90m → ceil(8.5)=9, +120m → ceil(9)=9
+        metadata_by_end_step = {}
+        for lead in (8, 9):
+            start = ((lead - 1) // 6) * 6
+            metadata_by_end_step[lead] = {
+                "shortName": "prate",
+                "typeOfLevel": "surface",
+                "level": 0,
+                "stepType": "avg",
+                "startStep": start,
+                "endStep": lead,
+                "units": "kg m**-2 s**-1",
+                "forecast_reference_time": CYCLE.isoformat(),
+                "valid_time": (CYCLE + timedelta(hours=lead)).isoformat(),
+            }
+        records = align_prate_horizons(issue, CYCLE, metadata_by_end_step)
+        assert len(records) == 4
+
+        # +30m and +60m slots both map to native lead 8 → same interval [7h, 8h]
+        slot_30 = records[0]  # horizon_minutes=30
+        slot_60 = records[1]  # horizon_minutes=60
+        assert slot_30["lead_hour"] == slot_60["lead_hour"] == 8, (
+            "Both 30m and 60m slots must map to the same native lead"
+        )
+        assert slot_30["source_interval_start"] == slot_60["source_interval_start"], (
+            "Shared native interval: start must be identical for both slots"
+        )
+        assert slot_30["source_interval_end"] == slot_60["source_interval_end"], (
+            "Shared native interval: end must be identical for both slots"
+        )
+        # Explicitly: no new temporal information between these two slots
+        assert slot_30["independent_native_observation"] is False
+        assert slot_60["independent_native_observation"] is False
+
+    def test_no_new_temporal_information_field_semantics(self):
+        """Document that independent_native_observation=False means:
+        the 30-minute output slot does NOT represent an independent native GFS
+        observation. The native PRATE was a 1-hour mean; subdividing it into
+        two 30-minute slots does not create new temporal resolution."""
+        records = self._run_align()
+        for rec in records:
+            # The field must be literally False (not just falsy)
+            assert rec["independent_native_observation"] is False
+            # native_cadence_minutes must be 60 (not 30) — confirms no false precision
+            assert rec["native_cadence_minutes"] == 60
+            # output_cadence_minutes is 30 — but this is disaggregation, not new data
+            assert rec["output_cadence_minutes"] == 30
+
