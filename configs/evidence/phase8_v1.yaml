@@ -1,0 +1,16 @@
+version: phase8_evidence_v1
+registry_output: reports/evidence/phase8_registry.json
+event_catalog_output: reports/evidence/mumbai_flood_event_catalog_v1.json
+scientific_rules:
+  susceptibility_is_water_depth: false
+  susceptibility_is_observed_extent: false
+  citizen_heuristics_are_verified_truth: false
+  synthetic_scenarios_are_observed_truth: false
+sources:
+  rainfall: GPM_FINAL_FINAL15X_FINAL
+  terrain: COPERNICUS_DEM
+  map_features: OPENSTREETMAP
+missing_sources:
+  - empirical_flood_extent_or_depth
+  - population_exposure
+  - municipal_drainage_network

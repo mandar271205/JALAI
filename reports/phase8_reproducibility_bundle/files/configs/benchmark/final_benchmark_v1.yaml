@@ -1,0 +1,14 @@
+version: final_benchmark_v1
+locked_test_access_allowed: false
+unsupported_metric_status: NOT_EVALUABLE
+independence_unit: event_or_scenario
+dimensions:
+  rainfall: [MAE, RMSE, Bias, CSI, POD, FAR, F1, Brier, reliability, runtime, memory]
+  flood_physics: [depth_MAE, depth_RMSE, extent_IoU, extent_F1, volume_error, mass_balance, solver_runtime]
+  fno: [target_MAE, inference_runtime, speedup_ratio, error_by_depth_regime, wet_dry_F1]
+  risk: [calibration, tier_consistency, uncertainty_coverage, event_aggregation]
+  citizen: [precision, recall, F1, false_corroboration, spam_rejection, calibration]
+statistics:
+  bootstrap_unit: event_or_scenario
+  resamples: 2000
+  confidence_interval: 0.95

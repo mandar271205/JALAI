@@ -1,0 +1,24 @@
+{
+  "data_versions": {
+    "historical_rainfall": "gpm_imerg_v07_mumbai_monsoon_expanded_v1",
+    "genuine_data_inventory": "reports/phase7_genuine_data_inventory.json",
+    "canonical_grid": "Mumbai 256x256; EPSG:32643 internally",
+    "locked_test_accessed_by_phase8": false
+  },
+  "model_versions": {
+    "operational_nowcaster": "PySTEPS (locked prior state; not modified)",
+    "experimental_nowcaster": "ConvLSTM heavy-rain V2 (not retrained)",
+    "flood_depth_model": "UNAVAILABLE",
+    "citizen_ml": "UNAVAILABLE"
+  },
+  "source_provenance_references": [
+    "reports/phase7_genuine_data_inventory.json",
+    "reports/phase8_source_capability_matrix.json"
+  ],
+  "metric_summary_references": [
+    "reports/phase8_final_benchmark_skeleton.json"
+  ],
+  "claim_gate_references": [
+    "reports/phase8_offline_dryrun_manifest.json"
+  ]
+}

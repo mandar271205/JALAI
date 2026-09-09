@@ -1,0 +1,19 @@
+version: phase8_metadata_bundle_v1
+max_file_bytes: 1000000
+allowed_extensions: [.json, .yaml, .yml, .md, .txt, .csv, .toml]
+excluded_content:
+  - raw_data
+  - zarr
+  - grib
+  - geotiff
+  - checkpoints
+  - credentials
+  - secrets
+include:
+  - git_state
+  - environment_versions
+  - configs
+  - hash_manifests
+  - provenance_references
+  - metric_summaries
+  - claim_gate_summary

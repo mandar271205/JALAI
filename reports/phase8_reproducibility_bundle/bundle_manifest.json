@@ -1,0 +1,106 @@
+{
+  "bundle_version": "phase8_metadata_bundle_v1",
+  "git_commit": "fa47dc792db1d6296d4d530058cc4706712e72d6",
+  "git_status": "A  configs/benchmark/final_benchmark_v1.yaml\nA  configs/citizen/verification_v2.yaml\nA  configs/evidence/phase8_v1.yaml\nA  configs/reproducibility/final_bundle_v1.yaml\nA  reports/phase8_evidence_benchmark_reproducibility_report.md\nA  reports/phase8_final_benchmark_skeleton.json\nA  reports/phase8_offline_dryrun_manifest.json\nA  reports/phase8_project_status.json\nAD reports/phase8_reproducibility_bundle/bundle_manifest.json\nAD reports/phase8_reproducibility_bundle/files/configs/benchmark/final_benchmark_v1.yaml\nAD reports/phase8_reproducibility_bundle/files/configs/citizen/verification_v2.yaml\nAD reports/phase8_reproducibility_bundle/files/configs/evidence/phase8_v1.yaml\nAD reports/phase8_reproducibility_bundle/files/configs/reproducibility/final_bundle_v1.yaml\nAD reports/phase8_reproducibility_bundle/files/reports/phase8_evidence_benchmark_reproducibility_report.md\nAD reports/phase8_reproducibility_bundle/files/reports/phase8_final_benchmark_skeleton.json\nAD reports/phase8_reproducibility_bundle/files/reports/phase8_offline_dryrun_manifest.json\nAD reports/phase8_reproducibility_bundle/files/reports/phase8_project_status.json\nAD reports/phase8_reproducibility_bundle/files/reports/phase8_reproducibility_references.json\nAD reports/phase8_reproducibility_bundle/files/reports/phase8_source_capability_matrix.json\nA  reports/phase8_reproducibility_references.json\nA  reports/phase8_source_capability_matrix.json\nA  scripts/audit_data_freshness.py\nA  scripts/audit_evidence_registry.py\nA  scripts/audit_source_capabilities.py\nA  scripts/build_citizen_dataset.py\nA  scripts/build_flood_event_catalog.py\nA  scripts/build_reproducibility_bundle.py\nA  scripts/check_scientific_claims.py\nA  scripts/export_research_tables.py\nA  scripts/generate_final_project_status.py\nA  scripts/run_final_benchmark.py\nA  scripts/run_offline_integration_dryrun.py\nA  scripts/train_citizen_baseline.py\nA  src/jalrakshak_ml/citizen/baseline.py\nA  src/jalrakshak_ml/citizen/dataset.py\nA  src/jalrakshak_ml/citizen/verification_v2.py\nA  src/jalrakshak_ml/evidence/__init__.py\nA  src/jalrakshak_ml/evidence/catalog.py\nA  src/jalrakshak_ml/evidence/contracts.py\nA  src/jalrakshak_ml/explain/risk_explanation_v2.py\nA  src/jalrakshak_ml/research/__init__.py\nA  src/jalrakshak_ml/research/benchmark.py\nA  src/jalrakshak_ml/research/claims.py\nA  src/jalrakshak_ml/research/common.py\nA  src/jalrakshak_ml/research/confidence.py\nA  src/jalrakshak_ml/research/decision.py\nA  src/jalrakshak_ml/research/freshness.py\nA  src/jalrakshak_ml/research/integration.py\nA  src/jalrakshak_ml/research/registry.py\nAM src/jalrakshak_ml/research/reproducibility.py\nA  src/jalrakshak_ml/research/run_manifest.py\nA  src/jalrakshak_ml/research/serving.py\nA  src/jalrakshak_ml/research/sources.py\nA  src/jalrakshak_ml/research/statistics.py\nA  src/jalrakshak_ml/research/status.py\nA  src/jalrakshak_ml/research/tables.py\nAM tests/test_phase8_evidence_benchmark.py",
+  "machine": {
+    "platform": "Windows-10-10.0.26200-SP0",
+    "machine": "AMD64",
+    "processor": "Intel64 Family 6 Model 186 Stepping 2, GenuineIntel",
+    "python": "3.11.16"
+  },
+  "cuda": {
+    "torch_available": true,
+    "cuda_available": false,
+    "cuda_version": null,
+    "device_count": 0
+  },
+  "dependencies": {
+    "numpy": "2.4.6",
+    "pandas": "3.0.5",
+    "pydantic": "2.13.5",
+    "PyYAML": "6.0.3",
+    "torch": "2.14.0",
+    "scikit-learn": "1.9.0"
+  },
+  "included_files": [
+    {
+      "path": "configs/evidence/phase8_v1.yaml",
+      "sha256": "f75df0a0f1f895b2287a11a871c92bb2e21fe84fb183fec2bd9c3a2e3b285389",
+      "bytes": 562
+    },
+    {
+      "path": "configs/benchmark/final_benchmark_v1.yaml",
+      "sha256": "2064b70bc158d8382437e87adda113cdedb065d8aa228057d48b6cb34e1fe74f",
+      "bytes": 695
+    },
+    {
+      "path": "configs/citizen/verification_v2.yaml",
+      "sha256": "d1cd473e668da6c1d1f20a1c2ff39e4c99bd90846e7b0fce477c6fd53db25bb9",
+      "bytes": 367
+    },
+    {
+      "path": "configs/reproducibility/final_bundle_v1.yaml",
+      "sha256": "aba2eb0970892f355fe1beff9b4c417af010e2b7b7cc4d1518357f17aabc7a76",
+      "bytes": 378
+    },
+    {
+      "path": "reports/phase8_evidence_benchmark_reproducibility_report.md",
+      "sha256": "a039c63e0d9bdde13629aabc9a342e76bc07446bdc7858d75eefa37a8d6f7b48",
+      "bytes": 13333
+    },
+    {
+      "path": "reports/phase8_reproducibility_references.json",
+      "sha256": "f5db48a51363b2cf182c1232e97a8b817a8564ddf7182dc8e4ccaeb2aed09ee2",
+      "bytes": 844
+    },
+    {
+      "path": "reports/phase8_source_capability_matrix.json",
+      "sha256": "82418c8257623fa5bbe5d93691dadeb1c195aec3cb07030e25c1e48d53cba864",
+      "bytes": 4724
+    },
+    {
+      "path": "reports/phase8_project_status.json",
+      "sha256": "29c72e684af4d7bc4ace42dc1fa613620b55ac64492511141a8abe025b68bc7f",
+      "bytes": 776
+    },
+    {
+      "path": "reports/phase8_final_benchmark_skeleton.json",
+      "sha256": "03989ad8e451ba8e1b40dc4f27926e87e8b8929ae828bde119ebe7640f450b0b",
+      "bytes": 9576
+    },
+    {
+      "path": "reports/phase8_offline_dryrun_manifest.json",
+      "sha256": "6e45d178cc99f11dd0f24956897ff1c0d7468e38137f2ea04e2848be0f6be0f6",
+      "bytes": 18059
+    }
+  ],
+  "excluded_files": [],
+  "references": {
+    "data_versions": {
+      "historical_rainfall": "gpm_imerg_v07_mumbai_monsoon_expanded_v1",
+      "genuine_data_inventory": "reports/phase7_genuine_data_inventory.json",
+      "canonical_grid": "Mumbai 256x256; EPSG:32643 internally",
+      "locked_test_accessed_by_phase8": false
+    },
+    "model_versions": {
+      "operational_nowcaster": "PySTEPS (locked prior state; not modified)",
+      "experimental_nowcaster": "ConvLSTM heavy-rain V2 (not retrained)",
+      "flood_depth_model": "UNAVAILABLE",
+      "citizen_ml": "UNAVAILABLE"
+    },
+    "source_provenance_references": [
+      "reports/phase7_genuine_data_inventory.json",
+      "reports/phase8_source_capability_matrix.json"
+    ],
+    "metric_summary_references": [
+      "reports/phase8_final_benchmark_skeleton.json"
+    ],
+    "claim_gate_references": [
+      "reports/phase8_offline_dryrun_manifest.json"
+    ]
+  },
+  "raw_data_included": false,
+  "model_checkpoints_included": false,
+  "credentials_included": false,
+  "bundle_sha256": "7845daeb89896819079551d7050503314b65dfff4f7f5b275fe7fc520f322e4e"
+}

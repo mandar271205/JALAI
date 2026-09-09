@@ -1,0 +1,28 @@
+{
+  "VERIFIED_WORKING": [
+    "genuine GPM historical corpus",
+    "genuine NOAA GFS replay",
+    "Copernicus DEM provenance",
+    "real-channel audit",
+    "susceptibility-only pipeline"
+  ],
+  "IMPLEMENTED_BUT_NOT_SCIENTIFICALLY_VALIDATED": [
+    "FNO architecture",
+    "HEV risk with proxy vulnerability",
+    "citizen ML architecture",
+    "citizen rules-only corroboration"
+  ],
+  "BLOCKED_OR_MISSING_REAL_DATA": [
+    "genuine hydraulic solver targets",
+    "real FNO training",
+    "calibrated flood depth",
+    "actual IMD radar integration",
+    "population exposure",
+    "empirical flood validation"
+  ],
+  "claim_safety": {
+    "susceptibility_is_depth": false,
+    "gpm_is_radar": false,
+    "citizen_heuristics_are_truth": false
+  }
+}

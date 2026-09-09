@@ -1,0 +1,335 @@
+{
+  "locked_test_accessed": false,
+  "metrics": [
+    {
+      "dimension": "rainfall",
+      "model_id": "UNAVAILABLE",
+      "metric": "MAE",
+      "status": "NOT_EVALUABLE",
+      "value": null,
+      "units": null,
+      "reason": "required genuine reference/evaluation absent",
+      "independent_blocks": null
+    },
+    {
+      "dimension": "rainfall",
+      "model_id": "UNAVAILABLE",
+      "metric": "RMSE",
+      "status": "NOT_EVALUABLE",
+      "value": null,
+      "units": null,
+      "reason": "required genuine reference/evaluation absent",
+      "independent_blocks": null
+    },
+    {
+      "dimension": "rainfall",
+      "model_id": "UNAVAILABLE",
+      "metric": "Bias",
+      "status": "NOT_EVALUABLE",
+      "value": null,
+      "units": null,
+      "reason": "required genuine reference/evaluation absent",
+      "independent_blocks": null
+    },
+    {
+      "dimension": "rainfall",
+      "model_id": "UNAVAILABLE",
+      "metric": "CSI",
+      "status": "NOT_EVALUABLE",
+      "value": null,
+      "units": null,
+      "reason": "required genuine reference/evaluation absent",
+      "independent_blocks": null
+    },
+    {
+      "dimension": "rainfall",
+      "model_id": "UNAVAILABLE",
+      "metric": "POD",
+      "status": "NOT_EVALUABLE",
+      "value": null,
+      "units": null,
+      "reason": "required genuine reference/evaluation absent",
+      "independent_blocks": null
+    },
+    {
+      "dimension": "rainfall",
+      "model_id": "UNAVAILABLE",
+      "metric": "FAR",
+      "status": "NOT_EVALUABLE",
+      "value": null,
+      "units": null,
+      "reason": "required genuine reference/evaluation absent",
+      "independent_blocks": null
+    },
+    {
+      "dimension": "rainfall",
+      "model_id": "UNAVAILABLE",
+      "metric": "F1",
+      "status": "NOT_EVALUABLE",
+      "value": null,
+      "units": null,
+      "reason": "required genuine reference/evaluation absent",
+      "independent_blocks": null
+    },
+    {
+      "dimension": "rainfall",
+      "model_id": "UNAVAILABLE",
+      "metric": "Brier",
+      "status": "NOT_EVALUABLE",
+      "value": null,
+      "units": null,
+      "reason": "required genuine reference/evaluation absent",
+      "independent_blocks": null
+    },
+    {
+      "dimension": "rainfall",
+      "model_id": "UNAVAILABLE",
+      "metric": "reliability",
+      "status": "NOT_EVALUABLE",
+      "value": null,
+      "units": null,
+      "reason": "required genuine reference/evaluation absent",
+      "independent_blocks": null
+    },
+    {
+      "dimension": "rainfall",
+      "model_id": "UNAVAILABLE",
+      "metric": "runtime",
+      "status": "NOT_EVALUABLE",
+      "value": null,
+      "units": null,
+      "reason": "required genuine reference/evaluation absent",
+      "independent_blocks": null
+    },
+    {
+      "dimension": "rainfall",
+      "model_id": "UNAVAILABLE",
+      "metric": "memory",
+      "status": "NOT_EVALUABLE",
+      "value": null,
+      "units": null,
+      "reason": "required genuine reference/evaluation absent",
+      "independent_blocks": null
+    },
+    {
+      "dimension": "flood_physics",
+      "model_id": "UNAVAILABLE",
+      "metric": "depth_MAE",
+      "status": "NOT_EVALUABLE",
+      "value": null,
+      "units": null,
+      "reason": "required genuine reference/evaluation absent",
+      "independent_blocks": null
+    },
+    {
+      "dimension": "flood_physics",
+      "model_id": "UNAVAILABLE",
+      "metric": "depth_RMSE",
+      "status": "NOT_EVALUABLE",
+      "value": null,
+      "units": null,
+      "reason": "required genuine reference/evaluation absent",
+      "independent_blocks": null
+    },
+    {
+      "dimension": "flood_physics",
+      "model_id": "UNAVAILABLE",
+      "metric": "extent_IoU",
+      "status": "NOT_EVALUABLE",
+      "value": null,
+      "units": null,
+      "reason": "required genuine reference/evaluation absent",
+      "independent_blocks": null
+    },
+    {
+      "dimension": "flood_physics",
+      "model_id": "UNAVAILABLE",
+      "metric": "extent_F1",
+      "status": "NOT_EVALUABLE",
+      "value": null,
+      "units": null,
+      "reason": "required genuine reference/evaluation absent",
+      "independent_blocks": null
+    },
+    {
+      "dimension": "flood_physics",
+      "model_id": "UNAVAILABLE",
+      "metric": "volume_error",
+      "status": "NOT_EVALUABLE",
+      "value": null,
+      "units": null,
+      "reason": "required genuine reference/evaluation absent",
+      "independent_blocks": null
+    },
+    {
+      "dimension": "flood_physics",
+      "model_id": "UNAVAILABLE",
+      "metric": "mass_balance",
+      "status": "NOT_EVALUABLE",
+      "value": null,
+      "units": null,
+      "reason": "required genuine reference/evaluation absent",
+      "independent_blocks": null
+    },
+    {
+      "dimension": "flood_physics",
+      "model_id": "UNAVAILABLE",
+      "metric": "solver_runtime",
+      "status": "NOT_EVALUABLE",
+      "value": null,
+      "units": null,
+      "reason": "required genuine reference/evaluation absent",
+      "independent_blocks": null
+    },
+    {
+      "dimension": "fno",
+      "model_id": "UNAVAILABLE",
+      "metric": "target_MAE",
+      "status": "NOT_EVALUABLE",
+      "value": null,
+      "units": null,
+      "reason": "required genuine reference/evaluation absent",
+      "independent_blocks": null
+    },
+    {
+      "dimension": "fno",
+      "model_id": "UNAVAILABLE",
+      "metric": "inference_runtime",
+      "status": "NOT_EVALUABLE",
+      "value": null,
+      "units": null,
+      "reason": "required genuine reference/evaluation absent",
+      "independent_blocks": null
+    },
+    {
+      "dimension": "fno",
+      "model_id": "UNAVAILABLE",
+      "metric": "speedup_ratio",
+      "status": "NOT_EVALUABLE",
+      "value": null,
+      "units": null,
+      "reason": "required genuine reference/evaluation absent",
+      "independent_blocks": null
+    },
+    {
+      "dimension": "fno",
+      "model_id": "UNAVAILABLE",
+      "metric": "error_by_depth_regime",
+      "status": "NOT_EVALUABLE",
+      "value": null,
+      "units": null,
+      "reason": "required genuine reference/evaluation absent",
+      "independent_blocks": null
+    },
+    {
+      "dimension": "fno",
+      "model_id": "UNAVAILABLE",
+      "metric": "wet_dry_F1",
+      "status": "NOT_EVALUABLE",
+      "value": null,
+      "units": null,
+      "reason": "required genuine reference/evaluation absent",
+      "independent_blocks": null
+    },
+    {
+      "dimension": "risk",
+      "model_id": "UNAVAILABLE",
+      "metric": "calibration",
+      "status": "NOT_EVALUABLE",
+      "value": null,
+      "units": null,
+      "reason": "required genuine reference/evaluation absent",
+      "independent_blocks": null
+    },
+    {
+      "dimension": "risk",
+      "model_id": "UNAVAILABLE",
+      "metric": "tier_consistency",
+      "status": "NOT_EVALUABLE",
+      "value": null,
+      "units": null,
+      "reason": "required genuine reference/evaluation absent",
+      "independent_blocks": null
+    },
+    {
+      "dimension": "risk",
+      "model_id": "UNAVAILABLE",
+      "metric": "uncertainty_coverage",
+      "status": "NOT_EVALUABLE",
+      "value": null,
+      "units": null,
+      "reason": "required genuine reference/evaluation absent",
+      "independent_blocks": null
+    },
+    {
+      "dimension": "risk",
+      "model_id": "UNAVAILABLE",
+      "metric": "event_aggregation",
+      "status": "NOT_EVALUABLE",
+      "value": null,
+      "units": null,
+      "reason": "required genuine reference/evaluation absent",
+      "independent_blocks": null
+    },
+    {
+      "dimension": "citizen",
+      "model_id": "UNAVAILABLE",
+      "metric": "precision",
+      "status": "NOT_EVALUABLE",
+      "value": null,
+      "units": null,
+      "reason": "required genuine reference/evaluation absent",
+      "independent_blocks": null
+    },
+    {
+      "dimension": "citizen",
+      "model_id": "UNAVAILABLE",
+      "metric": "recall",
+      "status": "NOT_EVALUABLE",
+      "value": null,
+      "units": null,
+      "reason": "required genuine reference/evaluation absent",
+      "independent_blocks": null
+    },
+    {
+      "dimension": "citizen",
+      "model_id": "UNAVAILABLE",
+      "metric": "F1",
+      "status": "NOT_EVALUABLE",
+      "value": null,
+      "units": null,
+      "reason": "required genuine reference/evaluation absent",
+      "independent_blocks": null
+    },
+    {
+      "dimension": "citizen",
+      "model_id": "UNAVAILABLE",
+      "metric": "false_corroboration",
+      "status": "NOT_EVALUABLE",
+      "value": null,
+      "units": null,
+      "reason": "required genuine reference/evaluation absent",
+      "independent_blocks": null
+    },
+    {
+      "dimension": "citizen",
+      "model_id": "UNAVAILABLE",
+      "metric": "spam_rejection",
+      "status": "NOT_EVALUABLE",
+      "value": null,
+      "units": null,
+      "reason": "required genuine reference/evaluation absent",
+      "independent_blocks": null
+    },
+    {
+      "dimension": "citizen",
+      "model_id": "UNAVAILABLE",
+      "metric": "calibration",
+      "status": "NOT_EVALUABLE",
+      "value": null,
+      "units": null,
+      "reason": "required genuine reference/evaluation absent",
+      "independent_blocks": null
+    }
+  ]
+}

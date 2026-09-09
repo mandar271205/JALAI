@@ -1,0 +1,16 @@
+version: citizen_verification_v2_rules_only
+ml_available: false
+verified_flood_truth_output_allowed: false
+layers:
+  - A_SCHEMA
+  - B_SPATIOTEMPORAL
+  - C_RAINFALL
+  - D_NEARBY_REPORTS
+  - E_DUPLICATE_SPAM
+  - F_IMAGE
+  - G_OPTIONAL_ML
+  - H_DECISION
+dataset:
+  split_strategy: event_level_explicit
+  unknown_supervised_eligible: false
+  pseudo_labels_allowed: false

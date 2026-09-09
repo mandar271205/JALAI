@@ -1,0 +1,589 @@
+{
+  "run_id": "phase8-dryrun-20260909T174035Z",
+  "git_sha": "fa47dc792db1d6296d4d530058cc4706712e72d6",
+  "config_hashes": {
+    "dryrun": "37d2b3ffbebddfba87c0028cecdb385c636ad0bb8f94ef047872a830d6dc94a5"
+  },
+  "source_hashes": {},
+  "model_hashes": {},
+  "normalization_hash": null,
+  "data_split": {
+    "fixture_only": true
+  },
+  "started_at": "2026-09-09T17:40:35.489927+00:00",
+  "completed_at": "2026-09-09T17:40:35.489927+00:00",
+  "machine_device": {
+    "platform": "Windows-10-10.0.26200-SP0",
+    "machine": "AMD64",
+    "processor": "Intel64 Family 6 Model 186 Stepping 2, GenuineIntel",
+    "python": "3.11.16"
+  },
+  "cuda_info": {
+    "torch_available": true,
+    "cuda_available": false,
+    "cuda_version": null,
+    "device_count": 0
+  },
+  "random_seeds": {
+    "python": 42,
+    "numpy": 42
+  },
+  "input_sources": [
+    {
+      "source_id": "GPM_FINAL",
+      "configured": true,
+      "credentials_required": true,
+      "credentials_available": false,
+      "historical_available": true,
+      "near_realtime_capable": false,
+      "actually_integrated": true,
+      "actually_populated": true,
+      "spatial_resolution": "0.1 degree native",
+      "temporal_resolution": "30 min",
+      "known_latency": "months",
+      "latency_is_observed_or_assumed": "ASSUMED",
+      "scientific_role": "historical rainfall reference; satellite, not radar"
+    },
+    {
+      "source_id": "GPM_IMERG_NRT",
+      "configured": false,
+      "credentials_required": true,
+      "credentials_available": false,
+      "historical_available": false,
+      "near_realtime_capable": true,
+      "actually_integrated": false,
+      "actually_populated": false,
+      "spatial_resolution": "0.1 degree native",
+      "temporal_resolution": "30 min",
+      "known_latency": "hours",
+      "latency_is_observed_or_assumed": "ASSUMED",
+      "scientific_role": "near-real-time satellite precipitation"
+    },
+    {
+      "source_id": "NOAA_GFS",
+      "configured": true,
+      "credentials_required": false,
+      "credentials_available": true,
+      "historical_available": true,
+      "near_realtime_capable": true,
+      "actually_integrated": true,
+      "actually_populated": true,
+      "spatial_resolution": "0.25 degree native",
+      "temporal_resolution": "hourly forecast steps",
+      "known_latency": "operational-cycle dependent",
+      "latency_is_observed_or_assumed": "ASSUMED",
+      "scientific_role": "coarse NWP rainfall guidance"
+    },
+    {
+      "source_id": "IMD_DWR",
+      "configured": false,
+      "credentials_required": true,
+      "credentials_available": false,
+      "historical_available": false,
+      "near_realtime_capable": true,
+      "actually_integrated": false,
+      "actually_populated": false,
+      "spatial_resolution": "site/product dependent",
+      "temporal_resolution": "unknown",
+      "known_latency": "unknown",
+      "latency_is_observed_or_assumed": "UNKNOWN",
+      "scientific_role": "weather radar; not integrated"
+    },
+    {
+      "source_id": "MOSDAC_INSAT",
+      "configured": false,
+      "credentials_required": true,
+      "credentials_available": false,
+      "historical_available": false,
+      "near_realtime_capable": true,
+      "actually_integrated": false,
+      "actually_populated": false,
+      "spatial_resolution": "product dependent",
+      "temporal_resolution": "product dependent",
+      "known_latency": "unknown",
+      "latency_is_observed_or_assumed": "UNKNOWN",
+      "scientific_role": "satellite observation; not integrated"
+    },
+    {
+      "source_id": "COPERNICUS_DEM",
+      "configured": true,
+      "credentials_required": false,
+      "credentials_available": true,
+      "historical_available": true,
+      "near_realtime_capable": false,
+      "actually_integrated": true,
+      "actually_populated": true,
+      "spatial_resolution": "30 m nominal",
+      "temporal_resolution": "static",
+      "known_latency": "not applicable",
+      "latency_is_observed_or_assumed": "OBSERVED",
+      "scientific_role": "terrain elevation input"
+    },
+    {
+      "source_id": "OPENSTREETMAP",
+      "configured": true,
+      "credentials_required": false,
+      "credentials_available": true,
+      "historical_available": true,
+      "near_realtime_capable": true,
+      "actually_integrated": true,
+      "actually_populated": true,
+      "spatial_resolution": "vector feature dependent",
+      "temporal_resolution": "snapshot",
+      "known_latency": "community update dependent",
+      "latency_is_observed_or_assumed": "UNKNOWN",
+      "scientific_role": "roads, waterways, facilities; not complete drainage"
+    },
+    {
+      "source_id": "POPULATION",
+      "configured": false,
+      "credentials_required": false,
+      "credentials_available": false,
+      "historical_available": false,
+      "near_realtime_capable": false,
+      "actually_integrated": false,
+      "actually_populated": false,
+      "spatial_resolution": "unavailable",
+      "temporal_resolution": "unavailable",
+      "known_latency": "unavailable",
+      "latency_is_observed_or_assumed": "UNKNOWN",
+      "scientific_role": "exposure input; missing"
+    },
+    {
+      "source_id": "FLOOD_VALIDATION",
+      "configured": false,
+      "credentials_required": false,
+      "credentials_available": false,
+      "historical_available": false,
+      "near_realtime_capable": false,
+      "actually_integrated": false,
+      "actually_populated": false,
+      "spatial_resolution": "unavailable",
+      "temporal_resolution": "event dependent",
+      "known_latency": "unavailable",
+      "latency_is_observed_or_assumed": "UNKNOWN",
+      "scientific_role": "observed flood extent/depth reference; missing"
+    }
+  ],
+  "output_artifacts": [
+    {
+      "type": "susceptibility",
+      "semantics": "SUSCEPTIBILITY_ONLY"
+    }
+  ],
+  "evaluation_metrics": [
+    {
+      "dimension": "rainfall",
+      "model_id": "UNAVAILABLE",
+      "metric": "MAE",
+      "status": "NOT_EVALUABLE",
+      "value": null,
+      "units": null,
+      "reason": "required genuine reference/evaluation absent",
+      "independent_blocks": null
+    },
+    {
+      "dimension": "rainfall",
+      "model_id": "UNAVAILABLE",
+      "metric": "RMSE",
+      "status": "NOT_EVALUABLE",
+      "value": null,
+      "units": null,
+      "reason": "required genuine reference/evaluation absent",
+      "independent_blocks": null
+    },
+    {
+      "dimension": "rainfall",
+      "model_id": "UNAVAILABLE",
+      "metric": "Bias",
+      "status": "NOT_EVALUABLE",
+      "value": null,
+      "units": null,
+      "reason": "required genuine reference/evaluation absent",
+      "independent_blocks": null
+    },
+    {
+      "dimension": "rainfall",
+      "model_id": "UNAVAILABLE",
+      "metric": "CSI",
+      "status": "NOT_EVALUABLE",
+      "value": null,
+      "units": null,
+      "reason": "required genuine reference/evaluation absent",
+      "independent_blocks": null
+    },
+    {
+      "dimension": "rainfall",
+      "model_id": "UNAVAILABLE",
+      "metric": "POD",
+      "status": "NOT_EVALUABLE",
+      "value": null,
+      "units": null,
+      "reason": "required genuine reference/evaluation absent",
+      "independent_blocks": null
+    },
+    {
+      "dimension": "rainfall",
+      "model_id": "UNAVAILABLE",
+      "metric": "FAR",
+      "status": "NOT_EVALUABLE",
+      "value": null,
+      "units": null,
+      "reason": "required genuine reference/evaluation absent",
+      "independent_blocks": null
+    },
+    {
+      "dimension": "rainfall",
+      "model_id": "UNAVAILABLE",
+      "metric": "F1",
+      "status": "NOT_EVALUABLE",
+      "value": null,
+      "units": null,
+      "reason": "required genuine reference/evaluation absent",
+      "independent_blocks": null
+    },
+    {
+      "dimension": "rainfall",
+      "model_id": "UNAVAILABLE",
+      "metric": "Brier",
+      "status": "NOT_EVALUABLE",
+      "value": null,
+      "units": null,
+      "reason": "required genuine reference/evaluation absent",
+      "independent_blocks": null
+    },
+    {
+      "dimension": "rainfall",
+      "model_id": "UNAVAILABLE",
+      "metric": "reliability",
+      "status": "NOT_EVALUABLE",
+      "value": null,
+      "units": null,
+      "reason": "required genuine reference/evaluation absent",
+      "independent_blocks": null
+    },
+    {
+      "dimension": "rainfall",
+      "model_id": "UNAVAILABLE",
+      "metric": "runtime",
+      "status": "NOT_EVALUABLE",
+      "value": null,
+      "units": null,
+      "reason": "required genuine reference/evaluation absent",
+      "independent_blocks": null
+    },
+    {
+      "dimension": "rainfall",
+      "model_id": "UNAVAILABLE",
+      "metric": "memory",
+      "status": "NOT_EVALUABLE",
+      "value": null,
+      "units": null,
+      "reason": "required genuine reference/evaluation absent",
+      "independent_blocks": null
+    },
+    {
+      "dimension": "flood_physics",
+      "model_id": "UNAVAILABLE",
+      "metric": "depth_MAE",
+      "status": "NOT_EVALUABLE",
+      "value": null,
+      "units": null,
+      "reason": "required genuine reference/evaluation absent",
+      "independent_blocks": null
+    },
+    {
+      "dimension": "flood_physics",
+      "model_id": "UNAVAILABLE",
+      "metric": "depth_RMSE",
+      "status": "NOT_EVALUABLE",
+      "value": null,
+      "units": null,
+      "reason": "required genuine reference/evaluation absent",
+      "independent_blocks": null
+    },
+    {
+      "dimension": "flood_physics",
+      "model_id": "UNAVAILABLE",
+      "metric": "extent_IoU",
+      "status": "NOT_EVALUABLE",
+      "value": null,
+      "units": null,
+      "reason": "required genuine reference/evaluation absent",
+      "independent_blocks": null
+    },
+    {
+      "dimension": "flood_physics",
+      "model_id": "UNAVAILABLE",
+      "metric": "extent_F1",
+      "status": "NOT_EVALUABLE",
+      "value": null,
+      "units": null,
+      "reason": "required genuine reference/evaluation absent",
+      "independent_blocks": null
+    },
+    {
+      "dimension": "flood_physics",
+      "model_id": "UNAVAILABLE",
+      "metric": "volume_error",
+      "status": "NOT_EVALUABLE",
+      "value": null,
+      "units": null,
+      "reason": "required genuine reference/evaluation absent",
+      "independent_blocks": null
+    },
+    {
+      "dimension": "flood_physics",
+      "model_id": "UNAVAILABLE",
+      "metric": "mass_balance",
+      "status": "NOT_EVALUABLE",
+      "value": null,
+      "units": null,
+      "reason": "required genuine reference/evaluation absent",
+      "independent_blocks": null
+    },
+    {
+      "dimension": "flood_physics",
+      "model_id": "UNAVAILABLE",
+      "metric": "solver_runtime",
+      "status": "NOT_EVALUABLE",
+      "value": null,
+      "units": null,
+      "reason": "required genuine reference/evaluation absent",
+      "independent_blocks": null
+    },
+    {
+      "dimension": "fno",
+      "model_id": "UNAVAILABLE",
+      "metric": "target_MAE",
+      "status": "NOT_EVALUABLE",
+      "value": null,
+      "units": null,
+      "reason": "required genuine reference/evaluation absent",
+      "independent_blocks": null
+    },
+    {
+      "dimension": "fno",
+      "model_id": "UNAVAILABLE",
+      "metric": "inference_runtime",
+      "status": "NOT_EVALUABLE",
+      "value": null,
+      "units": null,
+      "reason": "required genuine reference/evaluation absent",
+      "independent_blocks": null
+    },
+    {
+      "dimension": "fno",
+      "model_id": "UNAVAILABLE",
+      "metric": "speedup_ratio",
+      "status": "NOT_EVALUABLE",
+      "value": null,
+      "units": null,
+      "reason": "required genuine reference/evaluation absent",
+      "independent_blocks": null
+    },
+    {
+      "dimension": "fno",
+      "model_id": "UNAVAILABLE",
+      "metric": "error_by_depth_regime",
+      "status": "NOT_EVALUABLE",
+      "value": null,
+      "units": null,
+      "reason": "required genuine reference/evaluation absent",
+      "independent_blocks": null
+    },
+    {
+      "dimension": "fno",
+      "model_id": "UNAVAILABLE",
+      "metric": "wet_dry_F1",
+      "status": "NOT_EVALUABLE",
+      "value": null,
+      "units": null,
+      "reason": "required genuine reference/evaluation absent",
+      "independent_blocks": null
+    },
+    {
+      "dimension": "risk",
+      "model_id": "UNAVAILABLE",
+      "metric": "calibration",
+      "status": "NOT_EVALUABLE",
+      "value": null,
+      "units": null,
+      "reason": "required genuine reference/evaluation absent",
+      "independent_blocks": null
+    },
+    {
+      "dimension": "risk",
+      "model_id": "UNAVAILABLE",
+      "metric": "tier_consistency",
+      "status": "NOT_EVALUABLE",
+      "value": null,
+      "units": null,
+      "reason": "required genuine reference/evaluation absent",
+      "independent_blocks": null
+    },
+    {
+      "dimension": "risk",
+      "model_id": "UNAVAILABLE",
+      "metric": "uncertainty_coverage",
+      "status": "NOT_EVALUABLE",
+      "value": null,
+      "units": null,
+      "reason": "required genuine reference/evaluation absent",
+      "independent_blocks": null
+    },
+    {
+      "dimension": "risk",
+      "model_id": "UNAVAILABLE",
+      "metric": "event_aggregation",
+      "status": "NOT_EVALUABLE",
+      "value": null,
+      "units": null,
+      "reason": "required genuine reference/evaluation absent",
+      "independent_blocks": null
+    },
+    {
+      "dimension": "citizen",
+      "model_id": "UNAVAILABLE",
+      "metric": "precision",
+      "status": "NOT_EVALUABLE",
+      "value": null,
+      "units": null,
+      "reason": "required genuine reference/evaluation absent",
+      "independent_blocks": null
+    },
+    {
+      "dimension": "citizen",
+      "model_id": "UNAVAILABLE",
+      "metric": "recall",
+      "status": "NOT_EVALUABLE",
+      "value": null,
+      "units": null,
+      "reason": "required genuine reference/evaluation absent",
+      "independent_blocks": null
+    },
+    {
+      "dimension": "citizen",
+      "model_id": "UNAVAILABLE",
+      "metric": "F1",
+      "status": "NOT_EVALUABLE",
+      "value": null,
+      "units": null,
+      "reason": "required genuine reference/evaluation absent",
+      "independent_blocks": null
+    },
+    {
+      "dimension": "citizen",
+      "model_id": "UNAVAILABLE",
+      "metric": "false_corroboration",
+      "status": "NOT_EVALUABLE",
+      "value": null,
+      "units": null,
+      "reason": "required genuine reference/evaluation absent",
+      "independent_blocks": null
+    },
+    {
+      "dimension": "citizen",
+      "model_id": "UNAVAILABLE",
+      "metric": "spam_rejection",
+      "status": "NOT_EVALUABLE",
+      "value": null,
+      "units": null,
+      "reason": "required genuine reference/evaluation absent",
+      "independent_blocks": null
+    },
+    {
+      "dimension": "citizen",
+      "model_id": "UNAVAILABLE",
+      "metric": "calibration",
+      "status": "NOT_EVALUABLE",
+      "value": null,
+      "units": null,
+      "reason": "required genuine reference/evaluation absent",
+      "independent_blocks": null
+    }
+  ],
+  "scientific_claim_gates": [
+    {
+      "claim_id": "FLOOD_DEPTH",
+      "status": "BLOCKED",
+      "required_evidence": [
+        "calibrated_depth",
+        "genuine_hydraulic_or_validated_surrogate"
+      ],
+      "present_evidence": [
+        "susceptibility_output"
+      ],
+      "blocking_reasons": [
+        "missing:calibrated_depth",
+        "missing:genuine_hydraulic_or_validated_surrogate"
+      ],
+      "safe_phrase": "Flood depth unavailable; relative susceptibility only",
+      "forbidden_phrase": "Flood depth predicted"
+    },
+    {
+      "claim_id": "FLOOD_SUSCEPTIBILITY",
+      "status": "ALLOWED",
+      "required_evidence": [
+        "susceptibility_output"
+      ],
+      "present_evidence": [
+        "susceptibility_output"
+      ],
+      "blocking_reasons": [],
+      "safe_phrase": "Relative flood susceptibility is high",
+      "forbidden_phrase": "Observed flood depth is high"
+    },
+    {
+      "claim_id": "CITIZEN_VERIFIED",
+      "status": "BLOCKED",
+      "required_evidence": [
+        "corroborated_official_or_sensor_evidence"
+      ],
+      "present_evidence": [
+        "susceptibility_output"
+      ],
+      "blocking_reasons": [
+        "missing:corroborated_official_or_sensor_evidence"
+      ],
+      "safe_phrase": "Citizen report heuristic corroboration status",
+      "forbidden_phrase": "Citizen report is verified flood truth"
+    },
+    {
+      "claim_id": "REALTIME_RADAR_NOWCAST",
+      "status": "BLOCKED",
+      "required_evidence": [
+        "actual_radar_source",
+        "radar_fresh"
+      ],
+      "present_evidence": [
+        "susceptibility_output"
+      ],
+      "blocking_reasons": [
+        "missing:actual_radar_source",
+        "missing:radar_fresh"
+      ],
+      "safe_phrase": "Available precipitation-source nowcast",
+      "forbidden_phrase": "Real-time radar nowcast"
+    },
+    {
+      "claim_id": "CALIBRATED_PROBABILITY",
+      "status": "BLOCKED",
+      "required_evidence": [
+        "calibration_metrics",
+        "held_out_calibration"
+      ],
+      "present_evidence": [
+        "susceptibility_output"
+      ],
+      "blocking_reasons": [
+        "missing:calibration_metrics",
+        "missing:held_out_calibration"
+      ],
+      "safe_phrase": "Heuristic score",
+      "forbidden_phrase": "Calibrated probability"
+    }
+  ],
+  "locked_test_accessed": false,
+  "manifest_sha256": "93731f941d527b30f4fa8a767a08ab7903eaa4d9439672347f700a94c2293179"
+}
