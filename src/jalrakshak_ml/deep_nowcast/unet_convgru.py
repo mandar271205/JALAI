@@ -6,7 +6,10 @@ from typing import Any
 import torch
 from torch import nn
 
-from jalrakshak_ml.deep_nowcast.residual_convlstm import reconstruct_persistence_residual
+from jalrakshak_ml.deep_nowcast.final_contracts import (
+    differentiable_nonnegative,
+    validate_separated_inputs,
+)
 
 
 class ConvGRUCell(nn.Module):
@@ -225,6 +228,10 @@ class UNetConvGRUNowcaster(nn.Module):
             if inputs is None:
                 raise ValueError("Either obs_history or inputs must be provided.")
             obs_history, nwp_future, static_features = self._split_inputs(inputs)
+        elif self.nwp_channels == 11 and self.static_channels == 1:
+            if nwp_future is None or static_features is None:
+                raise ValueError("Final Phase 4E models require NWP and static sources explicitly")
+            validate_separated_inputs(obs_history, nwp_future, static_features)
 
         b, t_obs, _, h, w = obs_history.shape
 
@@ -343,4 +350,9 @@ class UNetConvGRUNowcaster(nn.Module):
             missing_nwp_mask=missing_nwp_mask,
             missing_static_mask=missing_static_mask,
         )
-        return reconstruct_persistence_residual(persistence_baseline, residual)
+        if obs_history is not None and nwp_future is not None and static_features is not None:
+            validate_separated_inputs(
+                obs_history, nwp_future, static_features, persistence_baseline
+            )
+        baseline = persistence_baseline[:, None]
+        return differentiable_nonnegative(baseline + residual)

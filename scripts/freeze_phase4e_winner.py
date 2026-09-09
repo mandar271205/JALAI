@@ -1,29 +1,30 @@
-"""Create an immutable Phase 4E winner manifest only after every validation gate passes."""
+"""Freeze the validation-selected Phase 4E winner without opening locked test data."""
+
+from __future__ import annotations
+
 import argparse
 import json
+from pathlib import Path
 
 from jalrakshak_ml.deep_nowcast.phase4e_prepare import freeze_winner
 
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--selection")
-    parser.add_argument("--prerequisites")
-    parser.add_argument("--output", default="models/phase4e/winner_manifest.json")
+    parser.add_argument("--selection", required=True)
+    parser.add_argument("--prerequisites", required=True)
+    parser.add_argument("--output", required=True)
     parser.add_argument("--execute", action="store_true")
     args = parser.parse_args()
     if not args.execute:
         print("MODEL_SELECTION_FROZEN=false")
-        print("LOCKED_TEST_ALLOWED_FOR_SINGLE_FINAL_EVALUATION=false")
+        print("LOCKED_TEST_TOUCHED=false")
         return
-    if not args.selection or not args.prerequisites:
-        parser.error("--execute requires --selection and --prerequisites")
-    with open(args.selection, encoding="utf-8") as stream:
-        selection = json.load(stream)
-    with open(args.prerequisites, encoding="utf-8") as stream:
-        prerequisites = json.load(stream)
-    result = freeze_winner(selection, prerequisites, args.output)
-    print(json.dumps(result, indent=2))
+    selection = json.loads(Path(args.selection).read_text(encoding="utf-8"))
+    prerequisites = json.loads(Path(args.prerequisites).read_text(encoding="utf-8"))
+    manifest = freeze_winner(selection, prerequisites, args.output)
+    print(json.dumps(manifest, indent=2, allow_nan=False))
+    print("LOCKED_TEST_TOUCHED=false")
 
 
 if __name__ == "__main__":

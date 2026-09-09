@@ -252,14 +252,15 @@ def fit_train_only_normalization(
 
 def tournament_execution_plan() -> dict[str, Any]:
     return {
-        "models": [
-            "Persistence",
-            "PySTEPS",
-            "ConvLSTM V2",
+        "required_deep_models": [
             "ConvLSTM V3",
             "U-Net + ConvGRU",
             "ST Attention",
         ],
+        "required_reference_models": ["Persistence", "PySTEPS"],
+        "optional_reference_models": {
+            "ConvLSTM V2": "only_if_compatible_genuine_checkpoint_exists"
+        },
         "deep_training_seeds": [26071, 26072, 26073],
         "inputs": {
             "obs_history": [4, 1, 128, 128],
@@ -292,12 +293,14 @@ def tournament_execution_plan() -> dict[str, Any]:
         ],
         "confidence_intervals": "block_or_event_bootstrap_only",
         "ablations": {
-            "A": ["GPM"],
-            "B": ["GPM", "GFS precipitation"],
-            "C": ["GPM", "full rich GFS"],
-            "D": ["GPM", "full rich GFS", "elevation"],
+            "A_remove_gfs_precipitation": ["gfs_precipitation"],
+            "B_remove_wind_group": ["u10", "v10", "wind_speed", "direction_sin_cos"],
+            "C_remove_thermodynamic_group": ["t2m", "rh2m", "surface_pressure", "cape", "pwat"],
+            "D_remove_terrain": ["static_elevation"],
+            "E_observation_only": ["all_nwp", "static_elevation"],
+            "F_nwp_only": ["rainfall_gpm", "static_elevation"],
         },
-        "source_dropout": ["missing GFS precip", "missing ancillary GFS", "missing terrain"],
+        "source_dropout": ["observation unavailable", "NWP unavailable", "terrain unavailable"],
         "split": "validation_only",
         "locked_test_access": False,
         "execution_state": "NOT_STARTED",
@@ -313,37 +316,56 @@ def freeze_winner(selection: dict[str, Any], prerequisites: dict[str, bool], out
         "multiseed_training",
         "validation_tournament",
         "required_ablations",
+        "required_source_dropout_evaluation",
+        "locked_test_clean",
     )
     missing = [key for key in required if not prerequisites.get(key)]
     if missing:
         raise RuntimeError(f"Model freeze gate closed; missing: {missing}")
     required_fields = (
-        "model_name",
+        "winning_model",
         "architecture",
-        "checkpoint",
-        "checkpoint_sha256",
-        "git_sha",
-        "dataset_version",
-        "gfs_replay_version",
-        "normalization_sha256",
-        "seed",
-        "selection_metric",
+        "checkpoint_hashes",
+        "seeds",
         "validation_metrics",
-        "config",
+        "selection_rule",
+        "replay_manifest_hash",
+        "normalization_hash",
+        "audit_hashes",
+        "config_hashes",
+        "git_commit",
+        "parameter_count",
+        "trained_models",
     )
     absent = [key for key in required_fields if key not in selection]
     if absent:
         raise ValueError(f"Winner manifest missing: {absent}")
+    if selection.get("locked_test_accessed") is not False:
+        raise PermissionError("Winner selection is contaminated or lacks locked-test evidence")
+    expected_models = {"convlstm_v3", "unet_convgru_v1", "st_attention_nowcaster_v1"}
+    expected_seeds = {26071, 26072, 26073}
+    trained_models = selection["trained_models"]
+    if set(trained_models) != expected_models:
+        raise ValueError("All three required deep architectures must be present")
+    if set(selection["seeds"]) != expected_seeds:
+        raise ValueError("Winner seed summary must contain all three required seeds")
+    if any(set(seeds) != expected_seeds for seeds in trained_models.values()):
+        raise ValueError("All three required seeds must be present for every architecture")
+    if {int(seed) for seed in selection["checkpoint_hashes"]} != expected_seeds:
+        raise ValueError("Winner checkpoint hashes must cover every required seed")
     manifest = {
         **selection,
         "freeze_timestamp": datetime.now(UTC).isoformat(),
         "MODEL_SELECTION_FROZEN": True,
         "LOCKED_TEST_ALLOWED_FOR_SINGLE_FINAL_EVALUATION": True,
+        "locked_test_accessed": False,
         "locked_test_automatically_run": False,
     }
     path = Path(output)
     if path.exists():
         raise FileExistsError("Winner manifest is immutable")
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(manifest, indent=2), encoding="utf-8")
+    part = path.with_suffix(path.suffix + ".part")
+    part.write_text(json.dumps(manifest, indent=2, allow_nan=False), encoding="utf-8")
+    part.replace(path)
     return manifest

@@ -1,3 +1,6 @@
+status: legacy_prototype_not_final
+final_phase4e_config: "configs/training/phase4e_final_v1.yaml"
+
 data:
   version: "gpm_imerg_v07_mumbai_monsoon_expanded_v1"
   source_version: "IMERG_V07"

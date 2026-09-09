@@ -1,0 +1,65 @@
+contract_version: phase5_foundation_v1
+execution_state: NOT_STARTED
+scientific_claims:
+  susceptibility_is_depth: false
+  calibrated_depth_available: false
+  genuine_physics_corpus_available: false
+  fno_training_allowed: false
+
+susceptibility:
+  quantity: relative_flood_susceptibility
+  units: dimensionless
+  calibrated_depth: false
+  required_grid: {crs: EPSG:32643, shape: [256, 256]}
+  allowed_features: [elevation, slope, flow_accumulation, low_lying_index, distance_to_water, imperviousness]
+  output: data/processed/flood/susceptibility_v1.tif
+  audit: reports/phase5_susceptibility_audit.json
+
+physics:
+  scenario_manifest: data/processed/flood/physics_scenarios_v1.json
+  solvers: [SWMM, LISFLOOD-FP]
+  rainfall_units: mm/h
+  depth_units: m
+  calibrated_default: false
+  missing_inputs_status: INSUFFICIENT_PHYSICAL_INPUTS
+  output_root: data/processed/flood/physics_runs_v1
+  audit: reports/phase5_physics_audit.json
+
+physics_dataset:
+  manifest: data/processed/flood/physics_dataset_v1.json
+  split_unit: scenario_id
+  target_quantity: physics_simulated_water_depth
+  require_physically_simulated: true
+  reject_susceptibility_target: true
+
+fno:
+  model_version: flood_fno_v1
+  surrogate_model: true
+  physics_reference_required: true
+  normalization: models/flood/fno_train_only_normalization_v1.json
+  checkpoint_root: models/flood/fno_v1
+  metrics: [depth_mae_m, depth_rmse_m, inundation_iou, inundation_csi, peak_depth_error_m, spatial_extent_error_cells, runtime_seconds, measured_speedup]
+
+exposure:
+  allowed_layers: [population, buildings, roads, hospitals, schools, critical_infrastructure, transport_assets]
+  require_provenance: true
+  aggregation: H3
+
+vulnerability:
+  separate_from_exposure: true
+  require_sourced_factors_or_curves: true
+  missing_data_status: PARTIAL
+
+risk:
+  components: [hazard, exposure, vulnerability]
+  categories: [LOW, MODERATE, HIGH, SEVERE]
+  explicit_normalization_required: true
+  distinguish: [data_quality, model_confidence, risk_probability]
+
+uncertainty:
+  propagation_unit: scenario
+  calibrated_probability_claim_requires_calibration: true
+
+explainability:
+  unsupported_causal_claims_prohibited: true
+  components: [rainfall, terrain_or_flood, exposure, vulnerability, uncertainty, data_quality, limitations, versions]

@@ -1,0 +1,86 @@
+contract_version: phase4e_final_v1
+execution_state: NOT_STARTED
+
+data:
+  dataset_version: gpm_imerg_v07_mumbai_monsoon_expanded_v1
+  replay_version: gfs_mumbai_phase4e_rich_non_test_v1
+  crs: EPSG:32643
+  canonical_grid: [256, 256]
+  training_crop: [128, 128]
+  history_length: 4
+  prediction_horizon: 4
+  horizons_minutes: [30, 60, 90, 120]
+  train_event_count: 12
+  validation_event_count: 3
+  train_sample_count: 204
+  validation_sample_count: 51
+  normal_dataset_api_splits: [train, validation]
+  final_train_only_normalization_required: true
+
+channels:
+  obs_history: [rainfall_gpm]
+  nwp_future:
+    - gfs_precipitation
+    - gfs_u10
+    - gfs_v10
+    - gfs_wind_speed
+    - gfs_wind_direction_sin
+    - gfs_wind_direction_cos
+    - gfs_t2m
+    - gfs_rh2m
+    - gfs_surface_pressure
+    - gfs_cape
+    - gfs_pwat
+  static_features:
+    - static_elevation
+  target: [rainfall_gpm]
+
+models:
+  convlstm_v3:
+    class: jalrakshak_ml.deep_nowcast.convlstm_v3.ConvLSTMNowcasterV3
+    kwargs: {input_channels: 13, obs_channels: 1, nwp_channels: 11, static_channels: 1, hidden_channels: [24, 24], output_horizons: 4, head_channels: 16}
+  unet_convgru_v1:
+    class: jalrakshak_ml.deep_nowcast.unet_convgru.UNetConvGRUNowcaster
+    kwargs: {input_channels: 13, obs_channels: 1, nwp_channels: 11, static_channels: 1, base_channels: 16, bottleneck_channels: 48, output_horizons: 4, head_channels: 16}
+  st_attention_nowcaster_v1:
+    class: jalrakshak_ml.deep_nowcast.st_attention.STAttentionNowcasterV1
+    kwargs: {input_channels: 13, obs_channels: 1, nwp_channels: 11, static_channels: 1, embed_dim: 64, num_heads: 4, patch_size: 8, output_horizons: 4, head_channels: 16}
+
+training:
+  seeds: [26071, 26072, 26073]
+  device: cuda
+  amp: true
+  deterministic: true
+  batch_size: 4
+  epochs: 40
+  learning_rate: 0.001
+  weight_decay: 0.0001
+  gradient_clip_norm: 1.0
+  early_stopping: {metric: validation.overall.mae, patience: 6}
+  scheduler: {name: reduce_on_plateau, patience: 2, factor: 0.5}
+  loss:
+    name: multi_scale_piecewise_loss
+    thresholds_mm_h: [1.0, 5.0, 10.0]
+    weights: [1.0, 2.0, 6.0, 10.0]
+    mse_weight: 0.05
+    coarse_scale_weight: 0.25
+    pool_kernel: 2
+    tuned_on_locked_test: false
+  source_dropout:
+    trained_with_source_dropout: false
+    observation_probability: 0.0
+    nwp_probability: 0.0
+    terrain_probability: 0.0
+
+evaluation:
+  split: validation
+  thresholds_mm_h: [0.1, 1.0, 5.0, 10.0]
+  insufficient_support_min_positive_pixels: 20
+  insufficient_support_min_events: 2
+  bootstrap: {unit: event, iterations: 2000, seed: 26071, paired: true}
+  convlstm_v2_policy: include_only_with_compatible_real_checkpoint
+
+selection:
+  rule: pre_registered_validation_rule_only
+  locked_test_accessed: false
+  winner_freeze_required_before_test: true
