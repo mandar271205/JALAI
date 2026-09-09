@@ -21,6 +21,7 @@ from .final_contracts import (
     FinalNormalization,
     sha256_file,
 )
+from .phase4e_prepare import validate_gpm_mask_semantics
 from .splits import (
     TRAIN_EVENTS_AUTHORITATIVE,
     VALIDATION_EVENTS_AUTHORITATIVE,
@@ -212,10 +213,21 @@ class Phase4EFinalDataset(Dataset):
         obs_mask = np.asarray(store["valid_mask"][sample.start_index : middle], dtype=bool)
         target = np.asarray(store["rainfall"][middle : middle + 4], dtype=np.float32)
         target_mask = np.asarray(store["valid_mask"][middle : middle + 4], dtype=bool)
-        self._validate_array("obs_history", obs, (4, *GRID_SHAPE), nonnegative=True)
-        self._validate_array("target", target, (4, *GRID_SHAPE), nonnegative=True)
-        if not obs_mask.all() or not target_mask.all():
-            raise ValueError("Final dataset rejects missing GPM cells; no silent imputation")
+        if obs.shape != (4, *GRID_SHAPE) or target.shape != (4, *GRID_SHAPE):
+            raise ValueError(
+                "GPM observation/target shape mismatch: "
+                f"obs={obs.shape}, target={target.shape}"
+            )
+        obs, obs_mask = validate_gpm_mask_semantics(
+            obs,
+            obs_mask,
+            context=f"GPM observation history for {sample.event_id}",
+        )
+        target, target_mask = validate_gpm_mask_semantics(
+            target,
+            target_mask,
+            context=f"GPM target for {sample.event_id}",
+        )
 
         issue_dir = self.replay_root / sample.event_id / self._issue_key(issue_time)
         metadata_path = issue_dir / "metadata.json"
@@ -244,11 +256,24 @@ class Phase4EFinalDataset(Dataset):
                 nwp_fields.append(field)
         nwp = np.stack(nwp_fields, axis=1)
 
-        obs_crop = obs[:, None, rows, cols]
-        target_crop = target[:, None, rows, cols]
+        obs_mask_crop = obs_mask[:, None, rows, cols]
+        target_mask_crop = target_mask[:, None, rows, cols]
+        # Zero is only a finite model-tensor placeholder at explicitly masked cells.
+        # The source Zarr stays untouched and the masks carry the missingness semantics.
+        obs_crop = np.where(obs_mask, obs, 0.0)[:, None, rows, cols].astype(
+            np.float32, copy=False
+        )
+        target_crop = np.where(target_mask, target, 0.0)[:, None, rows, cols].astype(
+            np.float32, copy=False
+        )
         nwp_crop = nwp[:, :, rows, cols]
         static_crop = self.elevation[None, rows, cols]
-        obs_norm = self.stats.normalize(obs_crop, channel="rainfall_gpm", group="obs_history")
+        obs_norm = np.zeros_like(obs_crop, dtype=np.float32)
+        obs_norm[obs_mask_crop] = self.stats.normalize(
+            obs_crop[obs_mask_crop],
+            channel="rainfall_gpm",
+            group="obs_history",
+        )
         nwp_norm = np.stack(
             [
                 self.stats.normalize(nwp_crop[:, pos], channel=name, group="nwp_future")
@@ -278,18 +303,19 @@ class Phase4EFinalDataset(Dataset):
         ):
             if dropped[key]:
                 array.fill(0.0)
-        persistence = obs[-1:, rows, cols].copy()
+        persistence = obs_crop[-1].copy()
         if dropped["observation"]:
             persistence.fill(0.0)
 
         return {
             "obs_history": torch.from_numpy(obs_norm.copy()),
             "obs_history_physical": torch.from_numpy(obs_crop.copy()),
+            "obs_valid_mask": torch.from_numpy(obs_mask_crop.copy()),
             "nwp_future": torch.from_numpy(nwp_norm.copy()),
             "static_features": torch.from_numpy(static_norm.copy()),
             "target": torch.from_numpy(target_crop.copy()),
             "target_physical": torch.from_numpy(target_crop.copy()),
-            "target_mask": torch.ones_like(torch.from_numpy(target_crop), dtype=torch.bool),
+            "target_mask": torch.from_numpy(target_mask_crop.copy()),
             "persistence_baseline": torch.from_numpy(persistence),
             "missing_obs_mask": torch.tensor([dropped["observation"]]),
             "missing_nwp_mask": torch.full((11,), dropped["nwp"], dtype=torch.bool),

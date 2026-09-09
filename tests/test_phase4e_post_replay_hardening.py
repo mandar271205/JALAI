@@ -462,17 +462,29 @@ def mock_dataset_and_elevation(tmp_path_factory) -> tuple[Path, Path]:
         zarr_path = dataset_root / f"{eid}.zarr"
         store = zarr.open(str(zarr_path), mode="w")
         gpm_data = np.stack([base_grid * (0.5 + 0.05 * f) for f in range(24)])[:, None, :, :]
+        gpm_valid_mask = np.ones_like(gpm_data, dtype=bool)
+        gpm_valid_mask[:, :, 0, 0] = False
+        gpm_data[:, :, 0, 0] = np.nan
         store.create_dataset(
             "rainfall",
             data=gpm_data,
             shape=(24, 1, 256, 256),
             dtype=np.float32,
         )
+        store.create_dataset(
+            "valid_mask",
+            data=gpm_valid_mask,
+            shape=gpm_valid_mask.shape,
+            dtype=bool,
+        )
         events_list.append({"event_id": eid, "split": "train", "path": f"{eid}.zarr"})
 
     # Add 3 validation events to manifest (must NEVER be opened by train normalizer)
     for eid in VALIDATION_EVENTS_AUTHORITATIVE:
         events_list.append({"event_id": eid, "split": "validation", "path": f"{eid}.zarr"})
+    # Locked-test entries likewise have no stores: opening either non-train split fails this test.
+    for eid in LOCKED_TEST_EVENTS_AUTHORITATIVE:
+        events_list.append({"event_id": eid, "split": "test", "path": f"{eid}.zarr"})
 
     manifest = {"dataset_version": "v1", "events": events_list}
     (dataset_root / "manifest.json").write_text(json.dumps(manifest, indent=2), encoding="utf-8")
@@ -490,6 +502,11 @@ def test_fit_train_only_normalization_success(
 ):
     dataset_root, elevation_path = mock_dataset_and_elevation
     out_artifact = tmp_path / "normalization" / "phase4e_train_stats.json"
+    source = zarr.open(
+        str(dataset_root / f"{TRAIN_EVENTS_AUTHORITATIVE[0]}.zarr"), mode="r"
+    )
+    rainfall_before = np.asarray(source["rainfall"][:]).copy()
+    mask_before = np.asarray(source["valid_mask"][:]).copy()
 
     result = fit_train_only_normalization(
         dataset_root,
@@ -509,6 +526,17 @@ def test_fit_train_only_normalization_success(
     assert result["total_train_issues"] == 204
     assert result["fitted_event_ids"] == list(TRAIN_EVENTS_AUTHORITATIVE)
     assert out_artifact.is_file()
+    expected_valid_pixels = 12 * 24 * (256 * 256 - 1)
+    rainfall_stats = result["statistics"]["obs_history"]["rainfall_gpm"]
+    assert rainfall_stats["count"] == expected_valid_pixels
+    assert rainfall_stats["finite_count"] == expected_valid_pixels
+    source_after = zarr.open(
+        str(dataset_root / f"{TRAIN_EVENTS_AUTHORITATIVE[0]}.zarr"), mode="r"
+    )
+    assert np.array_equal(
+        np.asarray(source_after["rainfall"][:]), rainfall_before, equal_nan=True
+    )
+    assert np.array_equal(np.asarray(source_after["valid_mask"][:]), mask_before)
 
     # Verify channel order and statistics
     stats = result["statistics"]

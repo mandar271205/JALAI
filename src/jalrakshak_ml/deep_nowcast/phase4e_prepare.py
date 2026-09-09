@@ -56,6 +56,36 @@ class RunningStats:
         }
 
 
+def validate_gpm_mask_semantics(
+    rainfall: np.ndarray,
+    valid_mask: np.ndarray,
+    *,
+    context: str,
+) -> tuple[np.ndarray, np.ndarray]:
+    """Validate the source GPM missing-data contract without imputing rainfall.
+
+    Genuine source values are finite and non-negative exactly where ``valid_mask``
+    is true. Missing source cells are NaN and remain missing; callers may create a
+    separate finite model-tensor representation only after this check.
+    """
+    rainfall_array = np.asarray(rainfall, dtype=np.float32)
+    mask_array = np.asarray(valid_mask, dtype=bool)
+    if rainfall_array.shape != mask_array.shape:
+        raise ValueError(
+            f"{context} rainfall/valid_mask shape mismatch: "
+            f"{rainfall_array.shape} != {mask_array.shape}"
+        )
+    if np.isinf(rainfall_array).any():
+        raise ValueError(f"{context} rainfall contains Inf")
+    if np.any(mask_array & ~np.isfinite(rainfall_array)):
+        raise ValueError(f"{context} valid GPM pixel contains non-finite rainfall")
+    if np.any(~mask_array & np.isfinite(rainfall_array)):
+        raise ValueError(f"{context} invalid GPM pixel contains finite rainfall")
+    if np.any(rainfall_array[mask_array] < 0.0):
+        raise ValueError(f"{context} valid GPM pixel contains negative rainfall")
+    return rainfall_array, mask_array
+
+
 def _sha(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
@@ -126,12 +156,14 @@ def fit_train_only_normalization(
         if not gpm_path.exists():
             raise FileNotFoundError(f"GPM store missing: {gpm_path}")
         store = zarr.open(str(gpm_path), mode="r")
-        gpm_rainfall = store["rainfall"][:]
-        if not np.isfinite(gpm_rainfall).all():
-            raise ValueError(f"Non-finite values in GPM store for event {event_id}")
-        if (gpm_rainfall < 0.0).any():
-            raise ValueError(f"Negative rainfall in GPM store for event {event_id}")
-        accumulators["rainfall_gpm"].update(gpm_rainfall)
+        if "valid_mask" not in store:
+            raise ValueError(f"GPM valid_mask missing for event {event_id}")
+        gpm_rainfall, gpm_valid_mask = validate_gpm_mask_semantics(
+            np.asarray(store["rainfall"][:], dtype=np.float32),
+            np.asarray(store["valid_mask"][:], dtype=bool),
+            context=f"GPM store for event {event_id}",
+        )
+        accumulators["rainfall_gpm"].update(gpm_rainfall[gpm_valid_mask])
 
         event_dir = replay_root / event_id
         if not event_dir.is_dir():

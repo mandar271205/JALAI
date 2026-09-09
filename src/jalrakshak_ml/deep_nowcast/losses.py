@@ -5,6 +5,7 @@ from itertools import pairwise
 
 import torch
 from torch import nn
+from torch.nn import functional as F
 
 
 class WeightedRainfallLoss(nn.Module):
@@ -145,7 +146,63 @@ class MultiScalePiecewiseLoss(nn.Module):
         )
         self.coarse_scale_weight = float(coarse_scale_weight)
         self.pool_kernel = int(pool_kernel)
-        self.pool = nn.AvgPool2d(kernel_size=self.pool_kernel, stride=self.pool_kernel)
+        if self.pool_kernel <= 0:
+            raise ValueError("pool_kernel must be positive")
+
+    def masked_pool(
+        self,
+        prediction_physical: torch.Tensor,
+        target_physical: torch.Tensor,
+        target_mask: torch.Tensor,
+    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
+        """Aggregate prediction and target over the same valid-pixel support.
+
+        Returns pooled prediction, pooled target, the coarse validity mask, and
+        valid-pixel counts. Blocks with partial coverage use valid-only means;
+        blocks with no valid target pixels carry no supervision. Predictions are
+        aggregated over exactly the same target-valid support.
+        """
+        if prediction_physical.shape != target_physical.shape:
+            raise ValueError(
+                f"Shape mismatch: {prediction_physical.shape} != {target_physical.shape}"
+            )
+        if target_mask.shape != target_physical.shape:
+            raise ValueError("target_mask must match target_physical shape")
+        if prediction_physical.ndim != 5:
+            raise ValueError("Multi-scale tensors must have shape [B, T, C, H, W]")
+        b, t, c, h, w = prediction_physical.shape
+        if h % self.pool_kernel or w % self.pool_kernel:
+            raise ValueError("Spatial dimensions must be divisible by pool_kernel")
+
+        pred_flat = prediction_physical.reshape(b * t, c, h, w)
+        tgt_flat = target_physical.reshape(b * t, c, h, w)
+        mask_flat = target_mask.reshape(b * t, c, h, w).to(dtype=torch.bool)
+        supervision_valid = mask_flat & torch.isfinite(tgt_flat)
+        support_values = supervision_valid.to(dtype=pred_flat.dtype)
+        area = float(self.pool_kernel * self.pool_kernel)
+        support = F.avg_pool2d(
+            support_values,
+            kernel_size=self.pool_kernel,
+            stride=self.pool_kernel,
+        ) * area
+        pred_sum = F.avg_pool2d(
+            torch.where(supervision_valid, pred_flat, torch.zeros_like(pred_flat)),
+            kernel_size=self.pool_kernel,
+            stride=self.pool_kernel,
+        ) * area
+        target_sum = F.avg_pool2d(
+            torch.where(supervision_valid, tgt_flat, torch.zeros_like(tgt_flat)),
+            kernel_size=self.pool_kernel,
+            stride=self.pool_kernel,
+        ) * area
+        denominator = support.clamp_min(1.0)
+        coarse_shape = (b, t, c, h // self.pool_kernel, w // self.pool_kernel)
+        return (
+            (pred_sum / denominator).reshape(coarse_shape),
+            (target_sum / denominator).reshape(coarse_shape),
+            (support > 0).reshape(coarse_shape),
+            support.reshape(coarse_shape),
+        )
 
     def forward(
         self,
@@ -157,18 +214,9 @@ class MultiScalePiecewiseLoss(nn.Module):
         if self.coarse_scale_weight <= 0.0:
             return native_loss
 
-        # Reshape to [B * horizon, C, H, W] for 2D pooling
-        orig_shape = prediction_physical.shape
-        b, t, c, h, w = orig_shape
-        pred_flat = prediction_physical.reshape(b * t, c, h, w)
-        tgt_flat = target_physical.reshape(b * t, c, h, w)
-        mask_flat = target_mask.reshape(b * t, c, h, w).to(dtype=pred_flat.dtype)
-
-        pred_coarse = self.pool(pred_flat).reshape(b, t, c, h // self.pool_kernel, w // self.pool_kernel)
-        tgt_coarse = self.pool(tgt_flat).reshape(b, t, c, h // self.pool_kernel, w // self.pool_kernel)
-        mask_coarse = (
-            self.pool(mask_flat) >= 0.75
-        ).reshape(b, t, c, h // self.pool_kernel, w // self.pool_kernel)
+        pred_coarse, tgt_coarse, mask_coarse, _ = self.masked_pool(
+            prediction_physical, target_physical, target_mask
+        )
 
         coarse_loss = self.base_loss(pred_coarse, tgt_coarse, mask_coarse)
         return native_loss + self.coarse_scale_weight * coarse_loss
@@ -181,17 +229,9 @@ class MultiScalePiecewiseLoss(nn.Module):
     ) -> dict[str, float]:
         with torch.no_grad():
             native_loss = self.base_loss(prediction_physical, target_physical, target_mask)
-            orig_shape = prediction_physical.shape
-            b, t, c, h, w = orig_shape
-            pred_flat = prediction_physical.reshape(b * t, c, h, w)
-            tgt_flat = target_physical.reshape(b * t, c, h, w)
-            mask_flat = target_mask.reshape(b * t, c, h, w).to(dtype=pred_flat.dtype)
-
-            pred_coarse = self.pool(pred_flat).reshape(b, t, c, h // self.pool_kernel, w // self.pool_kernel)
-            tgt_coarse = self.pool(tgt_flat).reshape(b, t, c, h // self.pool_kernel, w // self.pool_kernel)
-            mask_coarse = (
-                self.pool(mask_flat) >= 0.75
-            ).reshape(b, t, c, h // self.pool_kernel, w // self.pool_kernel)
+            pred_coarse, tgt_coarse, mask_coarse, _ = self.masked_pool(
+                prediction_physical, target_physical, target_mask
+            )
 
             coarse_loss = self.base_loss(pred_coarse, tgt_coarse, mask_coarse)
             total = native_loss + self.coarse_scale_weight * coarse_loss
