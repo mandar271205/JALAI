@@ -1,0 +1,42 @@
+{
+  "source": "OpenStreetMap Waterways",
+  "source_path": "data\\processed\\static\\waterways.geojson",
+  "crs": "EPSG:4326",
+  "feature_count": 1338,
+  "feature_types": {
+    "drain": 859,
+    "stream": 326,
+    "river": 96,
+    "canal": 49,
+    "ditch": 8
+  },
+  "total_length_km": 901.72,
+  "bbox_wgs84": [
+    72.7881,
+    18.7627,
+    73.4086,
+    19.3263
+  ],
+  "topology_qc": {
+    "total_endpoints": 1803,
+    "dangling_endpoints": 980,
+    "junction_nodes": 823,
+    "duplicate_segments": 3,
+    "invalid_geometries": 0,
+    "self_intersecting_lines": 0,
+    "network_connectivity_ratio": 0.4564614531336661,
+    "elevation_consistency": "UNKNOWN_NO_SURVEYED_INVERTS",
+    "flow_direction_verified": false
+  },
+  "usable_for_susceptibility": true,
+  "usable_for_lisflood_fp": true,
+  "usable_for_swmm": false,
+  "swmm_blocker_reasons": [
+    "Missing underground conduit geometries, dimensions, and materials",
+    "Missing junction manhole rim elevations and invert depths",
+    "Missing municipal stormwater outfall boundary tide flap conditions",
+    "Missing subcatchment delineation and runoff routing connections",
+    "Missing pipe slope and invert elevation consistency from surveyed records"
+  ],
+  "completeness_caveat": "OpenStreetMap waterways reflect crowdsourced surface channels only; they do NOT represent the subterranean municipal storm sewer pipe network of Mumbai."
+}

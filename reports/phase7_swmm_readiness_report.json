@@ -1,0 +1,56 @@
+{
+  "solver_available": false,
+  "network_nodes_available": false,
+  "network_links_available": false,
+  "subcatchments_available": false,
+  "outlets_available": false,
+  "conduit_geometry_available": false,
+  "invert_elevations_available": false,
+  "rainfall_forcing_available": true,
+  "infiltration_parameters_available": true,
+  "surface_parameters_available": true,
+  "calibration_data_available": false,
+  "validation_data_available": false,
+  "executable_input_ready": false,
+  "swmm_inputs_available": false,
+  "blockers": [
+    "Municipal stormwater drainage shapefile (.shp/.geojson) or SWMM input file (.inp) absent from repository",
+    "Subcatchment delineations with impervious percentages are unmapped",
+    "Conduit cross-sections, pipe diameters, roughness, and slope uncharacterized",
+    "Junction manhole ground rim elevations and invert depths absent",
+    "Tidal flap gate outfalls along Mithi river and Arabian sea uncharacterized",
+    "SWMM executable 'swmm5' not found on system PATH"
+  ],
+  "acquisition_checklist": [
+    {
+      "item": "Municipal Stormwater Drainage GIS (.inp / .shp)",
+      "source": "Brihanmumbai Municipal Corporation (BMC) Storm Water Drains (SWD) Dept",
+      "priority": "P0_CRITICAL",
+      "description": "Underground pipe network, closed conduits, box drains, and nullahs"
+    },
+    {
+      "item": "Manhole & Junction Survey",
+      "source": "BMC SWD / Mumbai Metropolitan Region Development Authority (MMRDA)",
+      "priority": "P0_CRITICAL",
+      "description": "Invert levels, rim elevations, and drop depths across all city wards"
+    },
+    {
+      "item": "Subcatchment Boundaries & Runoff Routing",
+      "source": "Urban Catchment Hydrology Survey",
+      "priority": "P1_HIGH",
+      "description": "Ward-level subcatchments, roof/pavement imperviousness fraction"
+    },
+    {
+      "item": "Tidal Boundary Outfalls",
+      "source": "Mumbai Port Trust / Maharashtra Maritime Board",
+      "priority": "P1_HIGH",
+      "description": "Tide gate locations, flap gate discharge coefficients, coastal tide levels"
+    },
+    {
+      "item": "Urban Discharge Calibration Data",
+      "source": "BMC Pumping Stations (Love Grove, Cleveland Bunder, Britannia, Irla)",
+      "priority": "P2_MEDIUM",
+      "description": "Pump discharge records and sump level loggers during storm events"
+    }
+  ]
+}

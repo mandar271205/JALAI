@@ -1,0 +1,36 @@
+{
+  "evidence_items": [
+    {
+      "evidence_id": "mumbai_relative_susceptibility_v1",
+      "evidence_type": "susceptibility",
+      "source": "Copernicus DEM GLO-30 + OSM Waterways Multi-Criteria Index",
+      "event_id": "static_monsoon_baseline",
+      "timestamp_utc": "2026-09-09T00:00:00Z",
+      "crs": "EPSG:32643",
+      "data_path": "data\\processed\\flood\\susceptibility_v1.tif",
+      "is_empirical": false,
+      "units": "dimensionless",
+      "resolution": "256x256 (~160m)",
+      "provenance": {
+        "method": "weighted_linear_combination",
+        "quantity": "relative_flood_susceptibility"
+      },
+      "metadata": {}
+    }
+  ],
+  "real_flood_validation_data_available": false,
+  "authoritative_extent_raster_present": false,
+  "summary": {
+    "total_items": 1,
+    "counts_by_type": {
+      "observed_extent": 0,
+      "reported_location": 0,
+      "modelled_extent": 0,
+      "susceptibility": 1,
+      "hydraulic_depth": 0
+    },
+    "real_flood_validation_data_available": false,
+    "authoritative_extent_raster_present": false,
+    "status_message": "Empirical satellite flood extent (Sentinel-1 SAR) or BMC waterlogging spot surveys are NOT yet acquired locally. REAL_FLOOD_VALIDATION_DATA_AVAILABLE remains False."
+  }
+}

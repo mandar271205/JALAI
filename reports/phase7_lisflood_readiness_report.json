@@ -1,0 +1,23 @@
+{
+  "dem_ready": true,
+  "terrain_validity": true,
+  "roughness_ready": true,
+  "rainfall_forcing_ready": true,
+  "boundary_conditions_ready": true,
+  "domain_extent": [
+    72.75,
+    18.85,
+    73.05,
+    19.3
+  ],
+  "grid_spacing_m": 160.88,
+  "nodata_handled": true,
+  "initial_conditions_ready": true,
+  "solver_available": false,
+  "input_data_ready": true,
+  "execution_ready": false,
+  "calibration_ready": false,
+  "blockers": [
+    "LISFLOOD-FP compiled binary 'lisflood' not found on system PATH (requires Linux/container execution)"
+  ]
+}

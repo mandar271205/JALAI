@@ -1,0 +1,19 @@
+{
+  "forcing_id": "swmm_forcing_MUMBAI_mumbai_monsoon_2021_06_18",
+  "solver_target": "SWMM",
+  "is_observation": true,
+  "units": "mm/h",
+  "native_cadence_minutes": 30,
+  "native_source_resolution": "0.1 deg (~10km)",
+  "working_grid_shape": [
+    1,
+    1
+  ],
+  "start_time": "2021-06-18T00:00:00",
+  "end_time": "2021-06-19T00:00:00",
+  "timesteps_count": 48,
+  "mean_rate_mm_h": 28.5,
+  "max_rate_mm_h": 33.45000076293945,
+  "source_hash": "a71453298d4f605090602f53a764270e9d159fc1a798f2f7e1d919a7bab50f2a",
+  "forcing_file": "data\\processed\\flood\\forcing\\rainfall_mumbai_monsoon_2021_06_18.dat"
+}

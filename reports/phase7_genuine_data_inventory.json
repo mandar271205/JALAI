@@ -1,0 +1,438 @@
+{
+  "status": "PASS",
+  "generated_at": "2026-09-09T14:11:45.240543+00:00",
+  "total_datasets_inventoried": 13,
+  "datasets": [
+    {
+      "dataset_id": "copernicus_dem_raw",
+      "source": "Copernicus GLO-30 Public DEM",
+      "source_url": "https://copernicus-dem-30m.s3.amazonaws.com/",
+      "source_organization": "European Space Agency (ESA) / Airbus Defence and Space",
+      "file_path": "data/raw/dem/copernicus_raw.tif",
+      "format": "GeoTIFF",
+      "crs": "EPSG:4326",
+      "bounds": [
+        72.75,
+        18.85,
+        73.05,
+        19.3
+      ],
+      "source_resolution": "1 arc-second (~30m)",
+      "working_resolution": "Raw 1 arc-second unprojected",
+      "units": "meters (orthometric height above EGM2008)",
+      "vintage": "2021 (COP30 v1 release)",
+      "license": "Copernicus WorldDEM Open Data License",
+      "file_size": 4069893,
+      "sha256": "7fd37eed07b1b06d0108e2edb8c75359594d5bc788d6a45305335652b6c1dbd5",
+      "processing_history": [
+        "Fetched raw 1x1 degree tiles",
+        "Mosaicked over Mumbai bounding box"
+      ],
+      "is_authoritative": true,
+      "usable_for": {
+        "susceptibility": true,
+        "hydraulics": true,
+        "exposure": false,
+        "vulnerability": false,
+        "validation": false
+      }
+    },
+    {
+      "dataset_id": "elevation_canonical_grid",
+      "source": "Copernicus GLO-30 DEM (Reprojected & Cropped)",
+      "source_url": "data/raw/dem/copernicus_raw.tif",
+      "source_organization": "ESA / JalRakshak ML Preprocessing",
+      "file_path": "data/processed/static/elevation.tif",
+      "format": "GeoTIFF",
+      "crs": "EPSG:32643",
+      "bounds": [
+        262927.81,
+        2085360.71,
+        295101.99,
+        2135557.25
+      ],
+      "source_resolution": "1 arc-second (~30m)",
+      "working_resolution": "256x256 (~125.7m x 196.1m)",
+      "units": "meters",
+      "vintage": "2026-09-06",
+      "license": "Copernicus Open Access / Derived Work",
+      "file_size": 159348,
+      "sha256": "56bd3208207e276499c1b47bce4a3e76df75d2e62b92903f71878d0fdee86ab0",
+      "processing_history": [
+        "Reprojected EPSG:4326 -> EPSG:32643",
+        "Bilinear resampled to 256x256 canonical grid"
+      ],
+      "is_authoritative": true,
+      "usable_for": {
+        "susceptibility": true,
+        "hydraulics": true,
+        "exposure": false,
+        "vulnerability": false,
+        "validation": false
+      }
+    },
+    {
+      "dataset_id": "slope_canonical_grid",
+      "source": "Derived from Copernicus DEM elevation.tif",
+      "source_url": "internal_derivation",
+      "source_organization": "JalRakshak ML Preprocessing",
+      "file_path": "data/processed/static/slope.tif",
+      "format": "GeoTIFF",
+      "crs": "EPSG:32643",
+      "bounds": [
+        262927.81,
+        2085360.71,
+        295101.99,
+        2135557.25
+      ],
+      "source_resolution": "256x256 (~160m)",
+      "working_resolution": "256x256 (~125.7m x 196.1m)",
+      "units": "degrees",
+      "vintage": "2026-09-06",
+      "license": "Derived Work",
+      "file_size": 163397,
+      "sha256": "bff27b1d865b7576f9c5dbe19dbb3693035f937aa16e2f9e40a8c7467039c91c",
+      "processing_history": [
+        "Finite-difference spatial gradient computation from elevation.tif"
+      ],
+      "is_authoritative": true,
+      "usable_for": {
+        "susceptibility": true,
+        "hydraulics": true,
+        "exposure": false,
+        "vulnerability": false,
+        "validation": false
+      }
+    },
+    {
+      "dataset_id": "distance_to_water_canonical_grid",
+      "source": "Derived from OSM Waterways vector features",
+      "source_url": "internal_derivation",
+      "source_organization": "JalRakshak ML Preprocessing",
+      "file_path": "data/processed/static/distance_to_water.tif",
+      "format": "GeoTIFF",
+      "crs": "EPSG:32643",
+      "bounds": [
+        262927.81,
+        2085360.71,
+        295101.99,
+        2135557.25
+      ],
+      "source_resolution": "Vector OSM waterways",
+      "working_resolution": "256x256 (~125.7m x 196.1m)",
+      "units": "meters",
+      "vintage": "2026-09-07",
+      "license": "ODbL Derived",
+      "file_size": 43771,
+      "sha256": "d41f6122eb49a78a37af5af1c9a17e501ac301f4a2e13d0727c186ce7776b21e",
+      "processing_history": [
+        "Scipy Exact Euclidean Distance Transform from rasterized OSM waterways"
+      ],
+      "is_authoritative": true,
+      "usable_for": {
+        "susceptibility": true,
+        "hydraulics": false,
+        "exposure": false,
+        "vulnerability": true,
+        "validation": false
+      }
+    },
+    {
+      "dataset_id": "roughness_canonical_grid",
+      "source": "Infrastructure Composite Manning's n Parameterization",
+      "source_url": "internal_derivation",
+      "source_organization": "JalRakshak ML Hydrology Engine",
+      "file_path": "data/processed/static/roughness.tif",
+      "format": "GeoTIFF",
+      "crs": "EPSG:32643",
+      "bounds": [
+        262927.81,
+        2085360.71,
+        295101.99,
+        2135557.25
+      ],
+      "source_resolution": "OSM vector overlays (roads, railways, waterways)",
+      "working_resolution": "256x256 (~125.7m x 196.1m)",
+      "units": "s / m^(1/3) (Manning's n)",
+      "vintage": "2026-09-09",
+      "license": "ODbL / Engineering Parameterization",
+      "file_size": 11408,
+      "sha256": "305e91d8ef9b09abaaf88d0c62d8e75978706e1981a52827963b252ea913b038",
+      "processing_history": [
+        "Rasterized OSM roads (0.015), railways (0.025), waterways (0.035), terrain (0.040)"
+      ],
+      "is_authoritative": false,
+      "usable_for": {
+        "susceptibility": false,
+        "hydraulics": true,
+        "exposure": false,
+        "vulnerability": false,
+        "validation": false
+      }
+    },
+    {
+      "dataset_id": "susceptibility_v1_grid",
+      "source": "Multi-criteria relative flood susceptibility engine",
+      "source_url": "scripts/build_flood_susceptibility.py",
+      "source_organization": "JalRakshak ML Flood Intelligence",
+      "file_path": "data/processed/flood/susceptibility_v1.tif",
+      "format": "GeoTIFF",
+      "crs": "EPSG:32643",
+      "bounds": [
+        262927.81,
+        2085360.71,
+        295101.99,
+        2135557.25
+      ],
+      "source_resolution": "Multi-source 30m / vector",
+      "working_resolution": "256x256 (~125.7m x 196.1m)",
+      "units": "dimensionless [0, 1]",
+      "vintage": "2026-09-09",
+      "license": "Derived Research Artifact",
+      "file_size": 262708,
+      "sha256": "e827be30c33c0b984fd095f6ec6203b514d31657124fb6a0e9323ac067a1bf9d",
+      "processing_history": [
+        "Weighted linear combination: 0.3*elev + 0.25*slope + 0.25*low_lying + 0.2*dist_water"
+      ],
+      "is_authoritative": true,
+      "usable_for": {
+        "susceptibility": true,
+        "hydraulics": false,
+        "exposure": false,
+        "vulnerability": false,
+        "validation": false
+      }
+    },
+    {
+      "dataset_id": "osm_waterways_vector",
+      "source": "OpenStreetMap waterways",
+      "source_url": "https://www.openstreetmap.org",
+      "source_organization": "OpenStreetMap Contributors",
+      "file_path": "data/processed/static/waterways.geojson",
+      "format": "GeoJSON",
+      "crs": "EPSG:4326",
+      "bounds": [
+        72.7881,
+        18.7627,
+        73.4086,
+        19.3263
+      ],
+      "source_resolution": "Crowdsourced vector",
+      "working_resolution": "Vector lines",
+      "units": "WGS-84 coordinates",
+      "vintage": "2026-09-07",
+      "license": "Open Data Commons Open Database License (ODbL)",
+      "file_size": 1188218,
+      "sha256": "9dc7b4c1c8e6b1a8cbbdd5f7af5684d11daca1c11aaa30c8431b394bf3fea15f",
+      "processing_history": [
+        "Overpass API query for waterways in Mumbai metropolitan region"
+      ],
+      "is_authoritative": true,
+      "usable_for": {
+        "susceptibility": true,
+        "hydraulics": true,
+        "exposure": false,
+        "vulnerability": false,
+        "validation": false
+      }
+    },
+    {
+      "dataset_id": "osm_roads_vector",
+      "source": "OpenStreetMap roads",
+      "source_url": "https://www.openstreetmap.org",
+      "source_organization": "OpenStreetMap Contributors",
+      "file_path": "data/processed/static/roads.geojson",
+      "format": "GeoJSON",
+      "crs": "EPSG:4326",
+      "bounds": [
+        72.75,
+        18.85,
+        73.05,
+        19.3
+      ],
+      "source_resolution": "Crowdsourced vector",
+      "working_resolution": "Vector lines",
+      "units": "WGS-84 coordinates",
+      "vintage": "2026-09-07",
+      "license": "ODbL",
+      "file_size": 81392078,
+      "sha256": "d0ec8c98f63cadedd1cdb58bf8b90f7ac6e32618b5dbbb7a83c967aa76be995b",
+      "processing_history": [
+        "Overpass API query for highway=* in Mumbai region"
+      ],
+      "is_authoritative": true,
+      "usable_for": {
+        "susceptibility": false,
+        "hydraulics": true,
+        "exposure": true,
+        "vulnerability": true,
+        "validation": false
+      }
+    },
+    {
+      "dataset_id": "osm_hospitals_vector",
+      "source": "OpenStreetMap hospitals & clinics",
+      "source_url": "https://www.openstreetmap.org",
+      "source_organization": "OpenStreetMap Contributors",
+      "file_path": "data/processed/static/hospitals.geojson",
+      "format": "GeoJSON",
+      "crs": "EPSG:4326",
+      "bounds": [
+        72.75,
+        18.85,
+        73.05,
+        19.3
+      ],
+      "source_resolution": "Crowdsourced points/polygons",
+      "working_resolution": "Vector features",
+      "units": "WGS-84 coordinates",
+      "vintage": "2026-09-07",
+      "license": "ODbL",
+      "file_size": 304250,
+      "sha256": "8e6c193628780f7a78e71a52ed003978e9a05fc8f7bc4e0b6b23277f64e30ad5",
+      "processing_history": [
+        "Overpass query: amenity=hospital | clinic | doctors"
+      ],
+      "is_authoritative": true,
+      "usable_for": {
+        "susceptibility": false,
+        "hydraulics": false,
+        "exposure": true,
+        "vulnerability": true,
+        "validation": false
+      }
+    },
+    {
+      "dataset_id": "osm_schools_vector",
+      "source": "OpenStreetMap schools & colleges",
+      "source_url": "https://www.openstreetmap.org",
+      "source_organization": "OpenStreetMap Contributors",
+      "file_path": "data/processed/static/schools.geojson",
+      "format": "GeoJSON",
+      "crs": "EPSG:4326",
+      "bounds": [
+        72.75,
+        18.85,
+        73.05,
+        19.3
+      ],
+      "source_resolution": "Crowdsourced points/polygons",
+      "working_resolution": "Vector features",
+      "units": "WGS-84 coordinates",
+      "vintage": "2026-09-07",
+      "license": "ODbL",
+      "file_size": 368236,
+      "sha256": "5d1a7e64f522abd7ac543c75c9a669f70b2b5b4c68ab305ee5b40ff3feef1cf7",
+      "processing_history": [
+        "Overpass query: amenity=school | college | university"
+      ],
+      "is_authoritative": true,
+      "usable_for": {
+        "susceptibility": false,
+        "hydraulics": false,
+        "exposure": true,
+        "vulnerability": false,
+        "validation": false
+      }
+    },
+    {
+      "dataset_id": "osm_emergency_assets_vector",
+      "source": "OpenStreetMap emergency assets (fire, police, shelter)",
+      "source_url": "https://www.openstreetmap.org",
+      "source_organization": "OpenStreetMap Contributors",
+      "file_path": "data/processed/static/emergency_assets.geojson",
+      "format": "GeoJSON",
+      "crs": "EPSG:4326",
+      "bounds": [
+        72.75,
+        18.85,
+        73.05,
+        19.3
+      ],
+      "source_resolution": "Crowdsourced points/polygons",
+      "working_resolution": "Vector features",
+      "units": "WGS-84 coordinates",
+      "vintage": "2026-09-07",
+      "license": "ODbL",
+      "file_size": 682483,
+      "sha256": "63a16fde9636082548a0631bf437c4dca424dc2e7fa61b66c6d5bcda0699b230",
+      "processing_history": [
+        "Overpass query: amenity=fire_station | police | social_facility"
+      ],
+      "is_authoritative": true,
+      "usable_for": {
+        "susceptibility": false,
+        "hydraulics": false,
+        "exposure": true,
+        "vulnerability": true,
+        "validation": false
+      }
+    },
+    {
+      "dataset_id": "osm_railways_vector",
+      "source": "OpenStreetMap railway lines & metro tracks",
+      "source_url": "https://www.openstreetmap.org",
+      "source_organization": "OpenStreetMap Contributors",
+      "file_path": "data/processed/static/railways.geojson",
+      "format": "GeoJSON",
+      "crs": "EPSG:4326",
+      "bounds": [
+        72.75,
+        18.85,
+        73.05,
+        19.3
+      ],
+      "source_resolution": "Crowdsourced lines",
+      "working_resolution": "Vector lines",
+      "units": "WGS-84 coordinates",
+      "vintage": "2026-09-07",
+      "license": "ODbL",
+      "file_size": 3726415,
+      "sha256": "cce2c022d0fd3ee3d94e4df4a0903c562715046e491626ee3e6532cf306d9a94",
+      "processing_history": [
+        "Overpass query: railway=rail | subway | light_rail"
+      ],
+      "is_authoritative": true,
+      "usable_for": {
+        "susceptibility": false,
+        "hydraulics": true,
+        "exposure": true,
+        "vulnerability": false,
+        "validation": false
+      }
+    },
+    {
+      "dataset_id": "mumbai_rainfall_events_catalog",
+      "source": "NASA GPM IMERG V07 Final Precipitation Corpus",
+      "source_url": "https://gpm.nasa.gov/data/imerg",
+      "source_organization": "NASA Goddard Space Flight Center / JalRakshak ML",
+      "file_path": "data/catalogs/mumbai_rainfall_events_v1.json",
+      "format": "JSON",
+      "crs": "EPSG:4326",
+      "bounds": [
+        72.75,
+        18.85,
+        73.05,
+        19.3
+      ],
+      "source_resolution": "0.1 deg (~10km) / 30-minute cadence",
+      "working_resolution": "30-minute event windows",
+      "units": "mm/h",
+      "vintage": "2021-2024 Monsoon Corpus (18 events)",
+      "license": "NASA Open Data Policy",
+      "file_size": 12829,
+      "sha256": "580fb3f8a5bdbfcfcf29da52d1a1dd3656cbf88192f9ef8fb8253a81c6fa7de9",
+      "processing_history": [
+        "Filtered IMERG V07 Final for Mumbai monsoon heavy precipitation episodes"
+      ],
+      "is_authoritative": true,
+      "usable_for": {
+        "susceptibility": true,
+        "hydraulics": true,
+        "exposure": false,
+        "vulnerability": false,
+        "validation": true
+      }
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "status": "PASS",
+  "output_tif": "data\\processed\\static\\roughness.tif",
+  "calibration_state": "UNCALIBRATED",
+  "valid_finite_cells": 65536,
+  "total_cells": 65536,
+  "roughness_bounds_respected": true,
+  "sha256": "305e91d8ef9b09abaaf88d0c62d8e75978706e1981a52827963b252ea913b038",
+  "min_roughness": 0.014999999664723873,
+  "max_roughness": 0.03999999910593033,
+  "mean_roughness": 0.030522683635354042
+}

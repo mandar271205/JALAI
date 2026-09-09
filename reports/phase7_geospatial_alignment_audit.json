@@ -1,0 +1,406 @@
+{
+  "status": "PASS",
+  "audit_timestamp": "2026-09-09T14:11:45.003964+00:00",
+  "reference_grid": {
+    "crs": "EPSG:32643",
+    "shape": [
+      256,
+      256
+    ],
+    "pilot_bbox_wgs84": [
+      72.75,
+      18.85,
+      73.05,
+      19.3
+    ]
+  },
+  "all_rasters_aligned": true,
+  "rasters_audited_count": 7,
+  "vectors_audited_count": 7,
+  "rasters": {
+    "elevation.tif": {
+      "name": "elevation",
+      "path": "data\\processed\\static\\elevation.tif",
+      "crs": "EPSG:32643",
+      "shape": [
+        256,
+        256
+      ],
+      "transform": [
+        125.6812,
+        0.0,
+        262927.8142,
+        0.0,
+        -196.0818,
+        2135557.2463
+      ],
+      "bounds": [
+        262927.81,
+        2085360.31,
+        295102.19,
+        2135557.25
+      ],
+      "nodata": NaN,
+      "is_finite": false,
+      "min_val": NaN,
+      "max_val": NaN,
+      "sha256": "56bd3208207e276499c1b47bce4a3e76df75d2e62b92903f71878d0fdee86ab0",
+      "file_size_bytes": 159348,
+      "matches_reference_grid": true,
+      "source_resolution": "30m Copernicus DEM / OSM vector",
+      "working_resolution": "256x256 (~160m) projected UTM 43N",
+      "discrepancies": []
+    },
+    "slope.tif": {
+      "name": "slope",
+      "path": "data\\processed\\static\\slope.tif",
+      "crs": "EPSG:32643",
+      "shape": [
+        256,
+        256
+      ],
+      "transform": [
+        125.6812,
+        0.0,
+        262927.8142,
+        0.0,
+        -196.0818,
+        2135557.2463
+      ],
+      "bounds": [
+        262927.81,
+        2085360.31,
+        295102.19,
+        2135557.25
+      ],
+      "nodata": NaN,
+      "is_finite": false,
+      "min_val": NaN,
+      "max_val": NaN,
+      "sha256": "bff27b1d865b7576f9c5dbe19dbb3693035f937aa16e2f9e40a8c7467039c91c",
+      "file_size_bytes": 163397,
+      "matches_reference_grid": true,
+      "source_resolution": "30m Copernicus DEM / OSM vector",
+      "working_resolution": "256x256 (~160m) projected UTM 43N",
+      "discrepancies": []
+    },
+    "flow_accumulation.tif": {
+      "name": "flow_accumulation",
+      "path": "data\\processed\\static\\flow_accumulation.tif",
+      "crs": "EPSG:32643",
+      "shape": [
+        256,
+        256
+      ],
+      "transform": [
+        125.6812,
+        0.0,
+        262927.8142,
+        0.0,
+        -196.0818,
+        2135557.2463
+      ],
+      "bounds": [
+        262927.81,
+        2085360.31,
+        295102.19,
+        2135557.25
+      ],
+      "nodata": NaN,
+      "is_finite": true,
+      "min_val": 1.0,
+      "max_val": 254.0,
+      "sha256": "7cd4a70fd0d7650b1e66bced836d2bc7007c4e8215e8bd8a0b7057af48329ded",
+      "file_size_bytes": 30579,
+      "matches_reference_grid": true,
+      "source_resolution": "30m Copernicus DEM / OSM vector",
+      "working_resolution": "256x256 (~160m) projected UTM 43N",
+      "discrepancies": []
+    },
+    "low_lying_index.tif": {
+      "name": "low_lying_index",
+      "path": "data\\processed\\static\\low_lying_index.tif",
+      "crs": "EPSG:32643",
+      "shape": [
+        256,
+        256
+      ],
+      "transform": [
+        125.6812,
+        0.0,
+        262927.8142,
+        0.0,
+        -196.0818,
+        2135557.2463
+      ],
+      "bounds": [
+        262927.81,
+        2085360.31,
+        295102.19,
+        2135557.25
+      ],
+      "nodata": NaN,
+      "is_finite": false,
+      "min_val": NaN,
+      "max_val": NaN,
+      "sha256": "9dea713eaaf222034f41568e2777e9ced04573e66f5c74b915dbb75e8d61e3a7",
+      "file_size_bytes": 93052,
+      "matches_reference_grid": true,
+      "source_resolution": "30m Copernicus DEM / OSM vector",
+      "working_resolution": "256x256 (~160m) projected UTM 43N",
+      "discrepancies": []
+    },
+    "distance_to_water.tif": {
+      "name": "distance_to_water",
+      "path": "data\\processed\\static\\distance_to_water.tif",
+      "crs": "EPSG:32643",
+      "shape": [
+        256,
+        256
+      ],
+      "transform": [
+        125.6812,
+        0.0,
+        262927.8142,
+        0.0,
+        -196.0818,
+        2135557.2463
+      ],
+      "bounds": [
+        262927.81,
+        2085360.31,
+        295102.19,
+        2135557.25
+      ],
+      "nodata": 0.0,
+      "is_finite": true,
+      "min_val": 160.8814697265625,
+      "max_val": 13266.6259765625,
+      "sha256": "d41f6122eb49a78a37af5af1c9a17e501ac301f4a2e13d0727c186ce7776b21e",
+      "file_size_bytes": 43771,
+      "matches_reference_grid": true,
+      "source_resolution": "30m Copernicus DEM / OSM vector",
+      "working_resolution": "256x256 (~160m) projected UTM 43N",
+      "discrepancies": []
+    },
+    "roughness.tif": {
+      "name": "roughness",
+      "path": "data\\processed\\static\\roughness.tif",
+      "crs": "EPSG:32643",
+      "shape": [
+        256,
+        256
+      ],
+      "transform": [
+        125.6812,
+        0.0,
+        262927.8142,
+        0.0,
+        -196.0818,
+        2135557.2463
+      ],
+      "bounds": [
+        262927.81,
+        2085360.31,
+        295102.19,
+        2135557.25
+      ],
+      "nodata": null,
+      "is_finite": true,
+      "min_val": 0.014999999664723873,
+      "max_val": 0.03999999910593033,
+      "sha256": "305e91d8ef9b09abaaf88d0c62d8e75978706e1981a52827963b252ea913b038",
+      "file_size_bytes": 11408,
+      "matches_reference_grid": true,
+      "source_resolution": "30m Copernicus DEM / OSM vector",
+      "working_resolution": "256x256 (~160m) projected UTM 43N",
+      "discrepancies": []
+    },
+    "susceptibility_v1.tif": {
+      "name": "susceptibility_v1",
+      "path": "data\\processed\\flood\\susceptibility_v1.tif",
+      "crs": "EPSG:32643",
+      "shape": [
+        256,
+        256
+      ],
+      "transform": [
+        125.6812,
+        0.0,
+        262927.8142,
+        0.0,
+        -196.0818,
+        2135557.2463
+      ],
+      "bounds": [
+        262927.81,
+        2085360.31,
+        295102.19,
+        2135557.25
+      ],
+      "nodata": NaN,
+      "is_finite": false,
+      "min_val": NaN,
+      "max_val": NaN,
+      "sha256": "e827be30c33c0b984fd095f6ec6203b514d31657124fb6a0e9323ac067a1bf9d",
+      "file_size_bytes": 262708,
+      "matches_reference_grid": true,
+      "source_resolution": "30m Copernicus DEM / OSM vector",
+      "working_resolution": "256x256 (~160m) projected UTM 43N",
+      "discrepancies": []
+    }
+  },
+  "vectors": {
+    "waterways.geojson": {
+      "name": "waterways",
+      "path": "data\\processed\\static\\waterways.geojson",
+      "crs": "EPSG:4326",
+      "feature_count": 1338,
+      "geometry_types": [
+        "LineString",
+        "Polygon"
+      ],
+      "bbox_wgs84": [
+        72.7881,
+        18.7627,
+        73.4086,
+        19.3263
+      ],
+      "duplicate_ids": 0,
+      "invalid_geometries": 0,
+      "sha256": "9dc7b4c1c8e6b1a8cbbdd5f7af5684d11daca1c11aaa30c8431b394bf3fea15f",
+      "file_size_bytes": 1188218,
+      "discrepancies": []
+    },
+    "roads.geojson": {
+      "name": "roads",
+      "path": "data\\processed\\static\\roads.geojson",
+      "crs": "EPSG:4326",
+      "feature_count": 292968,
+      "geometry_types": [
+        "LineString"
+      ],
+      "bbox_wgs84": [
+        72.7766,
+        18.8501,
+        73.0515,
+        19.3006
+      ],
+      "duplicate_ids": 0,
+      "invalid_geometries": 0,
+      "sha256": "d0ec8c98f63cadedd1cdb58bf8b90f7ac6e32618b5dbbb7a83c967aa76be995b",
+      "file_size_bytes": 81392078,
+      "discrepancies": []
+    },
+    "railways.geojson": {
+      "name": "railways",
+      "path": "data\\processed\\static\\railways.geojson",
+      "crs": "EPSG:4326",
+      "feature_count": 2342,
+      "geometry_types": [
+        "LineString"
+      ],
+      "bbox_wgs84": [
+        72.8145,
+        18.8768,
+        73.0979,
+        19.3184
+      ],
+      "duplicate_ids": 0,
+      "invalid_geometries": 0,
+      "sha256": "cce2c022d0fd3ee3d94e4df4a0903c562715046e491626ee3e6532cf306d9a94",
+      "file_size_bytes": 3726415,
+      "discrepancies": []
+    },
+    "hospitals.geojson": {
+      "name": "hospitals",
+      "path": "data\\processed\\static\\hospitals.geojson",
+      "crs": "EPSG:4326",
+      "feature_count": 1229,
+      "geometry_types": [
+        "MultiPolygon",
+        "Point",
+        "Polygon"
+      ],
+      "bbox_wgs84": [
+        72.7815,
+        18.8733,
+        73.0457,
+        19.2999
+      ],
+      "duplicate_ids": 0,
+      "invalid_geometries": 0,
+      "sha256": "8e6c193628780f7a78e71a52ed003978e9a05fc8f7bc4e0b6b23277f64e30ad5",
+      "file_size_bytes": 304250,
+      "discrepancies": []
+    },
+    "schools.geojson": {
+      "name": "schools",
+      "path": "data\\processed\\static\\schools.geojson",
+      "crs": "EPSG:4326",
+      "feature_count": 944,
+      "geometry_types": [
+        "LineString",
+        "MultiPolygon",
+        "Point",
+        "Polygon"
+      ],
+      "bbox_wgs84": [
+        72.7871,
+        18.8933,
+        73.0461,
+        19.2996
+      ],
+      "duplicate_ids": 0,
+      "invalid_geometries": 0,
+      "sha256": "5d1a7e64f522abd7ac543c75c9a669f70b2b5b4c68ab305ee5b40ff3feef1cf7",
+      "file_size_bytes": 368236,
+      "discrepancies": []
+    },
+    "emergency_assets.geojson": {
+      "name": "emergency_assets",
+      "path": "data\\processed\\static\\emergency_assets.geojson",
+      "crs": "EPSG:4326",
+      "feature_count": 2486,
+      "geometry_types": [
+        "LineString",
+        "MultiPolygon",
+        "Point",
+        "Polygon"
+      ],
+      "bbox_wgs84": [
+        72.7815,
+        18.8733,
+        73.0461,
+        19.2999
+      ],
+      "duplicate_ids": 0,
+      "invalid_geometries": 0,
+      "sha256": "63a16fde9636082548a0631bf437c4dca424dc2e7fa61b66c6d5bcda0699b230",
+      "file_size_bytes": 682483,
+      "discrepancies": []
+    },
+    "bridges.geojson": {
+      "name": "bridges",
+      "path": "data\\raw\\osm\\bridges.geojson",
+      "crs": "EPSG:4326",
+      "feature_count": 3218,
+      "geometry_types": [
+        "LineString",
+        "MultiPolygon",
+        "Polygon"
+      ],
+      "bbox_wgs84": [
+        72.7825,
+        18.8282,
+        73.1297,
+        20.3451
+      ],
+      "duplicate_ids": 0,
+      "invalid_geometries": 0,
+      "sha256": "f344b1f381abff3ab84bf37b6d0ce4d464c0876d854f977c66e50e67d0bbda8f",
+      "file_size_bytes": 13866530,
+      "discrepancies": []
+    }
+  }
+}

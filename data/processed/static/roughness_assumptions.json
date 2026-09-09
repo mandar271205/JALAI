@@ -1,0 +1,34 @@
+{
+  "calibration_state": "UNCALIBRATED",
+  "units": "s / m^(1/3)",
+  "bounds": [
+    0.01,
+    0.2
+  ],
+  "feature_parameters": {
+    "roads_asphalt": 0.015,
+    "railways_ballast": 0.025,
+    "waterways_channel": 0.035,
+    "default_terrain_mixed": 0.04
+  },
+  "literature_basis": "Chow (1959) / Arcement & Schneider (1989) USGS WSP 2339",
+  "note": "Engineering parameterization; not empirically calibrated to discharge gauge records.",
+  "provenance": {
+    "output_tif": "data\\processed\\static\\roughness.tif",
+    "sha256": "305e91d8ef9b09abaaf88d0c62d8e75978706e1981a52827963b252ea913b038",
+    "crs": "EPSG:32643",
+    "shape": [
+      256,
+      256
+    ],
+    "min_roughness": 0.014999999664723873,
+    "max_roughness": 0.03999999910593033,
+    "mean_roughness": 0.030522683635354042,
+    "roads_detected_cells": 26712,
+    "railways_detected_cells": 2685,
+    "waterways_detected_cells": 4966,
+    "worldcover_source_status": "DOWNLOAD_PENDING_EXTERNAL",
+    "worldcover_dataset": "ESA WorldCover 10m v200",
+    "resampling_policy": "nearest_or_mode_mandatory_no_bilinear"
+  }
+}

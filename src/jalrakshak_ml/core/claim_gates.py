@@ -53,6 +53,28 @@ class ScientificClaimGates:
     GIT_PUSHED: bool = False
     REMOTE_MODIFIED: bool = False
 
+    # Phase 7 Genuine Data Readiness & Physics Gates
+    PHASE_7_DATA_READINESS_HARDENED: bool = True
+    GENUINE_BUILDING_DATA_AVAILABLE: bool = False
+    GENUINE_ROAD_DATA_AVAILABLE: bool = True
+    GENUINE_CRITICAL_FACILITY_DATA_AVAILABLE: bool = True
+    GENUINE_POPULATION_DATA_AVAILABLE: bool = False
+    LAND_COVER_REAL_DATA_AVAILABLE: bool = False
+    ROUGHNESS_LAYER_READY: bool = True
+    ROUGHNESS_CALIBRATED: bool = False
+    GENUINE_DRAINAGE_EVIDENCE_AVAILABLE: bool = True
+    MUNICIPAL_DRAINAGE_NETWORK_AVAILABLE: bool = False
+    SWMM_EXECUTION_READY: bool = False
+    LISFLOOD_INPUT_DATA_READY: bool = True
+    LISFLOOD_SOLVER_AVAILABLE: bool = False
+    LISFLOOD_EXECUTION_READY: bool = False
+    REAL_FLOOD_VALIDATION_DATA_AVAILABLE: bool = False
+    VULNERABILITY_PROXY_DATA_AVAILABLE: bool = True
+    PHYSICS_SCENARIO_CATALOG_READY: bool = True
+
+    def __post_init__(self) -> None:
+        self.validate_scientific_integrity()
+
     def validate_scientific_integrity(self) -> None:
         """Enforce non-negotiable scientific safety constraints."""
         if self.SUSCEPTIBILITY_IS_NOT_DEPTH is not True:
@@ -71,6 +93,24 @@ class ScientificClaimGates:
             raise PermissionError("Locked rainfall test set must remain untouched")
         if self.FABRICATED_DEPTH_USED or self.FAKE_PHYSICS_TRUTH_USED:
             raise ValueError("Fabrication of hydraulic depth or physics truth is strictly prohibited")
+
+        # Phase 7 specific empirical validations
+        if self.ROUGHNESS_CALIBRATED:
+            raise ValueError("Roughness layer is uncalibrated literature parameterization; cannot claim calibration")
+        if self.MUNICIPAL_DRAINAGE_NETWORK_AVAILABLE:
+            raise ValueError("Municipal stormwater drainage network data is not present in repository")
+        if self.SWMM_INPUTS_AVAILABLE and not self.MUNICIPAL_DRAINAGE_NETWORK_AVAILABLE:
+            raise ValueError("SWMM inputs cannot be marked available without municipal drainage network")
+        if self.SWMM_EXECUTION_READY and not self.SWMM_INPUTS_AVAILABLE:
+            raise ValueError("SWMM execution cannot be ready without available inputs")
+        if self.LISFLOOD_EXECUTION_READY and not self.LISFLOOD_SOLVER_AVAILABLE:
+            raise ValueError("LISFLOOD-FP execution cannot be ready without solver binary")
+        if self.GENUINE_POPULATION_DATA_AVAILABLE:
+            raise ValueError("Census population raster is not present in local data repository")
+        if self.REAL_FLOOD_VALIDATION_DATA_AVAILABLE:
+            raise ValueError("Empirical flood validation extent is not present in local repository")
+        if self.REAL_VULNERABILITY_DATA_AVAILABLE:
+            raise ValueError("Socioeconomic vulnerability data is proxy only; cannot claim real census survey")
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
