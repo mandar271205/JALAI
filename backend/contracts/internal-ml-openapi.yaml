@@ -1,0 +1,38 @@
+openapi: 3.1.0
+info:
+  title: JalRakshak AI Internal ML Inference API
+  description: Internal contract between Backend Platform and ML/Geospatial Subteam.
+  version: 1.0.0
+servers:
+  - url: http://localhost:8001
+paths:
+  /health:
+    get:
+      summary: ML service health check
+      responses:
+        '200':
+          description: Healthy
+  /internal/ml/nowcast:
+    post:
+      summary: Trigger radar precipitation nowcast inference
+      responses:
+        '200':
+          description: Manifest with raster artifacts and valid timestamps
+  /internal/ml/inundation:
+    post:
+      summary: Compute hydrodynamic flood depth and velocity raster
+      responses:
+        '200':
+          description: Inundation raster manifest
+  /internal/ml/risk-assessment:
+    post:
+      summary: Aggregate flood depth, vulnerability, and assets into H3 risk cells
+      responses:
+        '200':
+          description: List of scored H3 cells
+  /internal/ml/verify-report:
+    post:
+      summary: Vision AI verification of crowd-sourced flood photo and description
+      responses:
+        '200':
+          description: Verification verdict, confidence score, and detected water level

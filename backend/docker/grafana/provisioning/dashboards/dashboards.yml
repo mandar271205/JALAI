@@ -1,0 +1,11 @@
+apiVersion: 1
+
+providers:
+  - name: 'JalRakshak Dashboards'
+    orgId: 1
+    folder: 'JalRakshak AI'
+    type: file
+    disableDeletion: false
+    editable: true
+    options:
+      path: /var/lib/grafana/dashboards

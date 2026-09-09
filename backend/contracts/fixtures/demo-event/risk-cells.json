@@ -1,0 +1,35 @@
+[
+  {
+    "h3_cell_id": "8860145b53fffff",
+    "valid_time": "2026-09-08T09:30:00Z",
+    "risk_level": "SEVERE",
+    "confidence": 0.94,
+    "flood_depth_m": 0.85,
+    "rainfall_rate_mm_h": 68.5,
+    "ward_id": "WARD-12-DHARAVI",
+    "model_version": "v1.2.0-hydro",
+    "data_version": "imd-wrf-20260908"
+  },
+  {
+    "h3_cell_id": "8860145b51fffff",
+    "valid_time": "2026-09-08T09:30:00Z",
+    "risk_level": "HIGH",
+    "confidence": 0.88,
+    "flood_depth_m": 0.45,
+    "rainfall_rate_mm_h": 45.0,
+    "ward_id": "WARD-08-KURLA",
+    "model_version": "v1.2.0-hydro",
+    "data_version": "imd-wrf-20260908"
+  },
+  {
+    "h3_cell_id": "8860145b57fffff",
+    "valid_time": "2026-09-08T09:30:00Z",
+    "risk_level": "MODERATE",
+    "confidence": 0.82,
+    "flood_depth_m": 0.15,
+    "rainfall_rate_mm_h": 22.0,
+    "ward_id": "WARD-04-DADAR",
+    "model_version": "v1.2.0-hydro",
+    "data_version": "imd-wrf-20260908"
+  }
+]

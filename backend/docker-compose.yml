@@ -1,0 +1,214 @@
+version: '3.8'
+
+services:
+  nginx:
+    image: nginx:1.25-alpine
+    container_name: jalrakshak_nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - backend
+      - titiler
+      - pg_tileserv
+    networks:
+      - jalrakshak_network
+
+  backend:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    container_name: jalrakshak_backend
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+      ml_stub:
+        condition: service_started
+    volumes:
+      - .:/app/backend
+    networks:
+      - jalrakshak_network
+
+  db:
+    image: postgis/postgis:16-3.4
+    container_name: jalrakshak_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-jalrakshak}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-jalrakshak}
+      POSTGRES_DB: ${POSTGRES_DB:-jalrakshak}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-jalrakshak} -d ${POSTGRES_DB:-jalrakshak}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - jalrakshak_network
+
+  redis:
+    image: redis:7-alpine
+    container_name: jalrakshak_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      - jalrakshak_network
+
+  minio:
+    image: minio/minio:RELEASE.2024-05-10T01-41-38Z
+    container_name: jalrakshak_minio
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ACCESS_KEY:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_SECRET_KEY:-minioadmin}
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio_data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      - jalrakshak_network
+
+  celery_worker:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.worker
+    container_name: jalrakshak_worker
+    restart: unless-stopped
+    env_file:
+      - .env
+    depends_on:
+      - db
+      - redis
+    volumes:
+      - ./backend:/app/backend
+    networks:
+      - jalrakshak_network
+
+  celery_beat:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.worker
+    container_name: jalrakshak_beat
+    restart: unless-stopped
+    command: ["celery", "-A", "app.workers.celery_app.celery", "beat", "--loglevel=info"]
+    env_file:
+      - .env
+    depends_on:
+      - db
+      - redis
+    volumes:
+      - ./backend:/app/backend
+    networks:
+      - jalrakshak_network
+
+  ml_stub:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.ml_stub
+    container_name: jalrakshak_ml_stub
+    restart: unless-stopped
+    ports:
+      - "8001:8001"
+    networks:
+      - jalrakshak_network
+
+  titiler:
+    image: ghcr.io/developmentseed/titiler:latest
+    container_name: jalrakshak_titiler
+    restart: unless-stopped
+    environment:
+      AWS_ACCESS_KEY_ID: ${MINIO_ACCESS_KEY:-minioadmin}
+      AWS_SECRET_ACCESS_KEY: ${MINIO_SECRET_KEY:-minioadmin}
+      AWS_S3_ENDPOINT: http://minio:9000
+      AWS_VIRTUAL_HOSTING: "FALSE"
+    ports:
+      - "8088:8000"
+    depends_on:
+      - minio
+    networks:
+      - jalrakshak_network
+
+  pg_tileserv:
+    image: pramsey/pg_tileserv:latest
+    container_name: jalrakshak_tileserv
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-jalrakshak}:${POSTGRES_PASSWORD:-jalrakshak}@db:5432/${POSTGRES_DB:-jalrakshak}
+    ports:
+      - "7800:7800"
+    depends_on:
+      - db
+    networks:
+      - jalrakshak_network
+
+  prometheus:
+    image: prom/prometheus:v2.52.0
+    container_name: jalrakshak_prometheus
+    restart: unless-stopped
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./docker/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    networks:
+      - jalrakshak_network
+
+  grafana:
+    image: grafana/grafana:10.4.2
+    container_name: jalrakshak_grafana
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-admin}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    volumes:
+      - ./docker/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./docker/grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - grafana_data:/var/lib/grafana
+    depends_on:
+      - prometheus
+    networks:
+      - jalrakshak_network
+
+volumes:
+  postgres_data:
+  redis_data:
+  minio_data:
+  prometheus_data:
+  grafana_data:
+
+networks:
+  jalrakshak_network:
+    driver: bridge

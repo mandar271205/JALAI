@@ -1,0 +1,55 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "OfflineSync",
+  "type": "object",
+  "required": [
+    "client_id",
+    "sync_version",
+    "client_timestamp",
+    "mutations"
+  ],
+  "properties": {
+    "client_id": {
+      "type": "string"
+    },
+    "sync_version": {
+      "type": "integer"
+    },
+    "client_timestamp": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "mutations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "mutation_id",
+          "entity_type",
+          "action",
+          "data"
+        ],
+        "properties": {
+          "mutation_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "entity_type": {
+            "type": "string"
+          },
+          "action": {
+            "type": "string",
+            "enum": [
+              "CREATE",
+              "UPDATE",
+              "DELETE"
+            ]
+          },
+          "data": {
+            "type": "object"
+          }
+        }
+      }
+    }
+  }
+}

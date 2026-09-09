@@ -1,0 +1,44 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "WeatherSource",
+  "type": "object",
+  "required": [
+    "source_id",
+    "name",
+    "source_type",
+    "status",
+    "last_successful_ingestion"
+  ],
+  "properties": {
+    "source_id": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "source_type": {
+      "type": "string",
+      "enum": [
+        "RADAR",
+        "SATELLITE",
+        "GAUGE",
+        "NUMERICAL_MODEL"
+      ]
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "HEALTHY",
+        "DEGRADED",
+        "OFFLINE"
+      ]
+    },
+    "last_successful_ingestion": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "latency_seconds": {
+      "type": "number"
+    }
+  }
+}
