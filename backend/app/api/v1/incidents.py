@@ -3,9 +3,11 @@ from pathlib import Path
 from typing import Any
 
 from fastapi import APIRouter, Depends, Query, status
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.security import AuthenticatedUser, get_current_user
 from app.core.security_hardening import enforce_regional_access
+from app.db.session import get_db
 from app.domains.audit.service import audit_service
 from app.domains.incidents.repository import IncidentsRepository
 from app.domains.incidents.state_machine import IncidentStatus
@@ -104,8 +106,9 @@ async def transition_incident(
     incident_id: str,
     payload: dict[str, Any],
     current_user: AuthenticatedUser = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
 ) -> dict[str, Any]:
-    target_status = payload.get("target_status")
+    target_status = payload.get("target_status") or payload.get("to_status")
     reason = payload.get("reason")
     notes = payload.get("notes")
 
@@ -131,7 +134,7 @@ async def transition_incident(
 
     # Record append-only cryptographic audit event
     audit_entry = await audit_service.record_event(
-        db=None,
+        db=db,
         actor_id=current_user.user_id,
         actor_role=current_user.role.value
         if hasattr(current_user.role, "value")

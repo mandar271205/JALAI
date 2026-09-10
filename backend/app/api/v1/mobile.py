@@ -44,45 +44,54 @@ async def get_mobile_home(
 
     # 1. Fetch risk evaluation near user location
     risk_cells = await ml_provider.get_risk_cells()
-    local_risk_level = "MODERATE"
-    local_risk_score = 0.58
-    local_factors = ["High surface runoff", "Low-lying catchment drainage"]
-    local_ward = "WARD-12-DHARAVI"
+    local_risk_level = "UNKNOWN"
+    local_risk_score = None
+    local_factors: list[str] = []
+    local_ward = None
+    risk_is_fallback = True
 
     if risk_cells and isinstance(risk_cells, list):
         primary_cell = risk_cells[0]
         local_risk_level = primary_cell.get("risk_level", "MODERATE")
         local_risk_score = primary_cell.get("inundation_susceptibility_score", 0.65)
-        local_ward = primary_cell.get("ward_id", "WARD-12-DHARAVI")
+        local_ward = primary_cell.get("ward_id")
+        risk_is_fallback = bool(primary_cell.get("is_fallback", False))
 
     # 2. Rainfall outlook at +30, +60, +90, +120 minutes
     nowcast_manifest = await ml_provider.get_nowcast_manifest()
-    rainfall_outlook = [
-        {
-            "lead_time_minutes": 30,
-            "rainfall_rate_mm_h": 35.0,
-            "category": "MODERATE",
-            "trend": "INCREASING",
-        },
-        {
-            "lead_time_minutes": 60,
-            "rainfall_rate_mm_h": 68.5,
-            "category": "HEAVY",
-            "trend": "INCREASING",
-        },
-        {
-            "lead_time_minutes": 90,
-            "rainfall_rate_mm_h": 52.0,
-            "category": "HEAVY",
-            "trend": "DECREASING",
-        },
-        {
-            "lead_time_minutes": 120,
-            "rainfall_rate_mm_h": 24.0,
-            "category": "MODERATE",
-            "trend": "DECREASING",
-        },
-    ]
+    rainfall_outlook = nowcast_manifest.get("rainfall_outlook", [])
+    if not isinstance(rainfall_outlook, list) or not rainfall_outlook:
+        # Honest fallback slots: numeric values must NOT be fabricated when radar nowcast is missing/fallback
+        rainfall_outlook = [
+            {
+                "lead_time_minutes": 30,
+                "rainfall_intensity_mm_h": None,
+                "condition": "UNAVAILABLE",
+                "status": "UNAVAILABLE",
+                "source": "DEMO_FIXTURE",
+            },
+            {
+                "lead_time_minutes": 60,
+                "rainfall_intensity_mm_h": None,
+                "condition": "UNAVAILABLE",
+                "status": "UNAVAILABLE",
+                "source": "DEMO_FIXTURE",
+            },
+            {
+                "lead_time_minutes": 90,
+                "rainfall_intensity_mm_h": None,
+                "condition": "UNAVAILABLE",
+                "status": "UNAVAILABLE",
+                "source": "DEMO_FIXTURE",
+            },
+            {
+                "lead_time_minutes": 120,
+                "rainfall_intensity_mm_h": None,
+                "condition": "UNAVAILABLE",
+                "status": "UNAVAILABLE",
+                "source": "DEMO_FIXTURE",
+            },
+        ]
 
     # 3. Active alerts
     from app.api.v1.alerts import _alerts_db
@@ -126,9 +135,13 @@ async def get_mobile_home(
             "risk_level": local_risk_level,
             "risk_score": local_risk_score,
             "dominant_factors": local_factors,
-            "summary": f"Current risk level in {local_ward} is {local_risk_level} with active drainage monitoring.",
-            "confidence": 0.85,
-            "is_fallback": True,
+            "summary": (
+                f"Current risk level for {local_ward} is {local_risk_level}."
+                if local_ward and local_risk_level != "UNKNOWN"
+                else "Current risk is unavailable."
+            ),
+            "confidence": primary_cell.get("confidence") if risk_cells else None,
+            "is_fallback": risk_is_fallback,
         },
         "rainfall_outlook": rainfall_outlook,
         "nowcast_manifest_id": nowcast_manifest.get("manifest_id"),
@@ -138,8 +151,14 @@ async def get_mobile_home(
         "watched_locations": user_watch_locations,
         "system_status": {
             "timestamp": now.isoformat(),
-            "operational_mode": "LIVE_OPERATIONAL",
-            "is_radar_available": True,
-            "provisional_model_fallback": True,
+            "operational_mode": (
+                "DEMO_FIXTURE"
+                if nowcast_manifest.get("is_fallback", True) or risk_is_fallback
+                else "LIVE_OPERATIONAL"
+            ),
+            "is_radar_available": bool(nowcast_manifest.get("radar_available", False)),
+            "provisional_model_fallback": bool(
+                nowcast_manifest.get("is_fallback", True) or risk_is_fallback
+            ),
         },
     }

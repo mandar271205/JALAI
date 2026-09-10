@@ -1,27 +1,17 @@
-# JalRakshak AI — Mobile Application (`mobile/`)
+# JalRakshak AI Mobile
 
-> [!NOTE]
-> This directory is reserved for the **JalRakshak Mobile Application** (e.g. Flutter or React Native).
-> Mobile engineers will implement citizen alerts, field reporting, and offline-first sync within this boundary.
+Expo/React Native client for citizen safety and field-responder operations. The app communicates only with the public `/api/v1` backend, keeps credentials in SecureStore, and labels unavailable backend capabilities honestly.
 
----
+## Run
 
-## Architectural & Integration Rules
+```bash
+npm install
+cp .env.example .env
+npm run start
+```
 
-1. **Backend-Only Communication**:
-   - The mobile client interacts **strictly** with the JalRakshak backend API gateway.
-   - The client never interacts directly with internal numerical pipelines or third-party AI endpoints.
+`EXPO_PUBLIC_AUTH_MODE=mock` is for local backend development only. Production requires a bearer token issued by the configured identity flow; this repository's backend currently validates tokens but does not expose a login/token-issuance endpoint.
 
-2. **Zero Credentials in Binary**:
-   - The mobile application bundle must **never** include Groq, NVIDIA NIM, database, or ML serving secrets.
-   - All access to backend endpoints uses authenticated citizen or responder session tokens.
+OS push requires a development/native build and valid Firebase/APNs/Expo project configuration. Expo Go is not presented as a live-push environment.
 
-3. **Field Reporting & Citizen Submissions**:
-   - Citizen ground-truth reports (photo metadata, geo-coordinates, flood observation text) are submitted via `POST /api/v1/reports`.
-   - Free text is sanitized on the backend against prompt injection; client should transmit structured geo-tagged payloads.
-
-4. **Offline Resilience**:
-   - In accordance with JalRakshak edge principles, the mobile app should cache the latest local hazard tiles and emergency guidance for disconnected operation during extreme weather.
-
-5. **Shared Contracts**:
-   - Refer to `shared/contracts/openapi.yaml` for client contracts and schema definitions.
+See `../docs/MOBILE_FRONTEND_IMPLEMENTATION_MATRIX.md` and `../docs/MOBILE_E2E_SMOKE.md`.

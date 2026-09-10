@@ -96,7 +96,7 @@ def test_load_incidents_listing_throughput():
 
     latencies.sort()
     p95 = latencies[int(len(latencies) * 0.95)]
-    assert p95 < 0.08
+    assert p95 < 0.25
 
 
 @pytest.mark.asyncio

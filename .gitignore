@@ -81,3 +81,9 @@ ios/Pods/
 .DS_Store
 .vscode/
 .idea/
+
+# Slide extraction temporary inspection artifacts
+reports/extracted_slide_images/
+
+# Local lockfile (avoid untracked clutter)
+uv.lock

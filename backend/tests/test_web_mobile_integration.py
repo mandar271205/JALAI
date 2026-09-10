@@ -39,13 +39,18 @@ async def test_mobile_home_endpoint(client: AsyncClient):
     assert len(data["rainfall_outlook"]) == 4
     horizons = [item["lead_time_minutes"] for item in data["rainfall_outlook"]]
     assert horizons == [30, 60, 90, 120]
+    for item in data["rainfall_outlook"]:
+        # Regression: numeric rainfall values MUST NOT be invented
+        assert item["rainfall_intensity_mm_h"] is None
+        assert item["status"] == "UNAVAILABLE"
 
     assert "active_alerts" in data
     assert "nearby_incidents" in data
     assert "nearby_reports" in data
     assert "watched_locations" in data
     assert "system_status" in data
-    assert data["system_status"]["operational_mode"] == "LIVE_OPERATIONAL"
+    assert data["system_status"]["operational_mode"] == "DEMO_FIXTURE"
+    assert data["system_status"]["is_radar_available"] is False
 
 
 @pytest.mark.asyncio

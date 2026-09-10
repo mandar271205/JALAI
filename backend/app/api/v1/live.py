@@ -10,6 +10,7 @@ logger = logging.getLogger("api.live")
 
 
 @router.websocket("/api/v1/live")
+@router.websocket("/ws/live")
 async def websocket_live_endpoint(
     websocket: WebSocket,
     token: str | None = Query(None),
