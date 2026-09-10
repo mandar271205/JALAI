@@ -1,0 +1,26 @@
+[
+  {
+    "source_id": "imd-radar-mumbai",
+    "name": "IMD Doppler Weather Radar (Mumbai/Colaba)",
+    "source_type": "RADAR",
+    "status": "HEALTHY",
+    "last_successful_ingestion": "2026-09-08T09:25:00Z",
+    "latency_seconds": 300.0
+  },
+  {
+    "source_id": "insat-3d-precipitation",
+    "name": "ISRO INSAT-3DR QPE Satellite Precipitation",
+    "source_type": "SATELLITE",
+    "status": "HEALTHY",
+    "last_successful_ingestion": "2026-09-08T09:15:00Z",
+    "latency_seconds": 900.0
+  },
+  {
+    "source_id": "cwc-telemetry-mithi",
+    "name": "CWC River Gauge Telemetry - Mithi River",
+    "source_type": "GAUGE",
+    "status": "HEALTHY",
+    "last_successful_ingestion": "2026-09-08T09:28:00Z",
+    "latency_seconds": 120.0
+  }
+]

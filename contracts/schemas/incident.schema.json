@@ -1,0 +1,77 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Incident",
+  "type": "object",
+  "required": [
+    "incident_id",
+    "title",
+    "severity",
+    "status",
+    "category",
+    "created_at",
+    "location"
+  ],
+  "properties": {
+    "incident_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "title": {
+      "type": "string"
+    },
+    "severity": {
+      "type": "string",
+      "enum": [
+        "LOW",
+        "MODERATE",
+        "HIGH",
+        "CRITICAL"
+      ]
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "REPORTED",
+        "VERIFIED",
+        "DISPATCHED",
+        "RESOLVED",
+        "CANCELLED"
+      ]
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "WATERLOGGING",
+        "FLASH_FLOOD",
+        "RIVER_BREACH",
+        "LANDSLIDE",
+        "SEWAGE_OVERFLOW"
+      ]
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "location": {
+      "type": "object",
+      "required": [
+        "latitude",
+        "longitude"
+      ],
+      "properties": {
+        "latitude": {
+          "type": "number"
+        },
+        "longitude": {
+          "type": "number"
+        }
+      }
+    },
+    "ward_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  }
+}

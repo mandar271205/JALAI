@@ -1,0 +1,59 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "ModelRun",
+  "type": "object",
+  "required": [
+    "run_id",
+    "model_type",
+    "model_version",
+    "data_version",
+    "status",
+    "started_at"
+  ],
+  "properties": {
+    "run_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "model_type": {
+      "type": "string",
+      "enum": [
+        "NOWCAST",
+        "INUNDATION",
+        "RISK_AGGREGATION",
+        "REPORT_VISION"
+      ]
+    },
+    "model_version": {
+      "type": "string"
+    },
+    "data_version": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "RUNNING",
+        "COMPLETED",
+        "FAILED"
+      ]
+    },
+    "started_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "completed_at": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "execution_time_ms": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    }
+  }
+}

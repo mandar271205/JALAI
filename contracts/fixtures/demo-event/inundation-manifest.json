@@ -1,0 +1,10 @@
+{
+  "manifest_id": "inundation-20260908-0930",
+  "generated_at": "2026-09-08T09:30:00Z",
+  "valid_time": "2026-09-08T10:00:00Z",
+  "depth_cog_url": "http://localhost:9000/jalrakshak/rasters/flood_depth_20260908_1000.tif",
+  "velocity_cog_url": "http://localhost:9000/jalrakshak/rasters/flood_velocity_20260908_1000.tif",
+  "max_depth_meters": 1.82,
+  "model_version": "hydro-2d-shallow-water-v3",
+  "data_version": "cwc-elevation-srtm30"
+}

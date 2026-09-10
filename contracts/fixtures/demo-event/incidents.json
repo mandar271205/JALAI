@@ -1,0 +1,28 @@
+[
+  {
+    "incident_id": "e0b04a8b-1175-4d76-bc34-b9623e1dc001",
+    "title": "Mithi River Overspill at CST Road Bridge",
+    "severity": "CRITICAL",
+    "status": "DISPATCHED",
+    "category": "RIVER_BREACH",
+    "created_at": "2026-09-08T09:10:00Z",
+    "location": {
+      "latitude": 19.0712,
+      "longitude": 72.8756
+    },
+    "ward_id": "WARD-08-KURLA"
+  },
+  {
+    "incident_id": "e0b04a8b-1175-4d76-bc34-b9623e1dc002",
+    "title": "Severe Waterlogging Under King's Circle Flyover",
+    "severity": "HIGH",
+    "status": "VERIFIED",
+    "category": "WATERLOGGING",
+    "created_at": "2026-09-08T09:20:00Z",
+    "location": {
+      "latitude": 19.0305,
+      "longitude": 72.8598
+    },
+    "ward_id": "WARD-04-DADAR"
+  }
+]

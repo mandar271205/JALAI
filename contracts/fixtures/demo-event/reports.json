@@ -1,0 +1,16 @@
+[
+  {
+    "report_id": "d1a13b9c-2286-4e87-cd45-c0734f2ed001",
+    "citizen_id": "usr-citizen-401",
+    "submitted_at": "2026-09-08T09:15:00Z",
+    "location": {
+      "latitude": 19.0715,
+      "longitude": 72.8759
+    },
+    "description": "Water reached waist level near Kurla station bus depot. Vehicles submerged.",
+    "image_url": "http://localhost:9000/jalrakshak/reports/report-d1a13b9c.jpg",
+    "verification_status": "AI_VERIFIED",
+    "ai_confidence": 0.96,
+    "estimated_water_depth_cm": 75.0
+  }
+]

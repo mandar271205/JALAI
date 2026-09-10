@@ -1,0 +1,57 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "CriticalAsset",
+  "type": "object",
+  "required": [
+    "asset_id",
+    "name",
+    "asset_type",
+    "location",
+    "flood_threshold_m"
+  ],
+  "properties": {
+    "asset_id": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "asset_type": {
+      "type": "string",
+      "enum": [
+        "HOSPITAL",
+        "POWER_SUBSTATION",
+        "FIRE_STATION",
+        "RELIEF_SHELTER",
+        "PUMPING_STATION"
+      ]
+    },
+    "location": {
+      "type": "object",
+      "required": [
+        "latitude",
+        "longitude"
+      ],
+      "properties": {
+        "latitude": {
+          "type": "number"
+        },
+        "longitude": {
+          "type": "number"
+        }
+      }
+    },
+    "flood_threshold_m": {
+      "type": "number"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "NORMAL",
+        "AT_RISK",
+        "INUNDATED",
+        "OFFLINE"
+      ]
+    }
+  }
+}

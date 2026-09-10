@@ -1,0 +1,15 @@
+[
+  {
+    "alert_id": "f5c22a7d-3397-4f98-de56-d1845f3fe001",
+    "headline": "FLASH FLOOD WARNING: Kurla and Dharavi Low-Lying Wards",
+    "description": "Rapid water level rise detected along Mithi River basin. Inundation depth exceeding 0.7m expected in next 60 minutes.",
+    "instruction": "Avoid low-lying subways and basement areas. Move to designated relief shelters or upper floors immediately.",
+    "severity": "Extreme",
+    "urgency": "Immediate",
+    "certainty": "Observed",
+    "status": "PUBLISHED",
+    "sent_at": "2026-09-08T09:25:00Z",
+    "area_description": "Mumbai Municipal Ward L and G/North (Kurla & Dharavi)",
+    "cap_xml": "<?xml version=\"1.0\" encoding=\"UTF-8\"?><alert xmlns=\"urn:oasis:names:tc:emergency:cap:1.2\"><identifier>f5c22a7d</identifier><sender>ndma-jalrakshak</sender><status>Actual</status><msgType>Alert</msgType><scope>Public</scope><info><headline>FLASH FLOOD WARNING</headline></info></alert>"
+  }
+]

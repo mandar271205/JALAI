@@ -1,0 +1,44 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "InundationManifest",
+  "type": "object",
+  "required": [
+    "manifest_id",
+    "generated_at",
+    "valid_time",
+    "depth_cog_url",
+    "velocity_cog_url",
+    "model_version",
+    "data_version"
+  ],
+  "properties": {
+    "manifest_id": {
+      "type": "string"
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "valid_time": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "depth_cog_url": {
+      "type": "string",
+      "format": "uri"
+    },
+    "velocity_cog_url": {
+      "type": "string",
+      "format": "uri"
+    },
+    "max_depth_meters": {
+      "type": "number"
+    },
+    "model_version": {
+      "type": "string"
+    },
+    "data_version": {
+      "type": "string"
+    }
+  }
+}

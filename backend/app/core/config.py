@@ -1,5 +1,6 @@
 from functools import lru_cache
 
+from pydantic import AliasChoices, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -21,6 +22,8 @@ class Settings(BaseSettings):
     POSTGRES_DB: str = "jalrakshak"
     POSTGRES_USER: str = "jalrakshak"
     POSTGRES_PASSWORD: str = "jalrakshak"
+    DB_CONNECTION_MODE: str = "pooler"  # pooler (port 6543), direct (port 5432), local
+    DB_STATEMENT_CACHE_SIZE: int = 0    # 0 for PgBouncer / Supabase transaction pooler
 
     # Redis
     REDIS_URL: str = "redis://localhost:6379/0"
@@ -34,8 +37,14 @@ class Settings(BaseSettings):
 
     # Supabase Auth / OIDC
     SUPABASE_URL: str = "https://placeholder-project.supabase.co"
-    SUPABASE_PUBLISHABLE_KEY: str = "placeholder-anon-key"
-    SUPABASE_SECRET_KEY: str = "placeholder-service-key"
+    SUPABASE_PUBLISHABLE_KEY: str = Field(
+        default="placeholder-anon-key",
+        validation_alias=AliasChoices("SUPABASE_PUBLISHABLE_KEY", "SUPABASE_ANON_KEY"),
+    )
+    SUPABASE_SECRET_KEY: str = Field(
+        default="placeholder-service-key",
+        validation_alias=AliasChoices("SUPABASE_SECRET_KEY", "SUPABASE_SERVICE_ROLE_KEY"),
+    )
     SUPABASE_JWT_SECRET: str = "placeholder-jwt-secret"
     AUTH_MODE: str = "mock"  # "mock" for local dev/testing, "supabase" for JWT validation
 
