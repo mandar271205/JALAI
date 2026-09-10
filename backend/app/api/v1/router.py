@@ -22,6 +22,7 @@ from app.api.v1 import (
     tiles,
     watch_locations,
     weather,
+    simulation,
 )
 from app.api.v1 import (
     map as map_router,
@@ -51,3 +52,5 @@ api_v1_router.include_router(mobile.router)
 api_v1_router.include_router(dashboard.router)
 api_v1_router.include_router(map_router.router)
 api_v1_router.include_router(devices.router)
+api_v1_router.include_router(simulation.router)
+

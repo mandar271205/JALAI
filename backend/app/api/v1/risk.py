@@ -27,6 +27,30 @@ async def get_risk_cells(
 ) -> Any:
     raw_cells = await ml_provider.get_risk_cells(bbox=bbox, valid_time=valid_time)
 
+    # Inject active simulation if present
+    from app.api.v1.simulation import get_active_simulation
+
+    sim = get_active_simulation()
+    if sim and sim.get("is_active"):
+        ward_val = sim.get("ward_id") or sim.get("ward") or "DHARAVI"
+        sim_cell = {
+            "cell_id": f"sim-{str(ward_val).lower()}-01",
+            "h3_cell_id": f"sim-{str(ward_val).lower()}-01",
+            "ward_id": ward_val,
+            "ward_name": sim.get("ward_name") or f"Ward {ward_val} (Simulated Hotspot)",
+            "latitude": sim.get("latitude", 19.0330),
+            "longitude": sim.get("longitude", 72.8570),
+            "risk_score": 0.94,
+            "risk_level": "SEVERE",
+            "hazard_score": 0.96,
+            "exposure_score": 0.92,
+            "vulnerability_score": 0.88,
+            "rainfall_rate_mm_h": sim.get("rainfall_rate_mm_h", 120.0),
+            "confidence": 0.98,
+            "timestamp": datetime.now(UTC).isoformat(),
+        }
+        raw_cells = [sim_cell] + [c for c in raw_cells if c.get("cell_id") != sim_cell["cell_id"]]
+
     # Filter bbox if given
     filtered = raw_cells
     if bbox:

@@ -13,4 +13,15 @@ export const assetsApi = {
     offset?: number;
   }): Promise<CriticalAssetsResponse> =>
     apiClient.get<CriticalAssetsResponse>(buildUrl("/api/v1/assets", params || {})),
+
+  create: (payload: {
+    name: string;
+    asset_type?: string;
+    ward_id?: string;
+    latitude: number;
+    longitude: number;
+    status?: string;
+    risk_level?: string;
+    inundation_threshold_m?: number;
+  }): Promise<unknown> => apiClient.post("/api/v1/assets", payload),
 };

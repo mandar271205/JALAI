@@ -1,23 +1,24 @@
 "use client";
-// ============================================================================
-// Command Center — Primary Operational Dashboard
-// Route: /command-center
-// Backend: GET /api/v1/dashboard/summary
-// ============================================================================
+
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
   AlertTriangle, FileWarning, Bell, MapPin, Users, Activity,
-  ArrowRight, CloudRain, TrendingUp, Clock,
+  ArrowRight, CloudRain, TrendingUp, Clock, Zap, RotateCcw, Sparkles,
 } from "lucide-react";
 import Link from "next/link";
 import { dashboardApi } from "@/lib/api/dashboard";
+import { simulationApi } from "@/lib/api/simulation";
 import {
   KpiCard, KpiCardSkeleton, ErrorState, RiskBadge,
   StatusBadge, Timestamp, PageHeader, DataFreshnessBadge,
 } from "@/components/common";
 import { formatMmH, formatNumber } from "@/lib/utils";
+import ScenarioSimulatorModal from "@/components/simulator/ScenarioSimulatorModal";
 
 export default function CommandCenterPage() {
+  const [isSimulatorOpen, setIsSimulatorOpen] = useState(false);
+
   const {
     data: summary,
     isLoading,
@@ -29,6 +30,12 @@ export default function CommandCenterPage() {
     queryKey: ["dashboard"],
     queryFn: dashboardApi.getSummary,
     refetchInterval: 60_000, // Auto-refresh every 60s
+  });
+
+  const { data: simStatus, refetch: refetchSim } = useQuery({
+    queryKey: ["simulation-status"],
+    queryFn: simulationApi.getStatus,
+    refetchInterval: 10_000,
   });
 
   return (
@@ -44,17 +51,72 @@ export default function CommandCenterPage() {
           )
         }
         actions={
-          <Link
-            href="/map"
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-600 text-white text-xs font-medium hover:bg-blue-700 transition-colors"
-          >
-            <MapPin className="w-3.5 h-3.5" />
-            Live Map
-          </Link>
+          <div className="flex items-center gap-2">
+            <Link
+              href="/simulation"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-sm transition-all"
+            >
+              <Sparkles className="w-3.5 h-3.5" />
+              Scenario Studio
+            </Link>
+            <button
+              onClick={() => setIsSimulatorOpen(true)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-600 text-slate-900 text-xs font-bold shadow-sm shadow-amber-500/20 transition-all cursor-pointer"
+            >
+              <Zap className="w-3.5 h-3.5 fill-slate-900" />
+              ⚡ Quick Preset
+            </button>
+            <Link
+              href="/map"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 text-white text-xs font-medium hover:bg-slate-950 transition-colors"
+            >
+              <MapPin className="w-3.5 h-3.5" />
+              Live Map
+            </Link>
+          </div>
         }
       />
 
       <div className="page-content">
+        {/* Active Simulation Indicator Banner */}
+        {simStatus?.is_active && (
+          <div className="rounded-xl border border-amber-300 bg-amber-50/90 p-3.5 flex flex-wrap items-center justify-between gap-3 animate-in fade-in">
+            <div className="flex items-center gap-2.5">
+              <span className="flex h-2.5 w-2.5 relative">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-rose-500"></span>
+              </span>
+              <div>
+                <p className="text-xs font-bold text-amber-950">
+                  ACTIVE SIMULATION: {simStatus.scenario_name} ({simStatus.ward_name})
+                </p>
+                <p className="text-[11px] text-amber-800">
+                  Precipitation: <strong>{simStatus.rainfall_rate_mm_h} mm/h</strong> · Tide:{" "}
+                  <strong>{simStatus.tide_level_m}m</strong> · Threat to: {simStatus.affected_asset}
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setIsSimulatorOpen(true)}
+                className="px-2.5 py-1 rounded-md text-xs font-semibold bg-white border border-amber-200 text-amber-900 hover:bg-amber-100 transition-colors"
+              >
+                View AI Briefing
+              </button>
+              <button
+                onClick={async () => {
+                  await simulationApi.reset();
+                  refetchSim();
+                  refetch();
+                }}
+                className="px-2.5 py-1 rounded-md text-xs font-semibold bg-amber-200 text-amber-950 hover:bg-amber-300 transition-colors"
+              >
+                Reset
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* City Risk Banner */}
         {summary && (
           <div className="jr-card p-5 flex items-start gap-4">
@@ -254,6 +316,12 @@ export default function CommandCenterPage() {
           </p>
         )}
       </div>
+
+      {/* Scenario Simulator Modal */}
+      <ScenarioSimulatorModal
+        isOpen={isSimulatorOpen}
+        onClose={() => setIsSimulatorOpen(false)}
+      />
     </div>
   );
 }

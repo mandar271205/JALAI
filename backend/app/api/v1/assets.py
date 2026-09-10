@@ -6,6 +6,8 @@ from fastapi import APIRouter, Query
 
 router = APIRouter(prefix="/assets", tags=["Critical Assets"])
 
+_custom_assets: list[dict[str, Any]] = []
+
 
 @router.get("")
 async def list_critical_assets(
@@ -20,10 +22,10 @@ async def list_critical_assets(
     fixture_file = base / "contracts" / "fixtures" / "demo-event" / "critical-assets.json"
     if not fixture_file.exists():
         fixture_file = Path(__file__).resolve().parents[4] / "contracts" / "fixtures" / "demo-event" / "critical-assets.json"
-    assets = []
+    assets = list(_custom_assets)
     if fixture_file.exists():
         with open(fixture_file, "r", encoding="utf-8") as f:
-            assets = json.load(f)
+            assets.extend(json.load(f))
 
     # Filter
     if asset_type:
@@ -35,3 +37,24 @@ async def list_critical_assets(
     paginated = assets[offset : offset + limit]
 
     return {"total": total, "limit": limit, "offset": offset, "items": paginated}
+
+
+@router.post("", status_code=201)
+async def create_critical_asset(payload: dict[str, Any]) -> dict[str, Any]:
+    """Register a new critical infrastructure asset."""
+    import uuid
+
+    asset_id = payload.get("asset_id") or f"asset-{uuid.uuid4().hex[:8]}"
+    asset = {
+        "asset_id": asset_id,
+        "name": payload.get("name", "Critical Facility"),
+        "asset_type": payload.get("asset_type", "PUMPING_STATION"),
+        "ward_id": payload.get("ward_id", "G-North"),
+        "latitude": float(payload.get("latitude", 19.0330)),
+        "longitude": float(payload.get("longitude", 72.8570)),
+        "status": payload.get("status", "AT_RISK"),
+        "risk_level": payload.get("risk_level", "SEVERE"),
+        "inundation_threshold_m": float(payload.get("inundation_threshold_m", 0.45)),
+    }
+    _custom_assets.insert(0, asset)
+    return asset

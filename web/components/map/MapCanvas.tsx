@@ -3,9 +3,9 @@
 // MapCanvas — Full-viewport MapLibre GL map with JalRakshak operational layers
 // ============================================================================
 import { useCallback, useRef, useState } from "react";
-import Map, { NavigationControl, Source, Layer, type MapRef } from "react-map-gl/maplibre";
+import Map, { NavigationControl, Source, Layer, Popup, type MapRef } from "react-map-gl/maplibre";
 import { useQuery } from "@tanstack/react-query";
-import { Layers, ToggleLeft, ToggleRight } from "lucide-react";
+import { Layers, ToggleLeft, ToggleRight, AlertTriangle, ShieldCheck, MapPin, Building2 } from "lucide-react";
 import { mapApi } from "@/lib/api/map";
 import { MUMBAI_CENTER, MUMBAI_ZOOM, getMumbaiBboxString } from "@/lib/utils";
 import { cn } from "@/lib/cn";
@@ -30,10 +30,27 @@ const DEFAULT_LAYERS: LayerState = {
   nowcastTile: false,
 };
 
+const H3_CENTROIDS: Record<string, [number, number]> = {
+  "8860145b53fffff": [72.8550, 19.0432], // Dharavi
+  "8860145b51fffff": [72.8756, 19.0712], // Kurla
+  "8860145b57fffff": [72.8478, 19.0178], // Dadar
+  "8860145a33fffff": [72.8397, 19.1197], // Andheri
+};
+
+interface PopupInfo {
+  longitude: number;
+  latitude: number;
+  title: string;
+  subtitle?: string;
+  badgeColor?: string;
+  badgeText?: string;
+}
+
 export default function MapCanvas() {
   const mapRef = useRef<MapRef>(null);
   const [layers, setLayers] = useState<LayerState>(DEFAULT_LAYERS);
   const [bbox, setBbox] = useState<string>(getMumbaiBboxString());
+  const [popupInfo, setPopupInfo] = useState<PopupInfo | null>(null);
 
   // Fetch map layers
   const { data: riskData } = useQuery({
@@ -70,30 +87,36 @@ export default function MapCanvas() {
   // GeoJSON features from API responses
   const riskGeoJson = riskGeoJsonFromCells(riskData?.features || []);
   const incidentGeoJson = pointsGeoJson(
-    (incidentData?.features || []).map((f: Incident) => ({
-      lat: f.latitude,
-      lng: f.longitude,
+    (incidentData?.features || []).map((f: any) => ({
+      lat: f.latitude ?? f.location?.latitude,
+      lng: f.longitude ?? f.location?.longitude,
       id: f.incident_id,
       label: f.title,
       color: severityToColor(f.severity),
+      badgeText: f.severity,
+      subtitle: `Status: ${f.status || "OPEN"} | Ward: ${f.ward_id || "N/A"}`,
     })),
   );
   const reportGeoJson = pointsGeoJson(
-    (reportData?.features || []).map((f: FieldReport) => ({
-      lat: f.latitude,
-      lng: f.longitude,
+    (reportData?.features || []).map((f: any) => ({
+      lat: f.latitude ?? f.location?.latitude,
+      lng: f.longitude ?? f.location?.longitude,
       id: f.report_id,
-      label: f.description?.slice(0, 50),
+      label: f.description?.slice(0, 60) || "Field Report",
       color: "#6366F1",
+      badgeText: f.verification_status || "REPORT",
+      subtitle: `Reported by citizen: ${f.citizen_id || "Anonymous"}`,
     })),
   );
   const assetGeoJson = pointsGeoJson(
-    (assetData?.features || []).map((f: CriticalAsset) => ({
-      lat: f.latitude,
-      lng: f.longitude,
+    (assetData?.features || []).map((f: any) => ({
+      lat: f.latitude ?? f.location?.latitude,
+      lng: f.longitude ?? f.location?.longitude,
       id: f.asset_id || f.id || "",
       label: f.name,
       color: assetStatusColor(f.status),
+      badgeText: f.status || "ASSET",
+      subtitle: `Type: ${f.asset_type || "Infrastructure"}`,
     })),
   );
 
@@ -113,6 +136,29 @@ export default function MapCanvas() {
           setBbox(
             `${b.getWest().toFixed(4)},${b.getSouth().toFixed(4)},${b.getEast().toFixed(4)},${b.getNorth().toFixed(4)}`,
           );
+        }}
+        interactiveLayerIds={[
+          "risk-core",
+          "incidents-circle",
+          "reports-circle",
+          "assets-circle",
+        ]}
+        onClick={(e) => {
+          const f = e.features?.[0];
+          if (f && f.geometry.type === "Point") {
+            const coords = (f.geometry as any).coordinates;
+            const props = f.properties || {};
+            setPopupInfo({
+              longitude: coords[0],
+              latitude: coords[1],
+              title: props.label || props.ward_id || "Detail",
+              subtitle: props.subtitle || (props.risk_level ? `Risk Zone: ${props.risk_level}` : undefined),
+              badgeColor: props.color,
+              badgeText: props.badgeText || props.risk_level,
+            });
+          } else {
+            setPopupInfo(null);
+          }
         }}
       >
         <NavigationControl position="bottom-right" />
@@ -137,20 +183,26 @@ export default function MapCanvas() {
         {layers.risk && riskGeoJson.features.length > 0 && (
           <Source id="risk-cells" type="geojson" data={riskGeoJson}>
             <Layer
-              id="risk-fill"
-              type="fill"
+              id="risk-halo"
+              type="circle"
               paint={{
-                "fill-color": ["get", "color"],
-                "fill-opacity": 0.35,
+                "circle-color": ["get", "color"],
+                "circle-radius": 32,
+                "circle-opacity": 0.28,
+                "circle-stroke-color": ["get", "color"],
+                "circle-stroke-width": 2,
+                "circle-stroke-opacity": 0.7,
               }}
             />
             <Layer
-              id="risk-outline"
-              type="line"
+              id="risk-core"
+              type="circle"
               paint={{
-                "line-color": ["get", "color"],
-                "line-width": 1,
-                "line-opacity": 0.5,
+                "circle-color": ["get", "color"],
+                "circle-radius": 12,
+                "circle-opacity": 0.6,
+                "circle-stroke-color": "#ffffff",
+                "circle-stroke-width": 2,
               }}
             />
           </Source>
@@ -164,10 +216,10 @@ export default function MapCanvas() {
               type="circle"
               paint={{
                 "circle-color": ["get", "color"],
-                "circle-radius": 8,
-                "circle-stroke-color": "#fff",
-                "circle-stroke-width": 2,
-                "circle-opacity": 0.9,
+                "circle-radius": 9,
+                "circle-stroke-color": "#ffffff",
+                "circle-stroke-width": 2.5,
+                "circle-opacity": 0.95,
               }}
             />
           </Source>
@@ -181,10 +233,10 @@ export default function MapCanvas() {
               type="circle"
               paint={{
                 "circle-color": ["get", "color"],
-                "circle-radius": 6,
-                "circle-stroke-color": "#fff",
-                "circle-stroke-width": 1.5,
-                "circle-opacity": 0.8,
+                "circle-radius": 7,
+                "circle-stroke-color": "#ffffff",
+                "circle-stroke-width": 2,
+                "circle-opacity": 0.9,
               }}
             />
           </Source>
@@ -198,17 +250,50 @@ export default function MapCanvas() {
               type="circle"
               paint={{
                 "circle-color": ["get", "color"],
-                "circle-radius": 7,
-                "circle-stroke-color": "#fff",
+                "circle-radius": 8,
+                "circle-stroke-color": "#ffffff",
                 "circle-stroke-width": 2,
+                "circle-opacity": 0.9,
               }}
             />
           </Source>
         )}
+
+        {/* Selected Popup */}
+        {popupInfo && (
+          <Popup
+            longitude={popupInfo.longitude}
+            latitude={popupInfo.latitude}
+            anchor="bottom"
+            onClose={() => setPopupInfo(null)}
+            closeButton={true}
+          >
+            <div className="p-2 min-w-44 text-xs font-sans text-gray-800">
+              <div className="flex items-center justify-between gap-2 mb-1">
+                <p className="font-bold text-sm text-gray-900 leading-tight">
+                  {popupInfo.title}
+                </p>
+                {popupInfo.badgeText && (
+                  <span
+                    className="px-1.5 py-0.5 rounded text-[10px] font-bold text-white uppercase whitespace-nowrap"
+                    style={{ backgroundColor: popupInfo.badgeColor || "#2563EB" }}
+                  >
+                    {popupInfo.badgeText}
+                  </span>
+                )}
+              </div>
+              {popupInfo.subtitle && (
+                <p className="text-gray-600 text-[11px] leading-relaxed">
+                  {popupInfo.subtitle}
+                </p>
+              )}
+            </div>
+          </Popup>
+        )}
       </Map>
 
       {/* Layer Control Panel */}
-      <div className="absolute top-4 right-4 bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden z-10 min-w-44">
+      <div className="absolute top-4 right-4 bg-white/95 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 overflow-hidden z-10 min-w-44">
         <div className="flex items-center gap-2 px-3 py-2 bg-gray-50 border-b border-gray-200">
           <Layers className="w-3.5 h-3.5 text-gray-500" />
           <span className="text-xs font-semibold text-gray-600">Layers</span>
@@ -229,47 +314,90 @@ export default function MapCanvas() {
         ))}
       </div>
 
-      {/* Legend */}
-      <div className="absolute bottom-8 left-4 bg-white/95 backdrop-blur-sm rounded-xl shadow border border-gray-200 p-3 z-10">
-        <p className="text-xs font-semibold text-gray-600 mb-2">Risk Level</p>
-        {[
-          { color: "#22C55E", label: "Low" },
-          { color: "#F59E0B", label: "Moderate" },
-          { color: "#F97316", label: "High" },
-          { color: "#EF4444", label: "Severe" },
-        ].map(({ color, label }) => (
-          <div key={label} className="flex items-center gap-1.5 mb-1">
-            <span className="w-3 h-3 rounded-sm" style={{ backgroundColor: color }} />
-            <span className="text-xs text-gray-600">{label}</span>
+      {/* Legend & Stats */}
+      <div className="absolute bottom-8 left-4 bg-white/95 backdrop-blur-sm rounded-xl shadow border border-gray-200 p-3 z-10 flex flex-col gap-3 min-w-48">
+        <div>
+          <p className="text-xs font-semibold text-gray-600 mb-2">Risk Level</p>
+          {[
+            { color: "#22C55E", label: "Low" },
+            { color: "#F59E0B", label: "Moderate" },
+            { color: "#F97316", label: "High" },
+            { color: "#EF4444", label: "Severe" },
+          ].map(({ color, label }) => (
+            <div key={label} className="flex items-center gap-1.5 mb-1">
+              <span className="w-3 h-3 rounded-full" style={{ backgroundColor: color }} />
+              <span className="text-xs text-gray-600">{label}</span>
+            </div>
+          ))}
+        </div>
+
+        <div className="border-t border-gray-100 pt-2 text-[11px] text-gray-500 flex flex-col gap-1">
+          <div className="flex justify-between items-center">
+            <span>Risk Zones:</span>
+            <span className="font-semibold text-gray-700">{riskGeoJson.features.length}</span>
           </div>
-        ))}
+          <div className="flex justify-between items-center">
+            <span>Incidents:</span>
+            <span className="font-semibold text-gray-700">{incidentGeoJson.features.length}</span>
+          </div>
+          <div className="flex justify-between items-center">
+            <span>Citizen Reports:</span>
+            <span className="font-semibold text-gray-700">{reportGeoJson.features.length}</span>
+          </div>
+          <div className="flex justify-between items-center">
+            <span>Critical Assets:</span>
+            <span className="font-semibold text-gray-700">{assetGeoJson.features.length}</span>
+          </div>
+        </div>
       </div>
     </div>
   );
 }
 
 // ---- GeoJSON helpers -------------------------------------------------------
-function riskGeoJsonFromCells(cells: RiskCell[]) {
+function riskGeoJsonFromCells(cells: any[]) {
   return {
     type: "FeatureCollection" as const,
     features: cells
-      .filter((c) => c.latitude && c.longitude)
-      .map((c) => ({
-        type: "Feature" as const,
-        geometry: {
-          type: "Point" as const,
-          coordinates: [c.longitude!, c.latitude!],
-        },
-        properties: {
-          color: riskLevelToColor(c.risk_level),
-          risk_level: c.risk_level,
-        },
-      })),
+      .map((c) => {
+        const lng =
+          c.longitude ??
+          c.location?.longitude ??
+          (c.h3_cell_id ? H3_CENTROIDS[c.h3_cell_id]?.[0] : undefined);
+        const lat =
+          c.latitude ??
+          c.location?.latitude ??
+          (c.h3_cell_id ? H3_CENTROIDS[c.h3_cell_id]?.[1] : undefined);
+        if (lat == null || lng == null) return null;
+        return {
+          type: "Feature" as const,
+          geometry: {
+            type: "Point" as const,
+            coordinates: [lng, lat],
+          },
+          properties: {
+            color: riskLevelToColor(c.risk_level),
+            risk_level: c.risk_level,
+            ward_id: c.ward_id || "Mumbai Cell",
+            badgeText: c.risk_level,
+            subtitle: `Ward: ${c.ward_id || "Mumbai"} | Rainfall: ${c.rainfall_rate_mm_h ? c.rainfall_rate_mm_h + " mm/h" : "N/A"}`,
+          },
+        };
+      })
+      .filter((f): f is NonNullable<typeof f> => f !== null),
   };
 }
 
 function pointsGeoJson(
-  points: Array<{ lat?: number; lng?: number; id: string; label?: string; color: string }>,
+  points: Array<{
+    lat?: number;
+    lng?: number;
+    id: string;
+    label?: string;
+    color: string;
+    subtitle?: string;
+    badgeText?: string;
+  }>,
 ) {
   return {
     type: "FeatureCollection" as const,
@@ -281,7 +409,13 @@ function pointsGeoJson(
           type: "Point" as const,
           coordinates: [p.lng!, p.lat!],
         },
-        properties: { id: p.id, label: p.label || "", color: p.color },
+        properties: {
+          id: p.id,
+          label: p.label || "",
+          color: p.color,
+          subtitle: p.subtitle,
+          badgeText: p.badgeText,
+        },
       })),
   };
 }

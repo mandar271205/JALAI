@@ -8,7 +8,7 @@ import {
   LayoutDashboard, Map, CloudRain, Waves, AlertTriangle,
   FileWarning, MapPin, Bell, Users, BarChart3, FlaskConical,
   Database, Server, PlaySquare, ScrollText, Settings,
-  LogOut, Droplets, ShieldAlert,
+  LogOut, Droplets, ShieldAlert, Sparkles,
 } from "lucide-react";
 import { useAuthStore } from "@/store";
 import { useConnectionStatus } from "@/hooks/useRealtime";
@@ -20,6 +20,7 @@ const NAV_GROUPS = [
     label: "Command",
     items: [
       { href: "/command-center", icon: LayoutDashboard, label: "Command Center" },
+      { href: "/simulation", icon: Sparkles, label: "Scenario & Field Studio" },
       { href: "/map", icon: Map, label: "Live Situation Map" },
     ],
   },
@@ -102,6 +103,7 @@ export function Sidebar() {
                 <Link
                   key={href}
                   href={href}
+                  prefetch={true}
                   className={cn(
                     "sidebar-nav-item",
                     isActive && "active",

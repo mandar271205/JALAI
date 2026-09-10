@@ -34,7 +34,13 @@ def _load_fixture_json(filename: str) -> Any:
 )
 async def get_dashboard_summary(
     current_user: AuthenticatedUser = Depends(
-        require_roles([UserRole.ANALYST, UserRole.MUNICIPAL_OFFICER, UserRole.ADMIN])
+        require_roles([
+            UserRole.ANALYST,
+            UserRole.MUNICIPAL_OFFICER,
+            UserRole.ADMIN,
+            UserRole.ALERT_APPROVER,
+            UserRole.DISASTER_MANAGER,
+        ])
     ),
 ) -> dict[str, Any]:
     """
@@ -42,6 +48,8 @@ async def get_dashboard_summary(
     Requires ANALYST, MUNICIPAL_OFFICER, or ADMIN role.
     """
     now = datetime.now(UTC)
+
+    from app.api.v1.simulation import get_active_simulation
 
     # 1. Risk cells analysis
     risk_cells = await ml_provider.get_risk_cells()
@@ -51,7 +59,19 @@ async def get_dashboard_summary(
     risk_order = {"LOW": 1, "MODERATE": 2, "HIGH": 3, "SEVERE": 4}
     affected_wards = set()
 
-    for c in risk_cells if isinstance(risk_cells, list) else []:
+    all_cells = list(risk_cells) if isinstance(risk_cells, list) else []
+    sim = get_active_simulation()
+    if sim.get("is_active") and sim.get("h3_cell_id"):
+        sim_cell = {
+            "h3_cell_id": sim["h3_cell_id"],
+            "ward_id": sim["ward_id"],
+            "risk_level": sim["risk_level"],
+            "rainfall_rate_mm_h": sim["rainfall_rate_mm_h"],
+        }
+        all_cells = [c for c in all_cells if c.get("h3_cell_id") != sim["h3_cell_id"]]
+        all_cells.insert(0, sim_cell)
+
+    for c in all_cells:
         lvl = c.get("risk_level", "LOW")
         if lvl in ("HIGH", "SEVERE"):
             high_severe_count += 1
@@ -62,6 +82,12 @@ async def get_dashboard_summary(
             max_rainfall = rain
         if c.get("ward_id"):
             affected_wards.add(c["ward_id"])
+
+    summary_text = (
+        f"[SIMULATED SCENARIO] {sim.get('scenario_name')}: Elevated flood risk across {sim.get('ward_name')}."
+        if sim.get("is_active")
+        else "Heavy monsoon rainfall over Mumbai metropolitan region with flash flood hotspots."
+    )
 
     # 2. Incidents count & list
     from app.api.v1.incidents import _memory_incidents
@@ -113,7 +139,7 @@ async def get_dashboard_summary(
             "peak_rainfall_rate_mm_h": max_rainfall or 68.5,
             "affected_wards": sorted(list(affected_wards)) or ["WARD-12-DHARAVI", "WARD-14-KURLA"],
             "lead_time_minutes": 120,
-            "summary": f"Active flood monitoring across Mumbai metropolitan area. Peak rainfall {max_rainfall or 68.5} mm/h.",
+            "summary": summary_text,
         },
         "model_health": {
             "database_connected": True,

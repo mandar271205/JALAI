@@ -19,6 +19,25 @@ router = APIRouter(prefix="/alerts", tags=["Alerts"])
 _alerts_db: dict[str, dict[str, Any]] = {}
 
 
+@router.get("")
+async def list_alerts(
+    status: str | None = None,
+    severity: str | None = None,
+) -> dict[str, Any]:
+    """
+    List alerts with optional status and severity filtering.
+    """
+    alerts = list(_alerts_db.values())
+    if status:
+        alerts = [a for a in alerts if a.get("status") == status]
+    if severity:
+        alerts = [a for a in alerts if a.get("severity") == severity]
+    return {
+        "count": len(alerts),
+        "items": alerts,
+    }
+
+
 @router.post("/draft", status_code=status.HTTP_201_CREATED)
 async def draft_alert(
     payload: dict[str, Any],

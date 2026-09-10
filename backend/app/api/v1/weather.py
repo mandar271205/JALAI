@@ -18,22 +18,40 @@ def compute_etag(data: Any) -> str:
 async def get_current_weather(
     response: Response, if_none_match: str | None = Header(None, alias="If-None-Match")
 ) -> Any:
-    data = {
-        "timestamp": datetime.now(UTC).isoformat(),
-        "summary": "Heavy monsoon rainfall over Mumbai metropolitan region",
-        "average_rainfall_rate_mm_h": 48.5,
-        "max_recorded_rainfall_mm": 112.0,
-        "active_stations": 42,
-        "model_version": "imd-wrf-highres-v4",
-        "data_version": "mumbai-telemetry-live",
-        "confidence": 0.95,
-    }
+    from app.api.v1.simulation import get_active_simulation
+
+    sim = get_active_simulation()
+    if sim.get("is_active"):
+        data = {
+            "timestamp": datetime.now(UTC).isoformat(),
+            "summary": f"[SIMULATED] {sim.get('scenario_name')} — {sim.get('ward_name')}",
+            "average_rainfall_rate_mm_h": sim.get("rainfall_rate_mm_h", 48.5),
+            "max_recorded_rainfall_mm": sim.get("max_recorded_rainfall_mm", 112.0),
+            "active_stations": 42,
+            "model_version": "imd-wrf-highres-v4 (Simulated Scenario)",
+            "data_version": "mumbai-telemetry-live",
+            "confidence": 0.96,
+            "is_simulated": True,
+            "simulated_scenario_id": sim.get("scenario_id"),
+        }
+    else:
+        data = {
+            "timestamp": datetime.now(UTC).isoformat(),
+            "summary": "Heavy monsoon rainfall over Mumbai metropolitan region",
+            "average_rainfall_rate_mm_h": 48.5,
+            "max_recorded_rainfall_mm": 112.0,
+            "active_stations": 42,
+            "model_version": "imd-wrf-highres-v4",
+            "data_version": "mumbai-telemetry-live",
+            "confidence": 0.95,
+            "is_simulated": False,
+        }
     # Deterministic etag using fixed keys
     etag = compute_etag({k: v for k, v in data.items() if k != "timestamp"})
     response.headers["ETag"] = etag
-    response.headers["Cache-Control"] = "public, max-age=60"
+    response.headers["Cache-Control"] = "no-cache" if sim.get("is_active") else "public, max-age=60"
 
-    if if_none_match and if_none_match == etag:
+    if if_none_match and if_none_match == etag and not sim.get("is_active"):
         response.status_code = status.HTTP_304_NOT_MODIFIED
         return response
 

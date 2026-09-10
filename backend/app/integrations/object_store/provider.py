@@ -46,7 +46,6 @@ class MinIOObjectStoreProvider(ObjectStoreProvider):
             port = int(parts[1]) if len(parts) > 1 else 9000
             with socket.create_connection((host, port), timeout=0.2):
                 pass
-
             if not self.client.bucket_exists(self.bucket_name):
                 self.client.make_bucket(self.bucket_name)
             return True
@@ -100,7 +99,7 @@ class LocalObjectStoreProvider(ObjectStoreProvider):
 
 def get_object_store_provider() -> ObjectStoreProvider:
     settings = get_settings()
-    if settings.APP_ENV == "test":
+    if settings.APP_ENV == "test" or not getattr(settings, "OBJECT_STORAGE_ENABLED", True):
         return LocalObjectStoreProvider()
     try:
         provider = MinIOObjectStoreProvider()

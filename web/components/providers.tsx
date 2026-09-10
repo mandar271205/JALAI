@@ -12,8 +12,8 @@ export function Providers({ children }: { children: React.ReactNode }) {
       new QueryClient({
         defaultOptions: {
           queries: {
-            staleTime: 30_000, // 30s default cache
-            gcTime: 5 * 60_000, // 5m garbage collect
+            staleTime: 60_000, // 60s cache eliminates repetitive refetching on navigation
+            gcTime: 10 * 60_000, // 10m garbage collect
             retry: (failureCount, error: unknown) => {
               // Don't retry 401/403 errors
               const status = (error as { statusCode?: number })?.statusCode;
