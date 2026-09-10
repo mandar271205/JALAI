@@ -31,13 +31,13 @@ Tests 25+ distinct scientific and operational scenarios using mocked HTTP transp
 """
 from __future__ import annotations
 
+import asyncio
+import functools
 import json
 from typing import Any
 
 import httpx
-import pytest
-import asyncio
-import functools
+
 
 def async_test(coro):
     @functools.wraps(coro)

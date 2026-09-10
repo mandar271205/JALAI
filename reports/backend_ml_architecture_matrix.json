@@ -1,0 +1,192 @@
+{
+  "audit_version": "1.0.0",
+  "generated_at": "2026-09-10T01:10:00Z",
+  "repository": "JalRakshak AI",
+  "overall_verdict": "READY",
+  "numerical_models_trained": false,
+  "summary": {
+    "total_components": 29,
+    "implemented": 27,
+    "implemented_not_connected": 0,
+    "partial": 0,
+    "expected_pending_model": 2,
+    "missing": 0,
+    "blocked_external": 0
+  },
+  "matrix": [
+    {
+      "component": "Backend startup",
+      "classification": "IMPLEMENTED",
+      "location": "backend/app/main.py",
+      "details": "FastAPI application entrypoint with lifespan event handlers, structured logging, CORS, and resilient startup without requiring trained numerical model weights."
+    },
+    {
+      "component": "Config",
+      "classification": "IMPLEMENTED",
+      "location": "backend/app/core/config.py",
+      "details": "Pydantic BaseSettings layer supporting dual-mode execution (direct/pooler), environment variable loading, Supabase alias mapping, and fallback defaults."
+    },
+    {
+      "component": "Supabase integration",
+      "classification": "IMPLEMENTED",
+      "location": "backend/app/db/session.py",
+      "details": "PostgreSQL database session manager configured for Supabase Transaction Pooler (port 6543) with statement_cache_size=0, SSL require, and verified SELECT 1 connectivity."
+    },
+    {
+      "component": "API contracts",
+      "classification": "IMPLEMENTED",
+      "location": "backend/app/api/v1/ / shared/contracts/",
+      "details": "Structured endpoints: /nowcast, /inundation, /risk, /report-verification, /models/status, /runs/{run_id} with typed Pydantic models conforming to shared JSON schemas."
+    },
+    {
+      "component": "Rain data",
+      "classification": "IMPLEMENTED",
+      "location": "src/jalrakshak_ml/data_adapters/ / configs/dataset_configs.yaml",
+      "details": "Genuine NASA GPM IMERG and NOAA GFS synoptic data adapters with spatial bounds [18.89, 19.30]N, [72.75, 73.05]E and explicit units mm/h."
+    },
+    {
+      "component": "Rain QC",
+      "classification": "IMPLEMENTED",
+      "location": "src/jalrakshak_ml/data_adapters/qc.py",
+      "details": "Evidence quality checking, timestamp validation, spatial bounding, and physical rate range gating."
+    },
+    {
+      "component": "Rain deterministic models",
+      "classification": "IMPLEMENTED",
+      "location": "src/jalrakshak_ml/models/baselines.py",
+      "details": "Persistence baseline and PySTEPS Lucas-Kanade optical flow advection nowcasting baseline operational."
+    },
+    {
+      "component": "Rain deep model interfaces",
+      "classification": "EXPECTED_PENDING_MODEL",
+      "location": "src/jalrakshak_ml/models/deep_models.py",
+      "details": "PyTorch model architectures and serving loaders defined for ConvLSTM V3, U-Net + ConvGRU, and ST-Attention. Checkpoint training and tournament winner freeze paused for demo."
+    },
+    {
+      "component": "Rain AI fallback",
+      "classification": "IMPLEMENTED",
+      "location": "src/jalrakshak_ml/decision_support/rainfall_inference.py",
+      "details": "Produces structured provisional rainfall forecast with physical rate clamping when numerical models are absent, preserving source_mode=PROVISIONAL_AI."
+    },
+    {
+      "component": "Flood physics",
+      "classification": "IMPLEMENTED",
+      "location": "src/jalrakshak_ml/flood/lisflood_adapter.py",
+      "details": "LISFLOOD-FP hydrodynamic adapter, verified 6-scenario research corpus, square solver-grid logic, and explicit rainfall forcing semantics."
+    },
+    {
+      "component": "Susceptibility",
+      "classification": "IMPLEMENTED",
+      "location": "src/jalrakshak_ml/flood/susceptibility.py",
+      "details": "High-resolution Mumbai topographic susceptibility index based on DEM elevation, slope, curvature, and TWI. Strictly segregated from physical water depth."
+    },
+    {
+      "component": "Flood FNO interface",
+      "classification": "EXPECTED_PENDING_MODEL",
+      "location": "src/jalrakshak_ml/models/flood_fno.py",
+      "details": "Fourier Neural Operator model architecture and serving loader exist. Final GPU training and physical calibration are pending research tasks."
+    },
+    {
+      "component": "Exposure",
+      "classification": "IMPLEMENTED",
+      "location": "src/jalrakshak_ml/risk/exposure.py",
+      "details": "OpenStreetMap local geospatial asset ingestion for buildings, roadways, and critical facilities (Sion Hospital, Kurla Substation, railway culverts)."
+    },
+    {
+      "component": "Vulnerability",
+      "classification": "IMPLEMENTED",
+      "location": "src/jalrakshak_ml/risk/vulnerability.py",
+      "details": "Geophysical vulnerability indexing based on elevation, drainage proximity, and slope. Social demographics remain explicitly unavailable."
+    },
+    {
+      "component": "Risk",
+      "classification": "IMPLEMENTED",
+      "location": "src/jalrakshak_ml/risk/intelligence.py",
+      "details": "Deterministic H x E x V risk engine producing continuous risk scores and categorical severity levels (LOW, MODERATE, HIGH, SEVERE) with explicit hazard type."
+    },
+    {
+      "component": "Uncertainty",
+      "classification": "IMPLEMENTED",
+      "location": "src/jalrakshak_ml/risk/uncertainty.py",
+      "details": "Multi-scenario spread and missing-data uncertainty estimation. Quality and confidence explicitly disentangled."
+    },
+    {
+      "component": "Explainability",
+      "classification": "IMPLEMENTED",
+      "location": "src/jalrakshak_ml/risk/explainability.py",
+      "details": "Machine-readable factor attribution breakdown (factor, direction, contribution, evidence source) and non-prescriptive advisory action recommendations."
+    },
+    {
+      "component": "Citizen verification",
+      "classification": "IMPLEMENTED",
+      "location": "src/jalrakshak_ml/citizen/verification_v2.py",
+      "details": "Rules-based 8-layer corroboration engine verifying timestamp, spatial clustering, and environmental consistency without uncalibrated ML claims."
+    },
+    {
+      "component": "LLM primary",
+      "classification": "IMPLEMENTED",
+      "location": "src/jalrakshak_ml/decision_support/groq_provider.py",
+      "details": "Model 1: Groq Provider with openai/gpt-oss-120b acting as primary generator."
+    },
+    {
+      "component": "LLM failover",
+      "classification": "IMPLEMENTED",
+      "location": "src/jalrakshak_ml/decision_support/nvidia_provider.py",
+      "details": "Model 2: NVIDIA NIM Provider with nvidia/nemotron-3.5-lightning-30b-a3b acting as fast secondary failover."
+    },
+    {
+      "component": "LLM verifier",
+      "classification": "IMPLEMENTED",
+      "location": "src/jalrakshak_ml/decision_support/nvidia_provider.py",
+      "details": "Model 3: NVIDIA NIM Provider with nvidia/nemotron-3-ultra-550b-a55b acting as heavy verifier on HIGH/SEVERE risk or disagreement."
+    },
+    {
+      "component": "Arbitration",
+      "classification": "IMPLEMENTED",
+      "location": "src/jalrakshak_ml/decision_support/arbitration.py",
+      "details": "Preserves numerical forecast supremacy over AI text, clamps hallucinated rainfall rates to meteorological envelope, and enforces depth_m = null when numerical solver is absent."
+    },
+    {
+      "component": "Persistence",
+      "classification": "IMPLEMENTED",
+      "location": "backend/app/models/ / backend/alembic/",
+      "details": "SQLAlchemy ORM models and migrations for runs, assessments, citizen reports, and audit logs. Run traceability via run_id."
+    },
+    {
+      "component": "Provenance",
+      "classification": "IMPLEMENTED",
+      "location": "src/jalrakshak_ml/decision_support/provenance.py",
+      "details": "Truthful internal audit metadata tracking run_id, timestamp, source mode, provider, model ID, verifier verdict, evidence hash, and fallback reasons."
+    },
+    {
+      "component": "Registry",
+      "classification": "IMPLEMENTED",
+      "location": "src/jalrakshak_ml/serving/registry.py",
+      "details": "Model and data registry tracking availability states: unavailable, experimental, smoke_only, validated, operational."
+    },
+    {
+      "component": "Health/status",
+      "classification": "IMPLEMENTED",
+      "location": "backend/app/api/v1/endpoints/health.py",
+      "details": "Health and model status endpoints reporting backend, database, ML services, evidence pipelines, and model states without exposing credentials."
+    },
+    {
+      "component": "Security",
+      "classification": "IMPLEMENTED",
+      "location": ".env.example / backend/app/core/security.py",
+      "details": "Zero committed credentials, gitignored environment files, masked provider names in frontend payloads, and service role backend isolation."
+    },
+    {
+      "component": "Future web integration",
+      "classification": "IMPLEMENTED",
+      "location": "web/README.md / shared/contracts/",
+      "details": "Shared OpenAPI contracts, TypeScript-ready JSON schemas, and clear developer onboarding documentation. Integration requires only BACKEND_BASE_URL."
+    },
+    {
+      "component": "Future mobile integration",
+      "classification": "IMPLEMENTED",
+      "location": "mobile/README.md / shared/schemas/",
+      "details": "Shared Pydantic/JSON schemas, CAP 1.2 alert schemas, and offline-first mobile design specifications. Integration requires only BACKEND_BASE_URL."
+    }
+  ]
+}

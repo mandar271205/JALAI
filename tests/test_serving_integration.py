@@ -1,9 +1,9 @@
 """Integration and contract adherence tests for the JalRakshak ML Serving API (SIH26071)."""
 import json
 from pathlib import Path
-import pytest
-from starlette.testclient import TestClient
+
 import jsonschema
+from starlette.testclient import TestClient
 
 from jalrakshak_ml.serving.app import app
 
