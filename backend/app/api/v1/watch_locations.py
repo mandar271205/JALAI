@@ -31,6 +31,18 @@ async def list_watch_locations(
     return watch_service.list_locations(current_user.user_id)
 
 
+@router.patch("/{location_id}", status_code=status.HTTP_200_OK)
+async def update_watch_location(
+    location_id: str,
+    payload: dict[str, Any],
+    current_user: AuthenticatedUser = Depends(get_current_user),
+) -> dict[str, Any]:
+    updated = watch_service.update_location(location_id, current_user.user_id, payload)
+    if not updated:
+        raise HTTPException(status_code=404, detail="Watch location not found.")
+    return updated
+
+
 @router.delete("/{location_id}")
 async def remove_watch_location(
     location_id: str, current_user: AuthenticatedUser = Depends(get_current_user)

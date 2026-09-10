@@ -58,6 +58,7 @@ class ReportVerificationResult:
     reasons: list[str]
     model_version: str
     ml_verification_available: bool = ML_VERIFICATION_AVAILABLE
+    visual_corroboration: dict[str, Any] | None = None
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -74,6 +75,7 @@ class ReportVerificationResult:
             "model_version": self.model_version,
             "ml_verification_available": self.ml_verification_available,
             "verified_by_ai": False,  # Strict claim gate
+            "visual_corroboration": self.visual_corroboration,
         }
 
 
@@ -91,6 +93,7 @@ class CitizenReportVerificationEngine:
         local_rainfall_rate_mm_h: float | None,
         local_susceptibility_score: float | None,
         nearby_reports_count: int = 0,
+        visual_corroboration: dict[str, Any] | None = None,
     ) -> ReportVerificationResult:
         report.validate()
         evidence: list[str] = []
@@ -111,6 +114,7 @@ class CitizenReportVerificationEngine:
                 reasons=["Cannot verify report without environmental reference data"],
                 model_version=self.engine_version,
                 ml_verification_available=ML_VERIFICATION_AVAILABLE,
+                visual_corroboration=visual_corroboration,
             )
 
         consistency_points = 0.0
@@ -144,6 +148,28 @@ class CitizenReportVerificationEngine:
             consistency_points += min(1.0, 0.5 * nearby_reports_count)
             evidence.append(f"{nearby_reports_count} corroborating reports within 1km")
 
+        # Visual evidence corroboration (auxiliary signal, NOT ground truth)
+        image_state = (
+            "METADATA_TIMESTAMP_MATCHED"
+            if report.image_metadata
+            else "NO_IMAGE_PROVIDED"
+        )
+        if visual_corroboration:
+            if visual_corroboration.get("water_visible"):
+                image_state = "AI_VISUALLY_CORROBORATED"
+                sev = visual_corroboration.get("visual_severity", "UNKNOWN")
+                score = visual_corroboration.get("visual_support_score", 0.0)
+                evidence.append(f"Visual corroboration: water visible (severity: {sev}, support: {score:.2f})")
+                obs = visual_corroboration.get("observations", [])
+                if obs:
+                    evidence.append(f"Visual observations: {', '.join(obs[:2])}")
+            elif visual_corroboration.get("is_fallback"):
+                image_state = "AI_VISION_FALLBACK"
+                reasons.append("Visual corroboration fallback: automated vision unavailable")
+            else:
+                image_state = "AI_VISUAL_DRY_SCENE"
+                reasons.append("Visual corroboration: no standing floodwater detected in image")
+
         consistency_score = float(consistency_points / max_points)
 
         # Classify status
@@ -153,12 +179,6 @@ class CitizenReportVerificationEngine:
             status = VerificationStatus.UNCERTAIN
         else:
             status = VerificationStatus.CONFLICTING
-
-        image_state = (
-            "METADATA_TIMESTAMP_MATCHED"
-            if report.image_metadata
-            else "NO_IMAGE_PROVIDED"
-        )
 
         return ReportVerificationResult(
             report_id=report.report_id,
@@ -173,4 +193,5 @@ class CitizenReportVerificationEngine:
             reasons=reasons,
             model_version=self.engine_version,
             ml_verification_available=ML_VERIFICATION_AVAILABLE,
+            visual_corroboration=visual_corroboration,
         )

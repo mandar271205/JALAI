@@ -10,13 +10,13 @@ The repository is structured into clear, decoupled domains for cross-functional 
 
 | Component | Directory | Responsibility | Technology Stack |
 | :--- | :--- | :--- | :--- |
-| **Backend Gateway** | [`backend/`](file:///c:/Users/sawan/OneDrive/Desktop/JALAI/jalrakshak-ml-starter/backend) | Public API gateway, DB persistence, citizen reports, alerts, WebSocket broadcast | FastAPI, SQLAlchemy Async, PostGIS, Redis |
-| **Scientific ML & Physics** | [`ml/`](file:///c:/Users/sawan/OneDrive/Desktop/JALAI/jalrakshak-ml-starter/ml) / [`src/`](file:///c:/Users/sawan/OneDrive/Desktop/JALAI/jalrakshak-ml-starter/src) | Rainfall nowcast, LISFLOOD-FP 8.0.3, FloodFNO, risk engine, Groq/NVIDIA AI fallback | PyTorch, PySTEPS, NumPy, Rasterio, Uvicorn |
-| **Web Application** | [`web/`](file:///c:/Users/sawan/OneDrive/Desktop/JALAI/jalrakshak-ml-starter/web) | Client dashboard for municipal authorities and citizens *(Integration ready)* | Next.js / React / TypeScript |
-| **Mobile Application** | [`mobile/`](file:///c:/Users/sawan/OneDrive/Desktop/JALAI/jalrakshak-ml-starter/mobile) | Citizen emergency alerts, field responder reporting, offline cached maps *(Integration ready)* | Flutter / React Native |
-| **Shared Contracts** | [`shared/`](file:///c:/Users/sawan/OneDrive/Desktop/JALAI/jalrakshak-ml-starter/shared) | Language-agnostic OpenAPI specs, JSON schemas, system constants, WebSocket events | OpenAPI 3.1, JSONSchema |
-| **Infrastructure** | [`infra/`](file:///c:/Users/sawan/OneDrive/Desktop/JALAI/jalrakshak-ml-starter/infra) | Multi-container Docker Compose definitions, Dockerfiles, and deployment guides | Docker, Compose |
-| **Review & Quarantine** | [`_to_review_delete/`](file:///c:/Users/sawan/OneDrive/Desktop/JALAI/jalrakshak-ml-starter/_to_review_delete) | Quarantined deletion candidates for manual review *(Absolute No-Delete Policy)* | Markdown, JSON Ledger |
+| **Backend Gateway** | [`backend/`](file:///c:/Users/sawan/OneDrive/Desktop/JALAI/jalrakshak-ai/backend) | Public API gateway, DB persistence, citizen reports, alerts, WebSocket broadcast | FastAPI, SQLAlchemy Async, PostGIS, Redis |
+| **Scientific ML & Physics** | [`ml/`](file:///c:/Users/sawan/OneDrive/Desktop/JALAI/jalrakshak-ai/ml) / [`src/`](file:///c:/Users/sawan/OneDrive/Desktop/JALAI/jalrakshak-ai/src) | Rainfall nowcast, LISFLOOD-FP 8.0.3, FloodFNO, risk engine, Groq/NVIDIA AI fallback | PyTorch, PySTEPS, NumPy, Rasterio, Uvicorn |
+| **Web Application** | [`web/`](file:///c:/Users/sawan/OneDrive/Desktop/JALAI/jalrakshak-ai/web) | Client dashboard for municipal authorities and citizens *(Integration ready)* | Next.js / React / TypeScript |
+| **Mobile Application** | [`mobile/`](file:///c:/Users/sawan/OneDrive/Desktop/JALAI/jalrakshak-ai/mobile) | Citizen emergency alerts, field responder reporting, offline cached maps *(Integration ready)* | Flutter / React Native |
+| **Shared Contracts** | [`shared/`](file:///c:/Users/sawan/OneDrive/Desktop/JALAI/jalrakshak-ai/shared) | Language-agnostic OpenAPI specs, JSON schemas, system constants, WebSocket events | OpenAPI 3.1, JSONSchema |
+| **Infrastructure** | [`infra/`](file:///c:/Users/sawan/OneDrive/Desktop/JALAI/jalrakshak-ai/infra) | Multi-container Docker Compose definitions, Dockerfiles, and deployment guides | Docker, Compose |
+| **Review & Quarantine** | [`_to_review_delete/`](file:///c:/Users/sawan/OneDrive/Desktop/JALAI/jalrakshak-ai/_to_review_delete) | Quarantined deletion candidates for manual review *(Absolute No-Delete Policy)* | Markdown, JSON Ledger |
 
 ---
 
@@ -66,7 +66,7 @@ docker compose up --build
 
 ## 4. Frontend & Mobile Team Integration
 
-Team members integrating Web or Mobile applications should review the complete guide in [`docs/INTEGRATION_GUIDE.md`](file:///c:/Users/sawan/OneDrive/Desktop/JALAI/jalrakshak-ml-starter/docs/INTEGRATION_GUIDE.md).
+Team members integrating Web or Mobile applications should review the complete guide in [`docs/INTEGRATION_GUIDE.md`](file:///c:/Users/sawan/OneDrive/Desktop/JALAI/jalrakshak-ai/docs/INTEGRATION_GUIDE.md).
 
 ### Crucial Integration Rules:
 - **Single Point of Contact**: Frontend applications consume the Backend Platform (`http://localhost:8000`) exclusively.
@@ -80,7 +80,7 @@ Team members integrating Web or Mobile applications should review the complete g
 
 To guarantee **zero accidental data loss**, this repository enforces an **Absolute No-Delete Rule**.
 - Redundant scripts, duplicate notebooks, empty logs, and legacy defect builders are moved to `_to_review_delete/`.
-- Every quarantined item is cataloged in `_to_review_delete/review_manifest.json` and [`docs/REVIEW_DELETE_CANDIDATES.md`](file:///c:/Users/sawan/OneDrive/Desktop/JALAI/jalrakshak-ml-starter/docs/REVIEW_DELETE_CANDIDATES.md).
+- Every quarantined item is cataloged in `_to_review_delete/review_manifest.json` and [`docs/REVIEW_DELETE_CANDIDATES.md`](file:///c:/Users/sawan/OneDrive/Desktop/JALAI/jalrakshak-ai/docs/REVIEW_DELETE_CANDIDATES.md).
 - The repository owner will inspect and approve any final manual deletions.
 
 ---

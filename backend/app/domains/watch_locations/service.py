@@ -48,6 +48,20 @@ class WatchLocationService:
             return True
         return False
 
+    def update_location(
+        self, location_id: str, user_id: str, updates: dict[str, Any]
+    ) -> dict[str, Any] | None:
+        if location_id in self._locations and self._locations[location_id]["user_id"] == user_id:
+            loc = self._locations[location_id]
+            for field in ("label", "latitude", "longitude", "risk_threshold", "notify_push", "ward_id"):
+                if field in updates:
+                    if field == "risk_threshold":
+                        loc[field] = str(updates[field]).upper()
+                    else:
+                        loc[field] = updates[field]
+            return loc
+        return None
+
     def check_risk_intersection(
         self, location: dict[str, Any], risk_cells: list[dict[str, Any]]
     ) -> dict[str, Any] | None:

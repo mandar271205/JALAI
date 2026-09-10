@@ -76,7 +76,7 @@ def create_phase4e_notebook():
                     "\n",
                     "REPO_URL = \"https://github.com/mandar271205/JALAI.git\"\n",
                     "REPO_BRANCH = \"main\"\n",
-                    "WORK_DIR = Path(\"/content/JALAI/jalrakshak-ml-starter\")\n",
+                    "WORK_DIR = Path(\"/content/JALAI/jalrakshak-ai\")\n",
                     "\n",
                     "if not WORK_DIR.exists():\n",
                     "    print(f\"Cloning {REPO_URL} (branch: {REPO_BRANCH})...\")\n",

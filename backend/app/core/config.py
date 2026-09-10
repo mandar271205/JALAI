@@ -101,6 +101,12 @@ class Settings(BaseSettings):
     AI_VERIFY_LOW_SUPPORT: bool = True
     AI_VERIFIER_MIN_SUPPORT: float = 0.65
 
+    # Vision AI Support (Groq Visual Corroboration)
+    AI_VISION_ENABLED: bool = True
+    AI_VISION_PROVIDER: str = "groq"
+    AI_VISION_MODEL: str = "qwen/qwen3.8-27b"
+    AI_VISION_ROLE: str = "citizen_visual_evidence"
+
 
 
 @lru_cache

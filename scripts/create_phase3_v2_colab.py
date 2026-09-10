@@ -26,7 +26,7 @@ This notebook trains `convlstm_mumbai_heavyrain_v2` on the existing 432-frame ex
     code("""# Cell 1: user paths. The expanded dataset must already exist.
 REPO_URL = ""                 # Optional Git URL; blank uses the current/uploaded repository
 REPO_BRANCH = "main"
-WORK_DIR = "/content/jalrakshak-ml-starter"
+WORK_DIR = "/content/jalrakshak-ai"
 CONFIG_PATH = "configs/training/convlstm_mumbai_heavyrain_v2.yaml"
 DRIVE_DATASET_DIR = ""        # Optional Drive path to the expanded_v1 directory
 DRIVE_OUTPUT_DIR = ""         # Optional Drive folder for checkpoints/reports
