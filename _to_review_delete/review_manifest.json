@@ -1,0 +1,87 @@
+{
+  "created_at": "2026-09-10T00:19:58.054876+00:00",
+  "policy": "All items moved here are quarantined candidates for manual review. Nothing is permanently deleted.",
+  "candidates": [
+    {
+      "original_path": "tmp.py",
+      "review_path": "_to_review_delete/temp/tmp.py",
+      "category": "TEMP",
+      "reason": "Scratch IPython notebook reader utility left in the root directory; not imported by production code.",
+      "references_found": [
+        ".gitignore"
+      ],
+      "replacement": null,
+      "safe_to_delete_assessment": "LIKELY",
+      "moved_at": "2026-09-10T00:19:58.054876+00:00",
+      "git_commit": "1874f55"
+    },
+    {
+      "original_path": "out.log",
+      "review_path": "_to_review_delete/temp/out.log",
+      "category": "TEMP",
+      "reason": "0-byte empty debug log file left in repository root.",
+      "references_found": [
+        ".gitignore"
+      ],
+      "replacement": null,
+      "safe_to_delete_assessment": "LIKELY",
+      "moved_at": "2026-09-10T00:19:58.054876+00:00",
+      "git_commit": "1874f55"
+    },
+    {
+      "original_path": "src/jalrakshak_ml/flood/dataset_builder.py",
+      "review_path": "_to_review_delete/legacy/flood/dataset_builder.py",
+      "category": "LEGACY",
+      "reason": "Legacy Phase 10 defective physics dataset builder that broadcast max depth as 4 horizons. Quarantined and superseded by verified_dataset.py.",
+      "references_found": [
+        "reports/phase11_reproducibility_manifest.json",
+        "reports/phase11_reproducibility_manifest.md"
+      ],
+      "replacement": "src/jalrakshak_ml/flood/verified_dataset.py",
+      "safe_to_delete_assessment": "DO_NOT_DELETE",
+      "moved_at": "2026-09-10T00:19:58.054876+00:00",
+      "git_commit": "1874f55"
+    },
+    {
+      "original_path": "notebooks/02_phase4e_deep_model_tournament.ipynb",
+      "review_path": "_to_review_delete/temp/02_phase4e_deep_model_tournament.ipynb",
+      "category": "SCRIPT",
+      "reason": "Redundant copy of authoritative colab/02_phase4e_deep_model_tournament.ipynb.",
+      "references_found": [
+        "reports/phase4e_research_report.md",
+        "scripts/create_phase4e_notebook.py"
+      ],
+      "replacement": "colab/02_phase4e_deep_model_tournament.ipynb",
+      "safe_to_delete_assessment": "LIKELY",
+      "moved_at": "2026-09-10T00:19:58.054876+00:00",
+      "git_commit": "1874f55"
+    },
+    {
+      "original_path": "models/flood_fno_smoke.pt",
+      "review_path": "models/flood_fno_smoke.pt (KEPT IN PLACE)",
+      "category": "MODEL",
+      "reason": "Unvalidated local CPU smoke checkpoint (loss 0.1704). Non-operational per scientific claim gates. Large binary kept in place and ignored.",
+      "references_found": [
+        "reports/fno_smoke_evaluation.json",
+        "reports/phase11_reproducibility_manifest.json"
+      ],
+      "replacement": null,
+      "safe_to_delete_assessment": "DO_NOT_DELETE",
+      "moved_at": "2026-09-10T00:19:58.054876+00:00",
+      "git_commit": "1874f55"
+    },
+    {
+      "original_path": "test.hdf5",
+      "review_path": "test.hdf5 (KEPT IN PLACE / IGNORED)",
+      "category": "TEMP",
+      "reason": "Temporary 8.1MB HDF5 test output. Kept in place and ignored by git.",
+      "references_found": [
+        ".gitignore"
+      ],
+      "replacement": null,
+      "safe_to_delete_assessment": "LIKELY",
+      "moved_at": "2026-09-10T00:19:58.054876+00:00",
+      "git_commit": "1874f55"
+    }
+  ]
+}

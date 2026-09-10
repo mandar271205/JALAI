@@ -1,0 +1,124 @@
+openapi: 3.1.0
+info:
+  title: JalRakshak AI Public API
+  description: Public trust boundary API for Disaster Management, Inundation Nowcasting, Risk Intelligence and Field Operations.
+  version: 1.0.0
+servers:
+  - url: http://localhost:8000
+    description: Local development server
+paths:
+  /health:
+    get:
+      summary: Liveness probe
+      responses:
+        '200':
+          description: Service alive
+  /ready:
+    get:
+      summary: Readiness probe
+      responses:
+        '200':
+          description: Service ready with database and dependencies healthy
+  /api/v1/weather/current:
+    get:
+      summary: Get current weather conditions
+      responses:
+        '200':
+          description: Current rainfall and weather conditions
+  /api/v1/weather/sources/status:
+    get:
+      summary: Get weather data ingestion sources status
+      responses:
+        '200':
+          description: Ingestion sources status list
+  /api/v1/models/status:
+    get:
+      summary: Get ML models status and version manifests
+      responses:
+        '200':
+          description: Status of nowcasting, inundation and risk models
+  /api/v1/nowcast/manifest:
+    get:
+      summary: Get latest radar/satellite precipitation nowcast manifest
+      responses:
+        '200':
+          description: Precipitation raster metadata and tile URLs
+  /api/v1/inundation/manifest:
+    get:
+      summary: Get latest hydrodynamic flood depth map manifest
+      responses:
+        '200':
+          description: Inundation raster metadata and tile URLs
+  /api/v1/risk/cells:
+    get:
+      summary: Query spatial H3 risk cells by bounding box or timestamp
+      parameters:
+        - name: bbox
+          in: query
+          required: false
+          schema:
+            type: string
+            example: "72.80,18.90,72.95,19.15"
+        - name: valid_time
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date-time
+      responses:
+        '200':
+          description: List of H3 risk cells
+  /api/v1/risk/{h3_cell}/timeline:
+    get:
+      summary: Get risk and water depth trajectory for a specific H3 cell
+      parameters:
+        - name: h3_cell
+          in: path
+          required: true
+          schema:
+            type: string
+            example: "8860145b53fffff"
+      responses:
+        '200':
+          description: Cell timeline
+  /api/v1/incidents:
+    get:
+      summary: List active disaster incidents
+      responses:
+        '200':
+          description: List of incidents
+    post:
+      summary: Create or elevate a disaster incident
+      responses:
+        '201':
+          description: Incident created
+  /api/v1/reports:
+    post:
+      summary: Submit citizen field report
+      responses:
+        '201':
+          description: Report submitted for verification
+  /api/v1/reports/{id}/review:
+    post:
+      summary: Review citizen report (Analyst / Municipal Officer)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Report review status updated
+  /api/v1/routes/lower-risk:
+    post:
+      summary: Compute flood-avoiding evacuation route
+      responses:
+        '200':
+          description: Safe route geometry and risk elevation profile
+  /api/v1/alerts/draft:
+    post:
+      summary: Draft Common Alerting Protocol (CAP) emergency alert
+      responses:
+        '201':
+          description: Draft alert created for approval

@@ -1,181 +1,102 @@
-# JalRakshak AI — ML + Geospatial Starter
+# JalRakshak AI — Unified Monorepo Platform
 
-This repository is **Sprint 0 / foundation only**. It deliberately does **not**
-jump to ConvLSTM, DGMR, SWMM/LISFLOOD or FNO yet.
+**JalRakshak AI** is an operational urban flood and rainfall intelligence platform integrating high-resolution meteorological nowcasting, hydrodynamic physics simulations, multi-criteria risk intelligence, and a resilient 3-model backend AI decision-support layer.
 
-The goal of this starter is to make the ML/GIS side reproducible and backend-ready:
+---
 
-1. freeze the ML-side contracts,
-2. define one pilot grid,
-3. ingest data through replaceable adapters,
-4. standardize/QC it,
-5. produce a canonical processed weather artifact,
-6. prove the pipeline works end-to-end on a deterministic demo fixture.
+## 1. Monorepo Components
 
-## Pilot used in this starter
+The repository is structured into clear, decoupled domains for cross-functional engineering:
 
-Working implementation choice: **Mumbai**.
+| Component | Directory | Responsibility | Technology Stack |
+| :--- | :--- | :--- | :--- |
+| **Backend Gateway** | [`backend/`](file:///c:/Users/sawan/OneDrive/Desktop/JALAI/jalrakshak-ml-starter/backend) | Public API gateway, DB persistence, citizen reports, alerts, WebSocket broadcast | FastAPI, SQLAlchemy Async, PostGIS, Redis |
+| **Scientific ML & Physics** | [`ml/`](file:///c:/Users/sawan/OneDrive/Desktop/JALAI/jalrakshak-ml-starter/ml) / [`src/`](file:///c:/Users/sawan/OneDrive/Desktop/JALAI/jalrakshak-ml-starter/src) | Rainfall nowcast, LISFLOOD-FP 8.0.3, FloodFNO, risk engine, Groq/NVIDIA AI fallback | PyTorch, PySTEPS, NumPy, Rasterio, Uvicorn |
+| **Web Application** | [`web/`](file:///c:/Users/sawan/OneDrive/Desktop/JALAI/jalrakshak-ml-starter/web) | Client dashboard for municipal authorities and citizens *(Integration ready)* | Next.js / React / TypeScript |
+| **Mobile Application** | [`mobile/`](file:///c:/Users/sawan/OneDrive/Desktop/JALAI/jalrakshak-ml-starter/mobile) | Citizen emergency alerts, field responder reporting, offline cached maps *(Integration ready)* | Flutter / React Native |
+| **Shared Contracts** | [`shared/`](file:///c:/Users/sawan/OneDrive/Desktop/JALAI/jalrakshak-ml-starter/shared) | Language-agnostic OpenAPI specs, JSON schemas, system constants, WebSocket events | OpenAPI 3.1, JSONSchema |
+| **Infrastructure** | [`infra/`](file:///c:/Users/sawan/OneDrive/Desktop/JALAI/jalrakshak-ml-starter/infra) | Multi-container Docker Compose definitions, Dockerfiles, and deployment guides | Docker, Compose |
+| **Review & Quarantine** | [`_to_review_delete/`](file:///c:/Users/sawan/OneDrive/Desktop/JALAI/jalrakshak-ml-starter/_to_review_delete) | Quarantined deletion candidates for manual review *(Absolute No-Delete Policy)* | Markdown, JSON Ledger |
 
-- API CRS: `EPSG:4326`
-- Internal analysis CRS: `EPSG:32643` (UTM zone 43N)
-- Working WGS84 bbox: `[72.75, 18.85, 73.05, 19.30]`
-- Canonical grid: `256 x 256`
-- Initial temporal step: `10 minutes`
+---
 
-The bbox is a project implementation choice, not a claim from the PRD. We can
-tighten/expand it after inspecting real data coverage.
+## 2. Environment Configuration
 
-## 1. One-time machine setup
+1. Copy the unified environment template:
+   ```bash
+   cp .env.example .env
+   ```
+2. Configure credentials in `.env`:
+   - **Backend**: `DATABASE_URL`, `REDIS_URL`, `JWT_SECRET_KEY`
+   - **ML Service**: `ML_SERVICE_URL=http://localhost:8001`, `ML_AUTH_TOKEN=dev-ml-token`
+   - **Groq Primary AI (Model 1)**: `GROQ_API_KEY=gsk_...` (Model: `openai/gpt-oss-120b`)
+   - **NVIDIA NIM Fast Failover & Heavy Verifier (Models 2 & 3)**: `NVIDIA_API_KEY=nvapi-...`
+     - Model 2: `nvidia/nemotron-3.5-lightning-30b-a3b`
+     - Model 3: `nvidia/nemotron-3-ultra-550b-a55b`
 
-Recommended on Windows/Linux/macOS: Miniconda/Micromamba/Conda with conda-forge,
-because GDAL/Rasterio installation is much less painful there.
+---
 
+## 3. Local Development Startup
+
+### Option A: Complete Multi-Container Stack (Docker Compose)
+Run database, cache, backend platform, and ML inference service together:
 ```bash
-conda env create -f environment.yml
-conda activate jalrakshak
-pip install -e ".[dev]"
+docker compose up --build
 ```
+- **Backend API Gateway**: `http://localhost:8000/docs`
+- **ML Serving Service**: `http://localhost:8001/docs`
 
-Optional but recommended:
-- Git
-- Docker Desktop / Docker Engine
-- VS Code
-- QGIS
-- JupyterLab
+### Option B: Local Native Development
+1. **Activate the Conda ML environment**:
+   ```bash
+   conda activate jalrakshak
+   pip install -e .
+   ```
+2. **Start the ML Inference Service**:
+   ```bash
+   uvicorn jalrakshak_ml.serving.app:app --host 0.0.0.0 --port 8001 --reload
+   ```
+3. **Start the Backend Service** (in a separate terminal):
+   ```bash
+   cd backend
+   uv run uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+   ```
 
-GPU/CUDA is **not required for Sprint 0**.
+---
 
-## 2. Verify the environment
+## 4. Frontend & Mobile Team Integration
 
+Team members integrating Web or Mobile applications should review the complete guide in [`docs/INTEGRATION_GUIDE.md`](file:///c:/Users/sawan/OneDrive/Desktop/JALAI/jalrakshak-ml-starter/docs/INTEGRATION_GUIDE.md).
+
+### Crucial Integration Rules:
+- **Single Point of Contact**: Frontend applications consume the Backend Platform (`http://localhost:8000`) exclusively.
+- **Zero Exposed AI Credentials**: Never store Groq or NVIDIA keys in client apps.
+- **Truthful Provenance**: Display JalRakshak risk and forecast domain metrics. Never show third-party provider names (e.g. "Groq result", "Nemotron").
+- **Depth Sanctity**: Water depth (`depth_m`) is `null` unless calibrated hydrodynamic sensors are online. Do not invent depth measurements.
+
+---
+
+## 5. Review Folder Policy (`_to_review_delete/`)
+
+To guarantee **zero accidental data loss**, this repository enforces an **Absolute No-Delete Rule**.
+- Redundant scripts, duplicate notebooks, empty logs, and legacy defect builders are moved to `_to_review_delete/`.
+- Every quarantined item is cataloged in `_to_review_delete/review_manifest.json` and [`docs/REVIEW_DELETE_CANDIDATES.md`](file:///c:/Users/sawan/OneDrive/Desktop/JALAI/jalrakshak-ml-starter/docs/REVIEW_DELETE_CANDIDATES.md).
+- The repository owner will inspect and approve any final manual deletions.
+
+---
+
+## 6. Testing & Quality Assurance
+
+Run the comprehensive test suite:
 ```bash
-python scripts/check_env.py
+pytest tests/test_decision_support.py -v
+pytest tests/test_serving_integration.py -v
+pytest tests/test_phase9_flood_physics_path.py -v
+pytest tests/test_phase4e_final_stack.py -v
 ```
 
-## 3. Run the first end-to-end ML/GIS pipeline
-
+Linting and compilation checks:
 ```bash
-python -m jalrakshak_ml.pipelines.bootstrap_demo
+ruff check .
+python -m compileall src tests shared -q
 ```
-
-Expected outputs:
-
-```text
-data/raw/demo/synthetic_rainfall.nc
-data/processed/demo/mumbai_rainfall.zarr/
-data/processed/demo/latest_rainfall.tif
-data/processed/demo/weatherframe_manifest.json
-data/processed/demo/pilot_grid.json
-```
-
-This run proves:
-- config loading works,
-- a source adapter can produce data,
-- timestamps/units/grid metadata exist,
-- raster reprojection/resampling works,
-- QC score is computed separately,
-- canonical artifacts and manifest are generated.
-
-## 4. Run tests
-
-```bash
-pytest -q
-```
-
-## 5. Folder ownership
-
-```text
-contracts/                  ML-owned internal contract + schemas
-configs/                    pilot/data-source configuration
-data/raw/                   immutable-ish downloaded/raw source files
-data/interim/               parsed but not fully canonical
-data/processed/             canonical arrays/rasters/manifests
-src/jalrakshak_ml/adapters/ replaceable source-specific readers/downloaders
-src/jalrakshak_ml/qc/       quality/freshness/range checks
-src/jalrakshak_ml/preprocessing/ reprojection/resampling/grid logic
-src/jalrakshak_ml/pipelines/ executable pipelines
-src/jalrakshak_ml/nowcast/  later: persistence -> pySTEPS -> deep nowcast
-src/jalrakshak_ml/fusion/   later: NWP + nowcast calibration/fusion
-src/jalrakshak_ml/flood/    later: susceptibility -> physics -> FNO
-src/jalrakshak_ml/risk/     later: H3 hazard/exposure/vulnerability
-src/jalrakshak_ml/reports/  later: report verification
-src/jalrakshak_ml/explain/  later: deterministic evidence + SHAP
-src/jalrakshak_ml/serving/  later: /internal/v1 FastAPI service
-```
-
-## 6. What we do immediately after this starter runs
-
-Do **not** train a deep model yet.
-
-### Real data acquisition order
-
-1. **Copernicus DEM GLO-30** — static terrain/elevation foundation.
-2. **OpenStreetMap** — roads, waterways, critical assets and context.
-3. **NASA GPM IMERG** — historical precipitation baseline/training-validation data.
-4. **NOAA GFS/NOMADS** — open NWP development source.
-5. **MOSDAC INSAT-3D/3DR** — satellite QPE/context when access is available.
-6. **IMD DWR/AWS adapters** — keep interfaces ready; do not block the build on privileged access.
-
-Every source gets its own adapter, and every adapter must ultimately emit data
-that can be converted to the same canonical grid + metadata model.
-
-## 7. Sprint 0 Definition of Done
-
-- [ ] repository installs on your laptop
-- [ ] `check_env.py` passes
-- [ ] `bootstrap_demo` creates all 5 outputs
-- [ ] tests pass
-- [ ] `contracts/internal-ml-openapi.yaml` is committed
-- [ ] `WeatherFrame` schema is committed
-- [ ] Mumbai pilot grid is frozen for the first development cycle
-- [ ] real-data acquisition checklist has started
-- [ ] no model training has started yet
-
-After that, the next code milestone is **real DEM + OSM + historical rainfall
-adapters and the canonical data cube**, not ConvLSTM.
-
-## Phase 3: ConvLSTM nowcasting
-
-Phase 3 uses native 30-minute GPM timing and whole-event splits. The historical
-acquisition command is read-only by default:
-
-```bash
-python scripts/acquire_phase3_data.py
-python scripts/acquire_phase3_data.py --execute
-```
-
-The configured safety limits are in
-`configs/training/convlstm_mumbai_v1.yaml`. Increase the event list and limits
-deliberately; the current three 12-hour windows exercise the pipeline but are
-not enough for a scientifically meaningful model validation.
-
-Train locally only for CPU smoke testing:
-
-```bash
-python scripts/train_convlstm.py --device cpu
-```
-
-For real training, open `colab/01_convlstm_training.ipynb`, select a GPU
-runtime, configure the repository/dataset/output paths, and run the cells in
-order. The notebook supports optional repository clone/pull, Google Drive,
-resume from `latest.pt`, held-out comparison against Persistence and pySTEPS,
-and export of checkpoints, metrics, and plots.
-
-Do not set `PHASE_3_MODEL_VALIDATED=true` for a CPU smoke run or for the legacy
-23-frame Phase-2 replay. It requires genuine GPU training on an approved larger
-historical corpus followed by held-out event evaluation.
-
-### Heavy-rain V2 redesign
-
-The additive V2 configuration uses the existing 432-frame expanded corpus and
-does not run acquisition:
-
-```bash
-python scripts/train_convlstm.py --config configs/training/convlstm_mumbai_heavyrain_v2.yaml --device cuda
-python scripts/evaluate_phase3.py --config configs/training/convlstm_mumbai_heavyrain_v2.yaml --checkpoint models/nowcast/convlstm_mumbai_heavyrain_v2/best.pt --device cuda
-```
-
-Use `colab/02_convlstm_heavyrain_v2_training.ipynb` for the isolated GPU
-workflow. It requires the versioned
-`gpm_imerg_v07_mumbai_monsoon_expanded_v1` stores to be present or mounted and
-fails rather than redownloading them. See `reports/phase3_v2_design.md` for the
-residual, mask, heavy-rain sampling/loss, and checkpoint-selection contracts.

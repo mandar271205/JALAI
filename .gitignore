@@ -1,6 +1,7 @@
 # Secrets
 .env
 .env.*
+!.env.example
 .netrc
 _netrc
 *.pem
@@ -26,9 +27,8 @@ test.hdf5
 test_dem_output.tif
 test_gfs.grib2
 cache/
-tmp.py
 tmp/
-out.log
+logs/
 *.part
 
 # Large ML artifacts
@@ -37,6 +37,14 @@ out.log
 *.pt
 models/*
 !models/.gitkeep
+
+# Quarantined review folder large binary rules (keep text/docs visible)
+_to_review_delete/**/*.pt
+_to_review_delete/**/*.pth
+_to_review_delete/**/*.ckpt
+_to_review_delete/**/*.hdf5
+_to_review_delete/**/*.zarr
+_to_review_delete/**/*.tif
 
 # Large geospatial datasets (>50MB)
 data/processed/static/roads.geojson
@@ -51,9 +59,25 @@ __pycache__/
 dist/
 build/
 
+# Node / Web
+node_modules/
+.next/
+.turbo/
+
+# Mobile build artifacts
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+android/.gradle/
+ios/Pods/
+*.apk
+*.aab
+*.ipa
+
 # Jupyter
 .ipynb_checkpoints/
 
 # OS / IDE
 .DS_Store
 .vscode/
+.idea/

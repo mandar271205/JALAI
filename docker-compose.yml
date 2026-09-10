@@ -1,0 +1,66 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgis/postgis:16-3.4-alpine
+    container_name: jalrakshak-db
+    environment:
+      POSTGRES_USER: jalrakshak
+      POSTGRES_PASSWORD: jalrakshak
+      POSTGRES_DB: jalrakshak
+    ports:
+      - "5432:5432"
+    volumes:
+      - jalrakshak_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U jalrakshak -d jalrakshak"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: jalrakshak-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - jalrakshak_redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: docker/Dockerfile
+    container_name: jalrakshak-backend
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://jalrakshak:jalrakshak@db:5432/jalrakshak
+      - REDIS_URL=redis://redis:6379/0
+      - ML_SERVICE_URL=http://ml:8001
+      - ML_AUTH_TOKEN=dev-ml-token
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+  ml:
+    build:
+      context: .
+      dockerfile: infra/docker/Dockerfile.ml
+    container_name: jalrakshak-ml
+    ports:
+      - "8001:8001"
+    env_file:
+      - .env
+    restart: unless-stopped
+
+volumes:
+  jalrakshak_pgdata:
+  jalrakshak_redisdata:

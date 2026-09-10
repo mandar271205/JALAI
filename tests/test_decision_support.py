@@ -36,6 +36,15 @@ from typing import Any
 
 import httpx
 import pytest
+import asyncio
+import functools
+
+def async_test(coro):
+    @functools.wraps(coro)
+    def wrapper(*args, **kwargs):
+        return asyncio.run(coro(*args, **kwargs))
+    return wrapper
+
 from starlette.testclient import TestClient
 
 from jalrakshak_ml.core.claim_gates import AUTHORITATIVE_GATES, ScientificClaimGates
@@ -96,7 +105,7 @@ def make_malformed_transport() -> httpx.MockTransport:
 # Test Cases 1-5: Rainfall Inference Scenarios
 # ==============================================================================
 
-@pytest.mark.asyncio
+@async_test
 async def test_01_rainfall_model_available_groq_success():
     """Scenario 1: Rainfall numerical model available + Groq Model 1 succeeds."""
     mock_groq_resp = {
@@ -131,7 +140,7 @@ async def test_01_rainfall_model_available_groq_success():
     assert out.numerical_forecast["rainfall_mm_h"] == [38.5, 45.0, 52.0, 48.0]
 
 
-@pytest.mark.asyncio
+@async_test
 async def test_02_rainfall_model_available_groq_fail_nvidia_success():
     """Scenario 2: Groq Model 1 fails -> fast failover to Model 2 (NVIDIA Lightning)."""
     groq = GroqProvider(api_key="test-key", transport=make_error_transport(500))
@@ -167,7 +176,7 @@ async def test_02_rainfall_model_available_groq_fail_nvidia_success():
     assert out.numerical_forecast["rainfall_mm_h"] == [15.0, 18.0, 20.0, 17.0]
 
 
-@pytest.mark.asyncio
+@async_test
 async def test_03_rainfall_model_available_both_ai_fail():
     """Scenario 3: Both AI providers fail -> clean fallback to NUMERICAL_MODEL."""
     groq = GroqProvider(api_key="test-key", transport=make_error_transport(503))
@@ -188,7 +197,7 @@ async def test_03_rainfall_model_available_both_ai_fail():
     assert out.numerical_forecast["rainfall_mm_h"] == [40.0, 42.0]
 
 
-@pytest.mark.asyncio
+@async_test
 async def test_04_rainfall_model_unavailable_gfs_provisional_ai():
     """Scenario 4: Model unavailable + GFS evidence -> PROVISIONAL_AI assessment."""
     mock_groq_resp = {
@@ -222,7 +231,7 @@ async def test_04_rainfall_model_unavailable_gfs_provisional_ai():
     assert out.expected_intensity_band_mm_h.min == 25.0
 
 
-@pytest.mark.asyncio
+@async_test
 async def test_05_rainfall_model_unavailable_insufficient_evidence():
     """Scenario 5: Model unavailable + no meteorological observations -> INSUFFICIENT_EVIDENCE."""
     router = ProviderRouter()
@@ -246,7 +255,7 @@ async def test_05_rainfall_model_unavailable_insufficient_evidence():
 # Test Cases 6-9: Anti-Hallucination & Flood Scenarios
 # ==============================================================================
 
-@pytest.mark.asyncio
+@async_test
 async def test_06_rainfall_anti_hallucination_clamping():
     """Scenario 6: LLM attempts to claim 120 mm/h when evidence max is 20 mm/h -> clamped."""
     mock_resp = {
@@ -272,7 +281,7 @@ async def test_06_rainfall_anti_hallucination_clamping():
     assert out.expected_intensity_band_mm_h.max <= 40.0
 
 
-@pytest.mark.asyncio
+@async_test
 async def test_07_flood_model_available_ai_enrichment():
     """Scenario 7: Genuine physics simulation available + AI interpretation."""
     mock_groq_resp = {
@@ -302,7 +311,7 @@ async def test_07_flood_model_available_ai_enrichment():
     assert out.risk_level == SeverityLevel.SEVERE
 
 
-@pytest.mark.asyncio
+@async_test
 async def test_08_flood_model_unavailable_provisional_ai():
     """Scenario 8: Flood model unavailable + terrain/susceptibility -> PROVISIONAL_AI, depth null."""
     mock_groq_resp = {
@@ -335,7 +344,7 @@ async def test_08_flood_model_unavailable_provisional_ai():
     assert out.risk_level == SeverityLevel.HIGH
 
 
-@pytest.mark.asyncio
+@async_test
 async def test_09_flood_anti_hallucination_invented_depth_rejected():
     """Scenario 9: Model unavailable but LLM invents 1.2m depth -> strictly set to null."""
     mock_groq_resp = {
@@ -365,7 +374,7 @@ async def test_09_flood_anti_hallucination_invented_depth_rejected():
 # Test Cases 10-16: Resilience, Injection, & Provider Health
 # ==============================================================================
 
-@pytest.mark.asyncio
+@async_test
 async def test_10_groq_timeout_lightning_failover():
     """Scenario 10: Groq client times out -> fast failover to Model 2."""
     def timeout_handler(request: httpx.Request):
@@ -392,7 +401,7 @@ async def test_10_groq_timeout_lightning_failover():
     assert out.provenance.ai_generator_slot == 2
 
 
-@pytest.mark.asyncio
+@async_test
 async def test_11_malformed_json_triggers_deterministic_fallback():
     """Scenario 11: LLM outputs malformed non-JSON prose -> fallback to deterministic baseline."""
     groq = GroqProvider(api_key="test-key", transport=make_malformed_transport())
@@ -406,7 +415,7 @@ async def test_11_malformed_json_triggers_deterministic_fallback():
     assert out.severity == SeverityLevel.HIGH  # Deterministic from 45 mm/h
 
 
-@pytest.mark.asyncio
+@async_test
 async def test_12_ai_disabled_preserves_deterministic_behavior(monkeypatch):
     """Scenario 12: AI_INFERENCE_ENABLED=false -> uses deterministic baseline directly."""
     monkeypatch.setenv("AI_INFERENCE_ENABLED", "false")
@@ -418,7 +427,7 @@ async def test_12_ai_disabled_preserves_deterministic_behavior(monkeypatch):
     assert out.provenance.ai_assistance_used is False
 
 
-@pytest.mark.asyncio
+@async_test
 async def test_13_no_api_keys_safe_fallback(monkeypatch):
     """Scenario 13: No API keys configured in environment -> safe deterministic fallback."""
     monkeypatch.delenv("GROQ_API_KEY", raising=False)
@@ -466,7 +475,7 @@ def test_15_citizen_prompt_injection_sanitized():
 # Test Cases 16-20: Heavy Verifier (Model 3) Orchestration
 # ==============================================================================
 
-@pytest.mark.asyncio
+@async_test
 async def test_16_ultra_not_called_on_low_risk():
     """Scenario 16: Normal LOW rainfall does NOT invoke Model 3 (Nemotron Ultra)."""
     mock_groq_resp = {
@@ -497,7 +506,7 @@ async def test_16_ultra_not_called_on_low_risk():
     assert out.provenance.ai_verifier_used is False
 
 
-@pytest.mark.asyncio
+@async_test
 async def test_17_ultra_called_on_severe_risk():
     """Scenario 17: SEVERE risk triggers Model 3 (Nemotron Ultra) verification."""
     mock_groq_resp = {
@@ -531,7 +540,7 @@ async def test_17_ultra_called_on_severe_risk():
     assert out.severity == SeverityLevel.SEVERE
 
 
-@pytest.mark.asyncio
+@async_test
 async def test_18_ultra_downgrade_verdict():
     """Scenario 18: Model 3 issues DOWNGRADE -> severity downgraded and confidence clamped."""
     mock_groq_resp = {
@@ -565,7 +574,7 @@ async def test_18_ultra_downgrade_verdict():
     assert out.provenance.ai_verifier_verdict == "DOWNGRADE"
 
 
-@pytest.mark.asyncio
+@async_test
 async def test_19_numerical_supremacy_over_llm_majority():
     """Scenario 19: Numerical model says MODERATE; even if LLMs say SEVERE, numerical model wins."""
     mock_groq_resp = {
