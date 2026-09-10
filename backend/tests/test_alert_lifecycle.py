@@ -29,11 +29,20 @@ async def test_alert_lifecycle_draft_approve_publish_rbac(client: AsyncClient):
     cit_res = await client.post(f"/api/v1/alerts/{alert_id}/approve", headers=citizen_headers)
     assert cit_res.status_code == 403
 
-    # 3. ALERT_APPROVER approves
+    # 3. Two-Person Rule: Same actor (usr-analyst-01) forbidden from approving own alert even with APPROVER role
+    self_approve_headers = {"X-Mock-Role": "ALERT_APPROVER", "X-Mock-User": "usr-analyst-01"}
+    self_res = await client.post(f"/api/v1/alerts/{alert_id}/approve", headers=self_approve_headers)
+    assert self_res.status_code == 403
+    err_body = self_res.json()
+    err_msg = err_body.get("error", {}).get("message", "") or err_body.get("detail", "")
+    assert "Two-person authorization violation" in err_msg
+
+    # 4. Distinct ALERT_APPROVER approves
     approver_headers = {"X-Mock-Role": "ALERT_APPROVER", "X-Mock-User": "usr-approver-01"}
     appr_res = await client.post(f"/api/v1/alerts/{alert_id}/approve", headers=approver_headers)
     assert appr_res.status_code == 200
     assert appr_res.json()["status"] == "APPROVED"
+    assert appr_res.json()["audit_event"]["action"] == "ALERT_APPROVED"
 
     # 4. ALERT_APPROVER publishes
     pub_res = await client.post(f"/api/v1/alerts/{alert_id}/publish", headers=approver_headers)

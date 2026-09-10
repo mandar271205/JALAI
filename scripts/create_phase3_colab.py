@@ -28,7 +28,7 @@ A deterministic checkpoint has no Brier/reliability metrics. `PHASE_3_MODEL_VALI
     code("""# User configuration - no personal Drive path is hardcoded.
 REPO_URL = ""                 # e.g. https://github.com/ORG/REPO.git; blank uses uploaded/current repo
 REPO_BRANCH = "main"
-WORK_DIR = "/content/jalrakshak-ml-starter"
+WORK_DIR = "/content/jalrakshak-ai"
 CONFIG_PATH = "configs/training/convlstm_mumbai_v1.yaml"
 
 USE_GOOGLE_DRIVE = False

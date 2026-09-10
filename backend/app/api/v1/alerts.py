@@ -3,9 +3,11 @@ from datetime import UTC, datetime
 from typing import Any
 
 from fastapi import APIRouter, Depends, Response, status
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.errors import ForbiddenError, NotFoundError, ValidationError
 from app.core.security import AuthenticatedUser, UserRole, require_roles
+from app.db.session import get_db
 from app.domains.audit.service import audit_service
 from app.integrations.cap.serializer import CAPSerializer
 from app.integrations.notifications.provider import get_notification_provider
@@ -71,6 +73,7 @@ async def approve_alert(
     current_user: AuthenticatedUser = Depends(
         require_roles([UserRole.ALERT_APPROVER, UserRole.ADMIN])
     ),
+    db: AsyncSession = Depends(get_db),
 ) -> dict[str, Any]:
     """
     Step 2: Designated Alert Approver validates region, content and authorizes publication.
@@ -97,10 +100,37 @@ async def approve_alert(
             f"Approver jurisdiction '{approver_region}' does not match alert region '{alert_region}'."
         )
 
+    # Two-Person Governance Rule: Approver must be a distinct actor from the alert drafter
+    if alert.get("created_by") and current_user.user_id == alert.get("created_by"):
+        raise ForbiddenError(
+            "Two-person authorization violation: The alert creator cannot approve their own alert. "
+            "A distinct authorized officer must review and approve."
+        )
+
     now = datetime.now(UTC).isoformat()
+    before_state = {"status": alert["status"], "approved_by": alert.get("approved_by")}
     alert["status"] = "APPROVED"
     alert["approved_by"] = current_user.user_id
     alert["approved_at"] = now
+    after_state = {"status": alert["status"], "approved_by": alert["approved_by"]}
+
+    audit_entry = await audit_service.record_event(
+        db=db,
+        actor_id=current_user.user_id,
+        actor_role=current_user.role.value
+        if hasattr(current_user.role, "value")
+        else str(current_user.role),
+        action="ALERT_APPROVED",
+        target_entity="ALERT",
+        target_id=alert_id,
+        before_state=before_state,
+        after_state=after_state,
+        supporting_snapshot={"reason": "Two-person authorized regional validation passed"},
+    )
+    alert["audit_event"] = {
+        "log_id": audit_entry["log_id"],
+        "action": audit_entry["action"],
+    }
     return alert
 
 
@@ -110,6 +140,7 @@ async def publish_alert(
     current_user: AuthenticatedUser = Depends(
         require_roles([UserRole.ALERT_APPROVER, UserRole.MUNICIPAL_OFFICER, UserRole.ADMIN])
     ),
+    db: AsyncSession = Depends(get_db),
 ) -> dict[str, Any]:
     """
     Step 3: Disseminate alert, generate OASIS CAP 1.2 XML, fan out notifications and emit real-time event.
@@ -147,7 +178,7 @@ async def publish_alert(
 
     # Record append-only cryptographic audit event
     audit_entry = await audit_service.record_event(
-        db=None,
+        db=db,
         actor_id=current_user.user_id,
         actor_role=current_user.role.value
         if hasattr(current_user.role, "value")

@@ -1,0 +1,24 @@
+[
+  {
+    "asset_id": "asset-hosp-001",
+    "name": "Sion Municipal General Hospital",
+    "asset_type": "HOSPITAL",
+    "location": {
+      "latitude": 19.0365,
+      "longitude": 72.8601
+    },
+    "flood_threshold_m": 0.5,
+    "status": "AT_RISK"
+  },
+  {
+    "asset_id": "asset-power-002",
+    "name": "Dharavi 110kV Electrical Substation",
+    "asset_type": "POWER_SUBSTATION",
+    "location": {
+      "latitude": 19.0432,
+      "longitude": 72.8534
+    },
+    "flood_threshold_m": 0.4,
+    "status": "NORMAL"
+  }
+]

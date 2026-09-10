@@ -45,6 +45,8 @@ async def get_current_user(
     credentials: HTTPAuthorizationCredentials | None = Depends(http_bearer),
     x_mock_user: str | None = Header(None, alias="X-Mock-User"),
     x_mock_role: str | None = Header(None, alias="X-Mock-Role"),
+    x_user_role: str | None = Header(None, alias="X-User-Role"),
+    x_user_id: str | None = Header(None, alias="X-User-ID"),
     settings: Settings = Depends(get_settings),
 ) -> AuthenticatedUser:
     """
@@ -74,8 +76,9 @@ async def get_current_user(
             raise UnauthorizedError(f"Invalid authentication token: {str(e)}")
 
     if settings.AUTH_MODE == "mock":
-        user_id = x_mock_user or "usr-dev-admin-001"
-        role_enum = parse_user_role(x_mock_role or "ADMIN")
+        user_id = x_mock_user or x_user_id or "usr-dev-admin-001"
+        effective_role = x_mock_role or x_user_role or "ADMIN"
+        role_enum = parse_user_role(effective_role)
         return AuthenticatedUser(
             user_id=user_id,
             email=f"{user_id}@jalrakshak.local",

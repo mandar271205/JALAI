@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://jalrakshak.ai/schemas/nowcast-result.schema.json",
+  "title": "NowcastResult",
+  "type": "object",
+  "required": [
+    "provider",
+    "model_version",
+    "data_version",
+    "issue_time",
+    "horizons_min",
+    "units",
+    "shape",
+    "source_metadata",
+    "forecast_type"
+  ],
+  "properties": {
+    "provider": {"type": "string"},
+    "model_version": {"type": "string"},
+    "data_version": {"type": "string"},
+    "issue_time": {"type": "string", "format": "date-time"},
+    "horizons_min": {
+      "type": "array",
+      "items": {"type": "integer", "exclusiveMinimum": 0},
+      "minItems": 1
+    },
+    "units": {"const": "mm/h"},
+    "shape": {
+      "type": "array",
+      "items": {"type": "integer", "exclusiveMinimum": 0},
+      "minItems": 3,
+      "maxItems": 3
+    },
+    "source_metadata": {"type": "object"},
+    "checkpoint_hash": {"type": ["string", "null"]},
+    "prediction_artifact_uri": {"type": ["string", "null"]},
+    "forecast_type": {"const": "deterministic"}
+  }
+}

@@ -17,6 +17,16 @@ from typing import Any
 
 import numpy as np
 
+from jalrakshak_ml.decision_support import (
+    DecisionSupportStatusResponse,
+    FloodInferenceInput,
+    FloodInferenceOutput,
+    ProviderRouter,
+    RainfallInferenceInput,
+    RainfallInferenceOutput,
+    infer_flood,
+    infer_rainfall,
+)
 from jalrakshak_ml.nowcast.pysteps_adapter import PystepsNowcast
 from jalrakshak_ml.serving.schemas import (
     InundationManifestResponse,
@@ -102,11 +112,12 @@ MUMBAI_PILOT_H3_CELLS = [
 class MLServingService:
     """Core ML serving backend providing typed inference endpoints."""
 
-    def __init__(self):
+    def __init__(self, provider_router: ProviderRouter | None = None):
         # Operational baseline model: PySTEPS Lucas-Kanade with persistence fallback
         self.nowcaster = PystepsNowcast(fallback_to_persistence=True)
+        self.provider_router = provider_router or ProviderRouter()
         self._runs_registry: dict[str, dict[str, Any]] = {}
-        logger.info("MLServingService initialized with operational baseline pysteps-lk-v1.")
+        logger.info("MLServingService initialized with operational baseline pysteps-lk-v1 and 3-model decision support router.")
 
     def run_nowcast(self, req: NowcastRequest) -> NowcastManifestResponse:
         now = datetime.now(UTC)
@@ -357,6 +368,33 @@ class MLServingService:
     def get_run(self, run_id: str) -> dict[str, Any] | None:
         return self._runs_registry.get(run_id)
 
+    async def run_rainfall_decision_support(
+        self, req: RainfallInferenceInput
+    ) -> RainfallInferenceOutput:
+        return await infer_rainfall(req, router=self.provider_router)
+
+    async def run_flood_decision_support(
+        self, req: FloodInferenceInput
+    ) -> FloodInferenceOutput:
+        return await infer_flood(req, router=self.provider_router)
+
+    def get_decision_support_status(self) -> DecisionSupportStatusResponse:
+        return DecisionSupportStatusResponse(
+            status="HEALTHY",
+            rainfall_model_available=True,
+            rainfall_model_name="pysteps-lk-v1",
+            rainfall_model_status="ACTIVE_OPERATIONAL_BASELINE",
+            flood_model_available=False,
+            flood_model_name="hydro-susceptibility-v1",
+            flood_model_status="SUSCEPTIBILITY_ONLY_UNCALIBRATED_DEPTH",
+            ai_enabled=self.provider_router.ai_enabled,
+            primary_ai_provider=self.provider_router.llm1.name,
+            secondary_ai_provider=self.provider_router.llm2.name,
+            verifier_ai_provider=self.provider_router.llm3.name,
+            provider_health=self.provider_router.health.stats,
+        )
+
 
 # Global singleton instance for serving
 ml_service = MLServingService()
+

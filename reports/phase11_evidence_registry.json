@@ -1,0 +1,72 @@
+{
+  "version": "phase11_model_data_evidence_registry_v1",
+  "records": [
+    {
+      "id": "future_rainfall_winner",
+      "status": "unavailable",
+      "frozen": false,
+      "checkpoint_opened": false
+    },
+    {
+      "id": "lisflood_8.0.3",
+      "status": "experimental",
+      "evidence": {
+        "verified": true,
+        "command": [
+          "wsl",
+          "-d",
+          "Ubuntu",
+          "--",
+          "/usr/local/bin/lisflood",
+          "-version"
+        ],
+        "exit_code": 0,
+        "stdout": "***************************\n LISFLOOD-FP version 8.0.3 (double)\nRectangular channels only.\n_CALCULATE_Q_MODE 1.\n***************************",
+        "binary_sha256": "32c11fc6c40617bb283356c9405b116dce432e659ca7a2e796155d177a7e26da"
+      }
+    },
+    {
+      "id": "phase10_physics_dataset",
+      "status": "smoke_only",
+      "training_eligible": false
+    },
+    {
+      "id": "phase11_corrected_physics_dataset",
+      "status": "smoke_only",
+      "training_eligible_for_smoke": true,
+      "dataset_version": "phase11_square_smoke_v1",
+      "sha256": "ceaca5707d6c3c1dce7fb854839825413f696cfc40f9cd37f5aeaa458ba0bd58"
+    },
+    {
+      "id": "flood_fno_smoke",
+      "status": "smoke_only",
+      "validated": false,
+      "operational": false,
+      "sha256": "f1e0f1777355071aaa881f60580c8ffe85dca07e809ff73b04aa2f6debc04292"
+    },
+    {
+      "id": "susceptibility",
+      "status": "experimental"
+    },
+    {
+      "id": "exposure_v1",
+      "status": "experimental"
+    },
+    {
+      "id": "geophysical_vulnerability_v1",
+      "status": "experimental"
+    },
+    {
+      "id": "hev_risk_v1",
+      "status": "experimental"
+    },
+    {
+      "id": "explainability_v1",
+      "status": "experimental"
+    },
+    {
+      "id": "phase11_citizen_metadata_rules_v1",
+      "status": "experimental"
+    }
+  ]
+}

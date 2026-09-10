@@ -1,0 +1,48 @@
+{
+  "expo": {
+    "name": "JalRakshak AI",
+    "slug": "jalrakshak-ai",
+    "version": "1.0.0",
+    "scheme": "jalrakshak",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow JalRakshak to capture flood evidence when you choose to report."
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Allow JalRakshak to select flood evidence when you choose to report."
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Allow JalRakshak to show nearby risk and attach a report location."
+        }
+      ],
+      ["expo-notifications", { "sounds": [] }]
+    ],
+    "android": {
+      "package": "in.jalrakshak.mobile",
+      "permissions": [
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_FINE_LOCATION",
+        "CAMERA"
+      ]
+    },
+    "ios": {
+      "bundleIdentifier": "in.jalrakshak.mobile",
+      "supportsTablet": true
+    },
+    "web": { "bundler": "metro" },
+    "experiments": { "typedRoutes": true }
+  }
+}

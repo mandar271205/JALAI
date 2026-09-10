@@ -1,0 +1,52 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "ResponderTask",
+  "type": "object",
+  "required": [
+    "task_id",
+    "incident_id",
+    "responder_id",
+    "priority",
+    "status",
+    "assigned_at"
+  ],
+  "properties": {
+    "task_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "incident_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "responder_id": {
+      "type": "string"
+    },
+    "priority": {
+      "type": "string",
+      "enum": [
+        "CRITICAL",
+        "HIGH",
+        "MEDIUM",
+        "LOW"
+      ]
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "ASSIGNED",
+        "ACKNOWLEDGED",
+        "EN_ROUTE",
+        "ON_SCENE",
+        "COMPLETED"
+      ]
+    },
+    "assigned_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "instructions": {
+      "type": "string"
+    }
+  }
+}

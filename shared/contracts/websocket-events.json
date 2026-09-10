@@ -1,0 +1,32 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "JalRakshak WebSocket Events Contract",
+  "type": "object",
+  "required": [
+    "event",
+    "timestamp",
+    "payload"
+  ],
+  "properties": {
+    "event": {
+      "type": "string",
+      "enum": [
+        "risk.cell.updated",
+        "incident.created",
+        "incident.status_changed",
+        "field_report.submitted",
+        "field_report.verified",
+        "alert.published",
+        "responder.location_updated",
+        "telemetry.heartbeat"
+      ]
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "payload": {
+      "type": "object"
+    }
+  }
+}

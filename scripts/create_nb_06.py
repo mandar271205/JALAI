@@ -175,5 +175,10 @@ notebook = {
     "nbformat_minor": 5
 }
 
-with open(r"c:\Users\sawan\OneDrive\Desktop\JALAI\jalrakshak-ml-starter\notebooks\06_pysteps_vs_persistence.ipynb", "w") as f:
+from pathlib import Path
+
+out_path = Path(__file__).resolve().parents[1] / "notebooks" / "06_pysteps_vs_persistence.ipynb"
+out_path.parent.mkdir(parents=True, exist_ok=True)
+with open(out_path, "w") as f:
     json.dump(notebook, f, indent=2)
+

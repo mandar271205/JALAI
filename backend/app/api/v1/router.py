@@ -4,8 +4,11 @@ from app.api.v1 import (
     alerts,
     assets,
     audit,
+    dashboard,
+    devices,
     incidents,
     inundation,
+    mobile,
     models,
     notifications,
     nowcast,
@@ -19,6 +22,9 @@ from app.api.v1 import (
     tiles,
     watch_locations,
     weather,
+)
+from app.api.v1 import (
+    map as map_router,
 )
 
 api_v1_router = APIRouter(prefix="/api/v1")
@@ -41,3 +47,7 @@ api_v1_router.include_router(sync.router)
 api_v1_router.include_router(replay.router)
 api_v1_router.include_router(optimization.router)
 api_v1_router.include_router(audit.router)
+api_v1_router.include_router(mobile.router)
+api_v1_router.include_router(dashboard.router)
+api_v1_router.include_router(map_router.router)
+api_v1_router.include_router(devices.router)

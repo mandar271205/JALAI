@@ -72,6 +72,16 @@ class ScientificClaimGates:
     VULNERABILITY_PROXY_DATA_AVAILABLE: bool = True
     PHYSICS_SCENARIO_CATALOG_READY: bool = True
 
+    # Phase 9/10 Flood-Physics Execution & FNO Gates
+    PHYSICS_DOMAIN_READY: bool = True          # DEM + roughness + grid verified
+    RAINFALL_FORCING_READY: bool = True         # .bdy forcing file exists
+    LISFLOOD_EXECUTABLE: bool = False          # solver binary on PATH or in WSL2
+    LISFLOOD_SMOKE_EXECUTED: bool = False      # genuine simulation runs completed
+    GENUINE_SOLVER_OUTPUT_AVAILABLE: bool = False  # validated simulated depth rasters exist
+    PHYSICS_DATASET_READY: bool = False        # frozen manifest with genuine simulation results
+    FNO_READY_FOR_SMOKE: bool = True           # architecture + loss + metrics verified
+    FNO_ACTUALLY_TRAINED: bool = False         # genuine surrogate model trained on solver depth targets
+
     def __post_init__(self) -> None:
         self.validate_scientific_integrity()
 
@@ -112,6 +122,16 @@ class ScientificClaimGates:
         if self.REAL_VULNERABILITY_DATA_AVAILABLE:
             raise ValueError("Socioeconomic vulnerability data is proxy only; cannot claim real census survey")
 
+        # Phase 9/10 physics-execution integrity
+        if self.LISFLOOD_SMOKE_EXECUTED and not self.LISFLOOD_EXECUTABLE:
+            raise ValueError("Cannot claim smoke execution without solver binary on PATH")
+        if self.GENUINE_SOLVER_OUTPUT_AVAILABLE and not self.LISFLOOD_SMOKE_EXECUTED:
+            raise ValueError("Genuine solver output requires at least one executed smoke run")
+        if self.PHYSICS_DATASET_READY and not self.GENUINE_SOLVER_OUTPUT_AVAILABLE:
+            raise ValueError("Physics dataset requires genuine solver output")
+        if self.FNO_ACTUALLY_TRAINED and not self.PHYSICS_DATASET_READY:
+            raise ValueError("FNO training requires a frozen genuine physics dataset")
+
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
 
@@ -122,3 +142,11 @@ class ScientificClaimGates:
 
 
 AUTHORITATIVE_GATES = ScientificClaimGates()
+
+
+def get_phase10_executed_gates() -> ScientificClaimGates:
+    """Deprecated: Phase 10 execution alone cannot attest dataset readiness/validation."""
+    raise PermissionError(
+        'Phase 10 automatic promotion disabled after forensic grid/forcing audit. '
+        'Run scripts/run_post_phase10_research_audit.py for evidence-derived current gates.'
+    )

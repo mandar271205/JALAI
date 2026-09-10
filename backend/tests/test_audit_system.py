@@ -120,3 +120,61 @@ async def test_audit_logs_api_authorization_and_listing():
     finally:
         app.dependency_overrides.pop(get_db, None)
         await engine.dispose()
+
+
+@pytest.mark.asyncio
+async def test_alert_lifecycle_records_audit_trail_queryable_via_api():
+    """
+    Verifies that alert approval and publication write verifiable audit trail events
+    accessible through the audit logs endpoint.
+    """
+    client = TestClient(app)
+
+    # 1. Draft alert
+    draft_res = client.post(
+        "/api/v1/alerts/draft",
+        json={
+            "headline": "Audit Test Flood Alert",
+            "description": "Heavy rainfall runoff",
+            "severity": "Extreme",
+            "urgency": "Immediate",
+            "certainty": "Observed",
+            "ward_id": "WARD-08-KURLA",
+            "area_description": "Kurla West",
+        },
+        headers={"X-Mock-Role": "ANALYST", "X-Mock-User": "usr-drafter-audit"},
+    )
+    assert draft_res.status_code == 201
+    alert_id = draft_res.json()["alert_id"]
+
+    # 2. Distinct officer approves
+    appr_res = client.post(
+        f"/api/v1/alerts/{alert_id}/approve",
+        headers={"X-Mock-Role": "ALERT_APPROVER", "X-Mock-User": "usr-approver-distinct"},
+    )
+    assert appr_res.status_code == 200
+    assert appr_res.json()["audit_event"]["action"] == "ALERT_APPROVED"
+
+    # 3. Publish alert
+    pub_res = client.post(
+        f"/api/v1/alerts/{alert_id}/publish",
+        headers={"X-Mock-Role": "ALERT_APPROVER", "X-Mock-User": "usr-approver-distinct"},
+    )
+    assert pub_res.status_code == 200
+
+    # 4. Disaster Manager queries audit trail
+    audit_res = client.get(
+        "/api/v1/audit/logs?limit=20",
+        headers={"X-Mock-Role": "DISASTER_MANAGER"},
+    )
+    assert audit_res.status_code == 200
+    logs = audit_res.json()
+    actions = [l["action"] for l in logs]
+    assert "ALERT_APPROVED" in actions
+    assert "ALERT_PUBLISHED" in actions
+
+    # Verify cryptographic hashes
+    approved_entry = next(l for l in logs if l["action"] == "ALERT_APPROVED" and l["target_id"] == alert_id)
+    assert approved_entry["actor_id"] == "usr-approver-distinct"
+    assert len(approved_entry["before_hash"]) == 64
+    assert len(approved_entry["after_hash"]) == 64

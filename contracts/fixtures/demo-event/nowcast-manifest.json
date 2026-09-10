@@ -1,0 +1,16 @@
+{
+  "manifest_id": "nowcast-20260908-0930",
+  "generated_at": "2026-09-08T09:30:00Z",
+  "valid_from": "2026-09-08T09:30:00Z",
+  "valid_to": "2026-09-08T11:30:00Z",
+  "lead_time_minutes": 120,
+  "cog_url": "http://localhost:9000/jalrakshak/rasters/nowcast_20260908_0930.tif",
+  "bounds": [
+    72.75,
+    18.88,
+    73.02,
+    19.28
+  ],
+  "model_version": "precip-nowcast-unet-v2",
+  "data_version": "imd-mumbai-radar-20260908"
+}
