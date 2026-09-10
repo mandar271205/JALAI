@@ -1,16 +1,32 @@
 // Centralized API client for JALAI Backend (FastAPI)
 // Default connects to the host machine LAN IP for Expo Go on Android device
 
+import Constants from 'expo-constants';
 import { Platform } from 'react-native';
 
-const DEFAULT_LAN_IP = '192.168.31.136';
+// Dynamically resolve host machine LAN IP from Expo Metro bundler
+const getHostIp = (): string => {
+  const hostUri =
+    Constants.expoConfig?.hostUri ||
+    (Constants as any).manifest?.debuggerHost ||
+    (Constants as any).manifest2?.extra?.expoClient?.hostUri;
+  if (hostUri) {
+    const ip = hostUri.split(':')[0];
+    if (ip && ip !== 'localhost' && ip !== '127.0.0.1') {
+      return ip;
+    }
+  }
+  return '10.10.122.75';
+};
+
+const DEFAULT_LAN_IP = getHostIp();
 const PORT = '8000';
 
 export const API_BASE_URL =
   process.env.EXPO_PUBLIC_API_URL ||
   (Platform.OS === 'android' && !Platform.isTV
     ? `http://${DEFAULT_LAN_IP}:${PORT}/api/v1`
-    : `http://localhost:${PORT}/api/v1`);
+    : `http://${DEFAULT_LAN_IP}:${PORT}/api/v1`);
 
 export interface CurrentWeatherResponse {
   timestamp: string;
