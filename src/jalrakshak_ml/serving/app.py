@@ -12,9 +12,16 @@ import os
 from contextlib import asynccontextmanager
 from typing import Any
 
-from fastapi import Depends, FastAPI, HTTPException, Header, status
+from fastapi import Depends, FastAPI, Header, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 
+from jalrakshak_ml.decision_support import (
+    DecisionSupportStatusResponse,
+    FloodInferenceInput,
+    FloodInferenceOutput,
+    RainfallInferenceInput,
+    RainfallInferenceOutput,
+)
 from jalrakshak_ml.serving.schemas import (
     InundationManifestResponse,
     InundationRequest,
@@ -198,3 +205,58 @@ async def run_risk_alias(payload: dict[str, Any] | None = None) -> dict[str, Any
 async def verify_report_alias(payload: dict[str, Any]) -> ReportVerificationResponse:
     req = ReportVerificationRequest.model_validate(payload)
     return ml_service.verify_citizen_report(req)
+
+
+# --- Decision Support & Fallback AI Endpoints ---
+
+@app.post(
+    "/internal/v1/decision-support/rainfall",
+    response_model=RainfallInferenceOutput,
+    tags=["Canonical Decision Support"],
+    dependencies=[Depends(verify_token)],
+)
+async def run_rainfall_decision_support_v1(req: RainfallInferenceInput) -> RainfallInferenceOutput:
+    return await ml_service.run_rainfall_decision_support(req)
+
+
+@app.post(
+    "/internal/v1/decision-support/flood",
+    response_model=FloodInferenceOutput,
+    tags=["Canonical Decision Support"],
+    dependencies=[Depends(verify_token)],
+)
+async def run_flood_decision_support_v1(req: FloodInferenceInput) -> FloodInferenceOutput:
+    return await ml_service.run_flood_decision_support(req)
+
+
+@app.get(
+    "/internal/v1/decision-support/status",
+    response_model=DecisionSupportStatusResponse,
+    tags=["Canonical Decision Support"],
+    dependencies=[Depends(verify_token)],
+)
+async def get_decision_support_status_v1() -> DecisionSupportStatusResponse:
+    return ml_service.get_decision_support_status()
+
+
+@app.post(
+    "/internal/ml/decision-support/rainfall",
+    response_model=RainfallInferenceOutput,
+    tags=["Backend Compatibility Aliases"],
+    dependencies=[Depends(verify_token)],
+)
+async def run_rainfall_decision_support_alias(payload: dict[str, Any]) -> RainfallInferenceOutput:
+    req = RainfallInferenceInput.model_validate(payload)
+    return await ml_service.run_rainfall_decision_support(req)
+
+
+@app.post(
+    "/internal/ml/decision-support/flood",
+    response_model=FloodInferenceOutput,
+    tags=["Backend Compatibility Aliases"],
+    dependencies=[Depends(verify_token)],
+)
+async def run_flood_decision_support_alias(payload: dict[str, Any]) -> FloodInferenceOutput:
+    req = FloodInferenceInput.model_validate(payload)
+    return await ml_service.run_flood_decision_support(req)
+

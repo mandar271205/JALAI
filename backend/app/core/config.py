@@ -54,6 +54,45 @@ class Settings(BaseSettings):
     OTEL_SERVICE_NAME: str = "jalrakshak-backend"
     OTEL_EXPORTER_OTLP_ENDPOINT: str | None = None
 
+    # Decision Support & 3-Model AI Fallback
+    AI_INFERENCE_ENABLED: bool = True
+    AI_PRIMARY_MODEL_SLOT: int = 1
+    AI_SECONDARY_MODEL_SLOT: int = 2
+    AI_VERIFIER_MODEL_SLOT: int = 3
+
+    # Slot 1: Groq Primary Generator
+    AI_LLM1_ENABLED: bool = True
+    AI_LLM1_PROVIDER: str = "groq"
+    AI_LLM1_MODEL: str = "openai/gpt-oss-120b"
+    AI_LLM1_ROLE: str = "primary_generator"
+    GROQ_API_KEY: str = "CHANGE_ME_GROQ_API_KEY"
+    GROQ_BASE_URL: str = "https://api.groq.com/openai/v1"
+
+    # Slot 2: NVIDIA NIM Fast Failover
+    AI_LLM2_ENABLED: bool = True
+    AI_LLM2_PROVIDER: str = "nvidia"
+    AI_LLM2_MODEL: str = "nvidia/nemotron-3.5-lightning-30b-a3b"
+    AI_LLM2_ROLE: str = "secondary_generator"
+
+    # Slot 3: NVIDIA NIM Heavy Verifier
+    AI_LLM3_ENABLED: bool = True
+    AI_LLM3_PROVIDER: str = "nvidia"
+    AI_LLM3_MODEL: str = "nvidia/nemotron-3-ultra-550b-a55b"
+    AI_LLM3_ROLE: str = "heavy_verifier"
+
+    # Shared NVIDIA Credentials
+    NVIDIA_API_KEY: str = "CHANGE_ME_NVIDIA_API_KEY"
+    NVIDIA_NIM_BASE_URL: str = "https://integrate.api.nvidia.com/v1"
+
+    # Verification Triggers & Thresholds
+    AI_VERIFIER_ENABLED: bool = True
+    AI_VERIFY_HIGH_RISK: bool = True
+    AI_VERIFY_SEVERE_RISK: bool = True
+    AI_VERIFY_DISAGREEMENT: bool = True
+    AI_VERIFY_LOW_SUPPORT: bool = True
+    AI_VERIFIER_MIN_SUPPORT: float = 0.65
+
+
 
 @lru_cache
 def get_settings() -> Settings:
