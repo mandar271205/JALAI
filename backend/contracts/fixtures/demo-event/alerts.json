@@ -1,7 +1,7 @@
 [
   {
     "alert_id": "f5c22a7d-3397-4f98-de56-d1845f3fe001",
-    "headline": "FLASH FLOOD WARNING: Kurla and Dharavi Low-Lying Wards",
+    "headline": "IMD RED ALERT: Flash Flood Warning for Mithi River Catchment",
     "description": "Rapid water level rise detected along Mithi River basin. Inundation depth exceeding 0.7m expected in next 60 minutes.",
     "instruction": "Avoid low-lying subways and basement areas. Move to designated relief shelters or upper floors immediately.",
     "severity": "Extreme",
@@ -9,7 +9,33 @@
     "certainty": "Observed",
     "status": "PUBLISHED",
     "sent_at": "2026-09-08T09:25:00Z",
-    "area_description": "Mumbai Municipal Ward L and G/North (Kurla & Dharavi)",
+    "area_description": "Kurla West & Dharavi Basin (Ward L & G/North)",
     "cap_xml": "<?xml version=\"1.0\" encoding=\"UTF-8\"?><alert xmlns=\"urn:oasis:names:tc:emergency:cap:1.2\"><identifier>f5c22a7d</identifier><sender>ndma-jalrakshak</sender><status>Actual</status><msgType>Alert</msgType><scope>Public</scope><info><headline>FLASH FLOOD WARNING</headline></info></alert>"
+  },
+  {
+    "alert_id": "f5c22a7d-3397-4f98-de56-d1845f3fe002",
+    "headline": "CIVIC TRAFFIC ADVISORY: Arterial Road Closures & Waterlogging",
+    "description": "Severe water accumulation under King's Circle Flyover and CST Road Bridge. Arterial transit restricted to single lane.",
+    "instruction": "Mithi Canal Road closed by police. Divert to Eastern High Ground Elevated Corridor. Avoid vehicle transit through water >0.3m.",
+    "severity": "Severe",
+    "urgency": "Immediate",
+    "certainty": "Observed",
+    "status": "PUBLISHED",
+    "sent_at": "2026-09-08T09:35:00Z",
+    "area_description": "CST Road Bridge & King's Circle Dadar",
+    "cap_xml": "<?xml version=\"1.0\" encoding=\"UTF-8\"?><alert xmlns=\"urn:oasis:names:tc:emergency:cap:1.2\"><identifier>f5c22a7e</identifier><sender>ndma-jalrakshak</sender><status>Actual</status><msgType>Alert</msgType><scope>Public</scope><info><headline>TRAFFIC ADVISORY</headline></info></alert>"
+  },
+  {
+    "alert_id": "f5c22a7d-3397-4f98-de56-d1845f3fe003",
+    "headline": "CIVIL DEFENSE ADVISORY: 24/7 Relief Havens & Medical Bases Open",
+    "description": "Emergency civil defense relief havens opened with backup power generation and drinking water supplies.",
+    "instruction": "Sion Municipal General Hospital (+5.4m MSL) active with 120 emergency beds. Citizens in flooded zones should evacuate.",
+    "severity": "Moderate",
+    "urgency": "Expected",
+    "certainty": "Likely",
+    "status": "PUBLISHED",
+    "sent_at": "2026-09-08T09:40:00Z",
+    "area_description": "Sion Municipal General Hospital & Ward Relief Havens",
+    "cap_xml": "<?xml version=\"1.0\" encoding=\"UTF-8\"?><alert xmlns=\"urn:oasis:names:tc:emergency:cap:1.2\"><identifier>f5c22a7f</identifier><sender>ndma-jalrakshak</sender><status>Actual</status><msgType>Alert</msgType><scope>Public</scope><info><headline>RELIEF HAVENS OPEN</headline></info></alert>"
   }
 ]

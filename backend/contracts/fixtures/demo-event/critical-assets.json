@@ -8,10 +8,38 @@
       "longitude": 72.8601
     },
     "flood_threshold_m": 0.5,
-    "status": "AT_RISK"
+    "status": "AT_RISK",
+    "capacity": 120,
+    "elevation_msl": 14.8
   },
   {
-    "asset_id": "asset-power-002",
+    "asset_id": "asset-shelter-002",
+    "name": "Kurla West Municipal Disaster Shelter",
+    "asset_type": "RELIEF_SHELTER",
+    "location": {
+      "latitude": 19.0685,
+      "longitude": 72.8720
+    },
+    "flood_threshold_m": 0.8,
+    "status": "NORMAL",
+    "capacity": 350,
+    "elevation_msl": 13.5
+  },
+  {
+    "asset_id": "asset-shelter-003",
+    "name": "Dadar Civil Defense Relief Base",
+    "asset_type": "RELIEF_SHELTER",
+    "location": {
+      "latitude": 19.0178,
+      "longitude": 72.8478
+    },
+    "flood_threshold_m": 0.9,
+    "status": "NORMAL",
+    "capacity": 500,
+    "elevation_msl": 16.2
+  },
+  {
+    "asset_id": "asset-power-004",
     "name": "Dharavi 110kV Electrical Substation",
     "asset_type": "POWER_SUBSTATION",
     "location": {
@@ -19,6 +47,8 @@
       "longitude": 72.8534
     },
     "flood_threshold_m": 0.4,
-    "status": "NORMAL"
+    "status": "NORMAL",
+    "capacity": 0,
+    "elevation_msl": 11.0
   }
 ]

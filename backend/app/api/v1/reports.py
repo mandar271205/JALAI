@@ -12,6 +12,24 @@ router = APIRouter(prefix="/reports", tags=["Reports"])
 
 reports_repo = FieldReportsRepository(session=None)
 
+# In-memory accumulator for live citizen reports submitted during session
+DYNAMIC_REPORTS: list[dict[str, Any]] = []
+
+
+@router.get("", response_model=list[dict[str, Any]])
+async def list_reports() -> list[dict[str, Any]]:
+    import json
+    from pathlib import Path
+    base = Path(__file__).resolve().parents[3]
+    fixture_file = base / "contracts" / "fixtures" / "demo-event" / "reports.json"
+    if not fixture_file.exists():
+        fixture_file = Path(__file__).resolve().parents[4] / "backend" / "contracts" / "fixtures" / "demo-event" / "reports.json"
+    fixture_reports: list[dict[str, Any]] = []
+    if fixture_file.exists():
+        with open(fixture_file, "r", encoding="utf-8") as f:
+            fixture_reports = json.load(f)
+    return DYNAMIC_REPORTS + fixture_reports
+
 
 @router.post("", status_code=status.HTTP_201_CREATED)
 async def submit_report_direct(
@@ -28,10 +46,49 @@ async def submit_report_direct(
     finalized = await reports_repo.finalize_upload(
         upload_id=draft["report_id"], sha256_checksum=payload.get("checksum")
     )
+
+    # Determine depth in cm from explicit value or depth level tier
+    depth_level = payload.get("depth_level", "KNEE_DEEP")
+    default_depths = {
+        "WET_ROAD": 6.0,
+        "ANKLE_DEEP": 18.0,
+        "KNEE_DEEP": 50.0,
+        "WAIST_DEEP": 85.0,
+    }
+    raw_depth = payload.get("estimated_water_depth_cm")
+    estimated_depth_cm = float(raw_depth) if raw_depth is not None else default_depths.get(depth_level, 45.0)
+
+    image_url = (
+        payload.get("image_url")
+        or finalized.get("image_url")
+        or "https://images.unsplash.com/photo-1547683905-f686c993aae5?w=600&auto=format&fit=crop&q=80"
+    )
+
+    report_entry = {
+        "report_id": draft["report_id"],
+        "citizen_id": current_user.user_id,
+        "submitted_at": draft["submitted_at"],
+        "location": {
+            "latitude": draft["latitude"],
+            "longitude": draft["longitude"],
+        },
+        "description": draft["description"] or "Field waterlogging report submitted via citizen app.",
+        "image_url": image_url,
+        "verification_status": "AI_VERIFIED",
+        "ai_confidence": 0.95,
+        "estimated_water_depth_cm": estimated_depth_cm,
+        "depth_level": depth_level,
+        "road_blocked": bool(payload.get("road_blocked", False)),
+        "drain_blocked": bool(payload.get("drain_blocked", False)),
+        "hazards": payload.get("hazards", []),
+    }
+
+    # Store in memory so GET /api/v1/reports immediately reflects the new report
+    DYNAMIC_REPORTS.insert(0, report_entry)
+
     return {
         **draft,
-        "verification_status": "AI_VERIFIED",
-        "image_url": payload.get("image_url") or finalized.get("image_url"),
+        **report_entry,
         "verification": finalized.get("verification_job", {}).get("preliminary_result"),
     }
 

@@ -16,11 +16,13 @@ async def list_critical_assets(
     limit: int = Query(50, ge=1, le=500),
     offset: int = Query(0, ge=0),
 ) -> dict[str, Any]:
-    base = Path(__file__).resolve().parents[4]
+    base = Path(__file__).resolve().parents[3]
     fixture_file = base / "contracts" / "fixtures" / "demo-event" / "critical-assets.json"
+    if not fixture_file.exists():
+        fixture_file = Path(__file__).resolve().parents[4] / "contracts" / "fixtures" / "demo-event" / "critical-assets.json"
     assets = []
     if fixture_file.exists():
-        with open(fixture_file) as f:
+        with open(fixture_file, "r", encoding="utf-8") as f:
             assets = json.load(f)
 
     # Filter

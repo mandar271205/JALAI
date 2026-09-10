@@ -1,6 +1,8 @@
 # Secrets
 .env
 .env.*
+!.env.example
+!.env*.example
 .netrc
 _netrc
 *.pem

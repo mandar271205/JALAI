@@ -38,9 +38,12 @@ class StubMLProvider(MLProvider):
 
     def __init__(self, fixtures_path: str | None = None):
         if not fixtures_path:
-            # Locate contracts/fixtures/demo-event relative to workspace or package
-            base = Path(__file__).resolve().parents[4]
-            self.fixtures_path = base / "contracts" / "fixtures" / "demo-event"
+            # Locate contracts/fixtures/demo-event relative to backend package or workspace
+            base = Path(__file__).resolve().parents[3]
+            p = base / "contracts" / "fixtures" / "demo-event"
+            if not p.exists():
+                p = Path(__file__).resolve().parents[4] / "backend" / "contracts" / "fixtures" / "demo-event"
+            self.fixtures_path = p
         else:
             self.fixtures_path = Path(fixtures_path)
 

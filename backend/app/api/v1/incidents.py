@@ -1,4 +1,5 @@
 import json
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -15,6 +16,101 @@ router = APIRouter(prefix="/incidents", tags=["Incidents"])
 # In-memory fallback repository for incident operations
 repo = IncidentsRepository(session=None)
 _memory_incidents: dict[str, dict[str, Any]] = {}
+_memory_sos: dict[str, dict[str, Any]] = {}
+
+
+@router.post("/sos", status_code=status.HTTP_201_CREATED)
+async def broadcast_sos_distress(
+    payload: dict[str, Any],
+    current_user: AuthenticatedUser = Depends(get_current_user),
+) -> dict[str, Any]:
+    lat = float(payload.get("latitude", 19.0728))
+    lon = float(payload.get("longitude", 72.8792))
+    ward_id = payload.get("ward_id", "Ward L (Kurla West)")
+    citizen_name = payload.get("citizen_name", "Ananya Sharma")
+    contact_number = payload.get("contact_number", "+91 98201 12345")
+    assistance_needs = payload.get("assistance_needs", [])
+    battery_level = payload.get("battery_level", 84)
+    notes = payload.get("notes", "Critical Flood Distress Beacon Activated")
+
+    incident = await repo.create_incident(
+        title=f"SOS DISTRESS: {citizen_name} ({ward_id})",
+        category="SOS_DISTRESS",
+        latitude=lat,
+        longitude=lon,
+        severity="FLASH_CRITICAL",
+        ward_id=ward_id,
+        reporter_id=current_user.user_id,
+        initial_notes=f"Citizen Contact: {contact_number} | Battery: {battery_level}% | Assistance: {', '.join(assistance_needs) if assistance_needs else 'None'} | Notes: {notes}",
+    )
+    incident["status"] = "DISPATCHED"
+    _memory_incidents[incident["incident_id"]] = incident
+
+    sos_id = f"SOS-2026-{int(datetime.now(timezone.utc).timestamp()) % 100000:05d}"
+    sos_record = {
+        "sos_id": sos_id,
+        "incident_id": incident["incident_id"],
+        "status": "DISPATCHED",
+        "priority": "FLASH_CRITICAL",
+        "citizen_name": citizen_name,
+        "contact_number": contact_number,
+        "latitude": lat,
+        "longitude": lon,
+        "ward_id": ward_id,
+        "assistance_needs": assistance_needs,
+        "battery_level": battery_level,
+        "assigned_unit": "NDRF 5th Battalion (Kurla Flood Quick-Response)",
+        "vehicle_callsign": "AMPHIBIOUS-RAFT-04",
+        "responder_phone": "1078",
+        "disaster_control_phone": "1916",
+        "eta_minutes": 8,
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "notes": notes,
+        "message": "Distress beacon locked. Rapid rescue unit dispatched.",
+    }
+    _memory_sos[sos_id] = sos_record
+    return sos_record
+
+
+@router.get("/sos/{sos_id}")
+async def get_sos_distress(sos_id: str) -> dict[str, Any]:
+    if sos_id in _memory_sos:
+        return _memory_sos[sos_id]
+    return {
+        "sos_id": sos_id,
+        "status": "DISPATCHED",
+        "priority": "FLASH_CRITICAL",
+        "assigned_unit": "NDRF 5th Battalion (Kurla Flood Quick-Response)",
+        "vehicle_callsign": "AMPHIBIOUS-RAFT-04",
+        "responder_phone": "1078",
+        "disaster_control_phone": "1916",
+        "eta_minutes": 6,
+        "message": "Rescue unit en route to locked coordinates.",
+    }
+
+
+@router.post("/sos/{sos_id}/cancel")
+async def cancel_sos_distress(
+    sos_id: str,
+    payload: dict[str, Any] | None = None,
+    current_user: AuthenticatedUser = Depends(get_current_user),
+) -> dict[str, Any]:
+    reason = payload.get("reason", "Citizen reported safe") if payload else "Citizen reported safe"
+    if sos_id in _memory_sos:
+        _memory_sos[sos_id]["status"] = "DE_ESCALATED"
+        _memory_sos[sos_id]["cancellation_reason"] = reason
+        _memory_sos[sos_id]["resolved_at"] = datetime.now(timezone.utc).isoformat()
+
+        inc_id = _memory_sos[sos_id].get("incident_id")
+        if inc_id and inc_id in _memory_incidents:
+            _memory_incidents[inc_id]["status"] = "RESOLVED"
+
+    return {
+        "sos_id": sos_id,
+        "status": "DE_ESCALATED",
+        "reason": reason,
+        "message": "Distress signal de-escalated. Ward marshals notified.",
+    }
 
 
 @router.get("")
@@ -24,11 +120,13 @@ async def list_incidents(
     ward_id: str | None = Query(None),
 ) -> list[dict[str, Any]]:
     # Merge fixture incidents with in-memory incidents
-    base = Path(__file__).resolve().parents[4]
+    base = Path(__file__).resolve().parents[3]
     fixture_file = base / "contracts" / "fixtures" / "demo-event" / "incidents.json"
+    if not fixture_file.exists():
+        fixture_file = Path(__file__).resolve().parents[4] / "contracts" / "fixtures" / "demo-event" / "incidents.json"
     incidents = []
     if fixture_file.exists():
-        with open(fixture_file) as f:
+        with open(fixture_file, "r", encoding="utf-8") as f:
             incidents = json.load(f)
 
     # Add any newly created memory incidents
@@ -68,10 +166,12 @@ async def get_incident(incident_id: str) -> dict[str, Any]:
         return _memory_incidents[incident_id]
 
     # Check fixtures
-    base = Path(__file__).resolve().parents[4]
+    base = Path(__file__).resolve().parents[3]
     fixture_file = base / "contracts" / "fixtures" / "demo-event" / "incidents.json"
+    if not fixture_file.exists():
+        fixture_file = Path(__file__).resolve().parents[4] / "contracts" / "fixtures" / "demo-event" / "incidents.json"
     if fixture_file.exists():
-        with open(fixture_file) as f:
+        with open(fixture_file, "r", encoding="utf-8") as f:
             for inc in json.load(f):
                 if inc.get("incident_id") == incident_id:
                     return {

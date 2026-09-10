@@ -7,6 +7,26 @@ from app.domains.routing.engine import routing_engine
 router = APIRouter(prefix="/routes", tags=["Routes"])
 
 
+@router.get("/closures")
+async def get_road_closures() -> list[dict[str, Any]]:
+    """Return all currently closed or inundated road segments from routing graph."""
+    results = []
+    for u, v, dist, depth, closed, name in routing_engine.edges:
+        u_node = routing_engine.nodes[u]
+        v_node = routing_engine.nodes[v]
+        results.append({
+            "road_name": name,
+            "is_closed": closed,
+            "flood_depth_m": depth,
+            "status": "CLOSED" if closed else ("INUNDATED" if depth >= 0.4 else "PASSABLE"),
+            "coordinates": [
+                [u_node["lat"], u_node["lon"]],
+                [v_node["lat"], v_node["lon"]]
+            ]
+        })
+    return results
+
+
 @router.post("/lower-risk")
 async def compute_lower_risk_route(payload: dict[str, Any]) -> dict[str, Any]:
     origin = payload.get("origin", {"latitude": 19.0712, "longitude": 72.8756})

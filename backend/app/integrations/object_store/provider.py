@@ -38,7 +38,15 @@ class MinIOObjectStoreProvider(ObjectStoreProvider):
         )
 
     async def ensure_bucket(self) -> bool:
+        import socket
         try:
+            # Fast socket probe: don't hang startup if MinIO service is not running locally
+            parts = self.endpoint.split(":")
+            host = parts[0]
+            port = int(parts[1]) if len(parts) > 1 else 9000
+            with socket.create_connection((host, port), timeout=0.2):
+                pass
+
             if not self.client.bucket_exists(self.bucket_name):
                 self.client.make_bucket(self.bucket_name)
             return True

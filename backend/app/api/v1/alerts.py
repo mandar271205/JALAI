@@ -174,11 +174,52 @@ async def publish_alert(
     }
 
 
+@router.get("", response_model=list[dict[str, Any]])
+@router.get("/active", response_model=list[dict[str, Any]])
+async def list_active_alerts() -> list[dict[str, Any]]:
+    """Return active published CAP alerts from fixtures and current runtime."""
+    import json
+    from pathlib import Path
+
+    base = Path(__file__).resolve().parents[3]
+    fixture_file = base / "contracts" / "fixtures" / "demo-event" / "alerts.json"
+    if not fixture_file.exists():
+        fixture_file = Path(__file__).resolve().parents[4] / "contracts" / "fixtures" / "demo-event" / "alerts.json"
+    alerts: list[dict[str, Any]] = []
+    if fixture_file.exists():
+        with open(fixture_file, "r", encoding="utf-8") as f:
+            alerts = json.load(f)
+
+    # Merge with any published in-memory alerts
+    for alert in _alerts_db.values():
+        if alert.get("status") in ["PUBLISHED", "APPROVED"]:
+            alerts.append(alert)
+
+    return alerts
+
+
 @router.get("/{alert_id}/cap.xml")
 async def get_alert_cap_xml(alert_id: str) -> Response:
-    if alert_id not in _alerts_db:
+    import json
+    from pathlib import Path
+
+    alert = _alerts_db.get(alert_id)
+    if not alert:
+        base = Path(__file__).resolve().parents[3]
+        fixture_file = base / "contracts" / "fixtures" / "demo-event" / "alerts.json"
+        if not fixture_file.exists():
+            fixture_file = Path(__file__).resolve().parents[4] / "contracts" / "fixtures" / "demo-event" / "alerts.json"
+        if fixture_file.exists():
+            with open(fixture_file, "r", encoding="utf-8") as f:
+                fixtures = json.load(f)
+                for a in fixtures:
+                    if a.get("alert_id") == alert_id:
+                        alert = a
+                        break
+
+    if not alert:
         raise NotFoundError(f"Alert '{alert_id}' not found.")
 
-    alert = _alerts_db[alert_id]
     xml_content = alert.get("cap_xml") or CAPSerializer.to_xml(alert)
     return Response(content=xml_content, media_type="application/xml")
+
